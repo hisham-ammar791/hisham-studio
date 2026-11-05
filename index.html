@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230f1b30%22/%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23090d16%22/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22112%22%20fill%3D%22url%28%23g%29%22/%3E%3Crect%20x%3D%2296%22%20y%3D%22196%22%20width%3D%22320%22%20height%3D%22216%22%20rx%3D%2226%22%20fill%3D%22%23131c2e%22%20stroke%3D%22%2310b981%22%20stroke-width%3D%2214%22/%3E%3Cg%20transform%3D%22rotate%28-9%2096%20190%29%22%3E%3Crect%20x%3D%2296%22%20y%3D%22120%22%20width%3D%22320%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22%2310b981%22/%3E%3Cpath%20d%3D%22M150%20120l-40%2064h56l40-64zM250%20120l-40%2064h56l40-64zM350%20120l-40%2064h56l40-64z%22%20fill%3D%22%23090d16%22/%3E%3C/g%3E%3Cpath%20d%3D%22M222%20258v100l86-50z%22%20fill%3D%22%23f8fafc%22/%3E%3Ctext%20x%3D%22256%22%20y%3D%22400%22%20font-family%3D%22Segoe%20UI%2CArial%2Csans-serif%22%20font-size%3D%220%22%20fill%3D%22%2310b981%22%3E%20%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#090d16">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="الاستوديو">
+<title>استوديو الإخراج الذكي v3 - مدة لقطات مرنة وقوالب لكل أداة</title>
+<style>
+:root{--bg:#090d16;--card:#131c2e;--panel:#1e293b;--accent:#10b981;--accent2:#059669;--blue:#3b82f6;--warn:#f59e0b;--bad:#ef4444;--text:#f8fafc;--muted:#94a3b8;--border:#334155}
+*{box-sizing:border-box;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
+body{background:var(--bg);color:var(--text);margin:0;padding:14px;line-height:1.6}
+.container{max-width:1300px;margin:0 auto}
+header{text-align:center;padding:14px;background:var(--card);border-radius:12px;border:1px solid var(--border);margin-bottom:14px}
+header h1{color:var(--accent);margin:0 0 4px;font-size:22px}
+header p{color:var(--muted);margin:0;font-size:13px}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tab-btn{flex:1;min-width:130px;padding:11px 8px;background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold}
+.tab-btn.active,.tab-btn:hover{background:var(--accent);border-color:var(--accent)}
+.panel{display:none;background:var(--card);padding:18px;border-radius:12px;border:1px solid var(--border)}
+.panel.active{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:800px){.grid2,.grid3{grid-template-columns:1fr}}
+label{display:block;font-weight:bold;margin-bottom:5px;color:var(--accent);font-size:13px}
+textarea,input,select{width:100%;padding:9px;margin-bottom:12px;background:#090d16;border:1px solid var(--border);color:#fff;border-radius:8px;font-size:14px}
+textarea{resize:vertical}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+button.b{flex:1;min-width:120px;background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer}
+button.b:hover{background:var(--accent2)}
+button.blue{background:var(--blue)}button.warn{background:var(--warn);color:#000}button.gray{background:#475569}button.red{background:#7f1d1d}
+.out{background:#090d16;padding:12px;border-radius:8px;border:1px solid var(--border);margin-top:10px;white-space:pre-wrap;font-family:monospace;font-size:13px}
+.hint{color:var(--muted);font-size:12.5px;margin:0 0 10px}
+.char{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
+.char h4{margin:0 0 8px;color:var(--accent)}
+.shot{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
+.shot-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold}
+.ok{background:#064e3b;color:#34d399}.wr{background:#78350f;color:#fbbf24}.er{background:#7f1d1d;color:#fca5a5}
+.mini{background:#334155;color:#fff;border:none;padding:4px 9px;border-radius:5px;font-size:12px;cursor:pointer}
+.mini:hover{background:var(--accent)}
+.tw{overflow-x:auto;margin-top:12px;border-radius:8px;border:1px solid var(--border)}
+table.m{width:100%;border-collapse:collapse;background:#090d16;font-size:13px;min-width:900px}
+table.m th{background:var(--panel);color:var(--accent);padding:9px;border:1px solid var(--border);text-align:right}
+table.m td{padding:9px;border:1px solid var(--border);vertical-align:top}
+table.m tr:nth-child(even){background:#0f1624}
+.pc{font-family:monospace;direction:ltr;text-align:left;color:#cbd5e1;background:#06090f;padding:7px;border-radius:6px;border:1px solid #1e293b;white-space:pre-wrap}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:9}
+.toast.show{opacity:1}
+.gridn{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.row{display:flex;gap:8px;align-items:center}
+.row>*{margin-bottom:0}
+@media print{
+ body{background:#fff;color:#000;padding:0}
+ header,.tabs,.btns,.noprint,.mini{display:none!important}
+ .panel{display:none!important;border:none;background:#fff}
+ #panel-2{display:block!important}
+ table.m{background:#fff;color:#000;min-width:0;font-size:10px}
+ table.m th{background:#eee;color:#000}table.m td{border-color:#999}
+ table.m tr:nth-child(even){background:#fff}
+ .pc{background:#fff;color:#000;border-color:#999}
+ .tw{border:none;overflow:visible}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+ <h1>🎬 استوديو الإخراج الذكي v3</h1>
+ <p>مدة لكل لقطة (من 2 ثانية فأكثر) • قوالب جاهزة لأدوات الفيديو • مراجعة السكريبت والفيديو عبر ChatGPT وGemini • حفظ تلقائي</p>
+</header>
+
+<div class="tabs">
+ <button class="tab-btn active" onclick="tab(0)">1. المشروع والشخصيات</button>
+ <button class="tab-btn" onclick="tab(1)">2. الحوار واللقطات</button>
+ <button class="tab-btn" onclick="tab(2)">3. جدول العمل الكلي</button>
+ <button class="tab-btn" onclick="tab(3)">4. الذكاء الاصطناعي</button>
+ <button class="tab-btn" onclick="tab(4)">5. الفحص والنقد</button>
+</div>
+
+<!-- 1 -->
+<div class="panel active" id="panel-0">
+ <div class="grid2">
+  <div>
+   <label>المكان والبيئة (Set Lock) — بالإنجليزية:</label>
+   <textarea id="setting" rows="3"></textarea>
+   <label>الستايل البصري:</label>
+   <input id="style">
+  </div>
+  <div>
+   <div class="grid2">
+    <div><label>نسبة الأبعاد:</label>
+     <select id="aspect"><option>16:9</option><option>9:16</option><option>1:1</option></select></div>
+    <div><label>صوت الخلفية (Ambient):</label><input id="ambient" placeholder="soft pharmacy ambience"></div>
+   </div>
+   <p class="hint">كل ما تكتبه هنا يدخل تلقائيًا في كل أمر فيديو. حافظ على وصف ثابت لتثبيت الشخصيات والمكان بين اللقطات.</p>
+  </div>
+ </div>
+ <h3 style="color:var(--accent)">الشخصيات</h3>
+ <div id="chars"></div>
+ <div class="btns"><button class="b blue" onclick="addChar()">➕ إضافة شخصية</button></div>
+</div>
+
+<!-- 2 -->
+<div class="panel" id="panel-1">
+ <label>الصق الحوار هنا (سطر لكل لقطة، ويمكن البدء باسم الشخصية: مثل «فهيم: ...»):</label>
+ <textarea id="dlg" rows="5"></textarea>
+ <div class="btns">
+  <button class="b" onclick="importDialogue()">⬇️ تحويل الحوار إلى لقطات</button>
+  <button class="b gray" onclick="addShot()">➕ لقطة فارغة</button>
+ </div>
+ <div class="grid3">
+  <div><label>إيقاع الكاميرا:</label>
+   <select id="pacing"><option value="dynamic">ديناميكي (تأسيس Two-Shot ثم تنويع)</option><option value="static">ثابت (Two-Shot لكل اللقطات)</option></select></div>
+  <div><label>بروتوكول الفم:</label>
+   <select id="lip">
+    <option value="A">فم هادئ + منع اليد من الوجه</option>
+    <option value="B">فم مغلق + تمثيل بالعين والحاجب</option>
+   </select></div>
+  <div><label>الاستمرارية:</label>
+   <select id="cont"><option value="1">ربط بالإطار الأخير للقطة السابقة</option><option value="0">بدون ربط</option></select></div>
+ </div>
+ <div class="grid3" style="margin-top:6px">
+  <div><label>الأداة المستهدفة (قالب الأوامر):</label><select id="tool"></select></div>
+  <div><label>المدة الافتراضية للقطة (ثانية):</label><input id="defDur" type="number" step="0.5" min="2"></div>
+  <div><label>الحد الأقصى للأداة (ثانية):</label><input id="maxDur" type="number" step="1" min="2"></div>
+ </div>
+ <p class="hint">الحدود الأقصى قيم تقريبية قابلة للتعديل؛ راجع حد خطتك الفعلي في الأداة. يمكنك تغيير مدة كل لقطة على حدة داخل بطاقتها.</p>
+ <div id="customWrap" style="display:none">
+  <label>القالب المخصص — المتغيرات المتاحة: {shot} {duration} {aspect} {setting} {characters} {style} {camera} {speaker} {gesture} {lip} {listeners} {timeline} {ambient} {negative} {continuity}</label>
+  <textarea id="customTpl" rows="5" dir="ltr"></textarea>
+ </div>
+ <div class="btns"><button class="b gray" onclick="applyDurAll()">تطبيق المدة الافتراضية على كل اللقطات</button></div>
+ <div id="shots"></div>
+</div>
+
+<!-- 3 -->
+<div class="panel" id="panel-2">
+ <div class="btns noprint">
+  <button class="b" onclick="renderSheet(true)">⚙️ تحديث الجدول</button>
+  <button class="b blue" onclick="dl('csv')">📥 تحميل CSV</button>
+  <button class="b blue" onclick="cp('csv')">📋 نسخ CSV</button>
+  <button class="b gray" onclick="dl('json')">💾 حفظ JSON</button>
+  <button class="b gray" onclick="cp('json')">📋 نسخ JSON</button>
+  <button class="b warn" onclick="window.print()">🖨️ طباعة</button>
+ </div>
+ <div class="btns noprint">
+  <button class="b gray" onclick="copyAll('prompt')">نسخ كل أوامر الفيديو</button>
+  <button class="b gray" onclick="copyAll('tts')">نسخ كل أكواد الصوت</button>
+  <button class="b gray" onclick="document.getElementById('imp').click()">📂 استيراد مشروع JSON</button>
+  <button class="b red" onclick="resetAll()">إعادة ضبط</button>
+  <input type="file" id="imp" accept=".json" style="display:none" onchange="importJSON(this)">
+ </div>
+ <div class="hint noprint" id="summary"></div>
+ <div class="tw" id="sheet"></div>
+ <div class="out noprint" id="exportBox" style="display:none"></div>
+</div>
+
+<!-- 4 -->
+<div class="panel" id="panel-3">
+ <p class="hint">الربط المباشر يعمل عند فتح الملف على جهازك (وليس داخل صفحة معاينة محجوبة الاتصال). المفتاح يُحفظ في متصفحك فقط ولا يدخل في ملف JSON. بدون مفتاح استخدم أزرار النسخ والفتح.</p>
+ <label>مسودة السكريبت أو الفكرة الخام:</label>
+ <textarea id="raw" rows="4" placeholder="اكتب الفكرة أو الحوار المبدئي..."></textarea>
+ <div class="btns">
+  <button class="b gray" onclick="showPre()">توليد أمر التطوير</button>
+  <button class="b blue" onclick="openChat('chatgpt','pre')">نسخ + فتح ChatGPT</button>
+  <button class="b blue" onclick="openChat('gemini','pre')">نسخ + فتح Gemini</button>
+  <button class="b" onclick="runAI('pre')">⚡ تشغيل مباشر عبر API</button>
+ </div>
+ <div class="out" id="preOut">اضغط «توليد أمر التطوير».</div>
+ <label style="margin-top:12px">رد الذكاء الاصطناعي (الصق الرد هنا أو سيظهر تلقائيًا):</label>
+ <textarea id="aiResult" rows="6" placeholder="اسم الشخصية: الحوار (سطر لكل لقطة)"></textarea>
+ <div class="btns"><button class="b" onclick="applyAI()">✅ طبّق على اللقطات</button></div>
+ <h3 style="color:var(--accent)">🔎 مراجعة وتعديل السكريبت الحالي</h3>
+ <p class="hint">يرسل الحوار الحالي بكل لقطاته ومددها إلى ChatGPT أو Gemini ويرجع بتقييم ونسخة معدلة؛ اضغط «طبّق على اللقطات» في الصندوق أعلاه (المدد تُحفظ).</p>
+ <label>ماذا تريد من المراجع؟ (اختياري)</label>
+ <input id="scriptAsk" placeholder="مثال: خلّي الإفيهات أقوى وقلل عدد الكلمات">
+ <div class="btns">
+  <button class="b gray" onclick="showKind('script')">توليد أمر المراجعة</button>
+  <button class="b blue" onclick="openChat('chatgpt','script')">نسخ + فتح ChatGPT</button>
+  <button class="b blue" onclick="openChat('gemini','script')">نسخ + فتح Gemini</button>
+  <button class="b" onclick="runAI('script')">⚡ عبر API</button>
+ </div>
+ <div class="out" id="scriptOut">اضغط «توليد أمر المراجعة».</div>
+ <h3 style="color:var(--accent)">🎞️ مراجعة الفيديو كامل (Gemini)</h3>
+ <p class="hint">يبني أمرًا يحتوي الجدول الزمني المتوقع لكل لقطة، فيقارن Gemini ما شاهده بما كان مطلوبًا ويعطيك حكمًا لكل لقطة وأوامر بديلة للمعيب. عبر التطبيق: انسخ الأمر وأرفق الفيديو. عبر API: اختر ملفًا حتى 14MB.</p>
+ <input type="file" id="vidFile" accept="video/*">
+ <div class="btns">
+  <button class="b gray" onclick="showKind('video')">توليد أمر مراجعة الفيديو</button>
+  <button class="b blue" onclick="openChat('gemini','video')">نسخ + فتح Gemini</button>
+  <button class="b" onclick="runAI('video')">⚡ رفع ومراجعة عبر API</button>
+ </div>
+ <div class="out" id="videoOut">اضغط «توليد أمر مراجعة الفيديو».</div>
+ <h3 style="color:var(--accent)">إعدادات الاتصال</h3>
+ <div class="grid3">
+  <div><label>المزوّد:</label><select id="prov"><option value="gemini">Gemini</option><option value="openai">OpenAI (ChatGPT)</option></select></div>
+  <div><label>اسم الموديل (عدّله حسب المتاح لك):</label><input id="model"></div>
+  <div><label>مفتاح API:</label><input id="apikey" type="password" placeholder="يُحفظ على جهازك فقط"></div>
+ </div>
+</div>
+
+<!-- 5 -->
+<div class="panel" id="panel-4">
+ <label>رقم اللقطة المراد فحصها (اتركه فارغًا للعامة):</label>
+ <input id="critShot" type="number" min="1" placeholder="مثال: 2">
+ <label>ملاحظاتك على الفيديو المولّد:</label>
+ <textarea id="notes" rows="3" placeholder="مثال: يد الشخصية اقتربت من الوجه عند الثانية 4..."></textarea>
+ <div class="btns">
+  <button class="b gray" onclick="showCrit()">توليد أمر الفحص</button>
+  <button class="b blue" onclick="openChat('chatgpt','crit')">نسخ + فتح ChatGPT</button>
+  <button class="b blue" onclick="openChat('gemini','crit')">نسخ + فتح Gemini</button>
+  <button class="b" onclick="runAI('crit')">⚡ تشغيل عبر API</button>
+ </div>
+ <div class="out" id="critOut">سيظهر هنا أمر الفحص لإرساله مع الفيديو المرفق.</div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const LS='studio5s_v2', KS='studio5s_v2_key';
+const DEF={
+ setting:"Inside a bright modern Egyptian pharmacy with warm lighting. Arabic pharmacy signs are strictly static in the background.",
+ style:"cinematic 3D animated comedy, soft depth of field, consistent character design",
+ aspect:"16:9", ambient:"soft pharmacy ambience, quiet air-conditioner hum",
+ chars:[
+  {id:'c1',name:'فهيم',aliases:'عم فهيم, عمو فهيم',short:'elderly man',side:'left',visual:'elderly Egyptian man in a traditional vest and glasses, seated in a green chair',tone:'curious, animated Egyptian tone'},
+  {id:'c2',name:'دكتور',aliases:'الصيدلي, د, دكتور اتش',short:'young pharmacist',side:'right',visual:'young pharmacist in a white lab coat and glasses, behind the counter',tone:'witty, warm sarcastic tone'}
+ ],
+ shots:[
+  {cid:'c1',text:'يا دكتور أنا سمعت إن شرب المية السخنة على الريق بيسيح الدهون فوراً!',gesture:'auto',custom:'',camera:'auto',sfx:'',dur:5},
+  {cid:'c2',text:'ياه يا عم فهيم! ده على كده الكاتل كان زمانه فتح عيادة تخسيس!',gesture:'auto',custom:'',camera:'auto',sfx:'',dur:5},
+  {cid:'c1',text:'طب والليمون بالكمون يا دكتور؟ ده الحاجة بتحلف بيه كل يوم الصبح!',gesture:'auto',custom:'',camera:'auto',sfx:'',dur:5}
+ ],
+ pacing:'dynamic', lip:'A', cont:'1', prov:'gemini', model:'gemini-2.5-flash', raw:'', tool:'generic', defDur:5, maxDur:10, customTpl:'Shot {shot} ({duration}s, {aspect}). {setting} {characters} Camera: {camera}. {speaker} {gesture}; {lip}. {listeners} Timeline: {timeline} Style: {style}. {continuity} Avoid: {negative}'
+};
+const G={
+ point:"raises one index finger smoothly at chest level to emphasize the point, expressive eyebrows",
+ palm:"opens one palm smoothly in a witty explanatory gesture, slight upper-body lean forward",
+ tilt:"tilts head slightly with comedic curiosity, raises one eyebrow, makes a single smooth hand gesture",
+ smile:"gives a warm knowing smile, nods once, makes a calm open-handed gesture above the desk",
+ clap:"lightly taps hands together once in amazement, wide expressive eyes, hands kept below chest level"
+};
+const GL={auto:'ذكي تلقائي',point:'رفع السبابة للتأكيد',palm:'فتح الكف',tilt:'إمالة الرأس بفضول',smile:'ابتسامة وإيماءة',clap:'خبطة كف من الدهشة',custom:'مخصص...'};
+const CL={auto:'تلقائي',two:'Two-Shot ثابت',mcu:'Medium Close-up على المتحدث',ots:'Over-the-shoulder'};
+const LIP={
+ A:"natural subtle mouth movement, strictly keep hands away from face and mouth area",
+ B:"closed mouth with expressive eye and eyebrow acting only, hands strictly below chest level"
+};
+const NEG="morphing fingers, hands covering mouth, head turned away, extra limbs, background text distortion, changing clothes";
+
+let S=load();
+let rows=[];
+
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function load(){try{const r=localStorage.getItem(LS);if(r)return Object.assign(clone(DEF),JSON.parse(r))}catch(e){}return clone(DEF)}
+function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+function getKey(){try{return localStorage.getItem(KS)||''}catch(e){return window.__k||''}}
+function setKey(v){try{localStorage.setItem(KS,v)}catch(e){window.__k=v}}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function $(id){return document.getElementById(id)}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(window.__t);window.__t=setTimeout(()=>t.classList.remove('show'),1800)}
+function tab(i){document.querySelectorAll('.tab-btn').forEach((b,k)=>b.classList.toggle('active',k===i));document.querySelectorAll('.panel').forEach((p,k)=>p.classList.toggle('active',k===i));if(i===2)renderSheet();}
+
+function charById(id){return S.chars.find(c=>c.id===id)||S.chars[0]}
+function ref(c){return `the ${c.short||'character'} on the ${c.side}`}
+function fmt(x){return tt(x)}
+function words(t){return t.trim().split(/\s+/).filter(Boolean).length}
+function norm(s){return s.replace(/[ً-ٟ]/g,'').replace(/[\s.]+/g,' ').trim()}
+
+/* ---------- bind simple fields ---------- */
+const FIELDS=['setting','style','aspect','ambient','pacing','lip','cont','raw','defDur','maxDur','customTpl'];
+function bindFields(){
+ FIELDS.forEach(f=>{const el=$(f);if(!el)return;el.value=S[f];el.addEventListener('input',()=>{S[f]=el.value;save();if(['pacing','lip','cont','maxDur'].includes(f))renderShots()})});
+ $('dlg').value=S.dlgDraft||'';$('dlg').addEventListener('input',()=>{S.dlgDraft=$('dlg').value;save()});
+ const ts=$('tool');ts.innerHTML=Object.keys(TOOLS).map(k=>`<option value="${k}">${TOOLS[k].n}</option>`).join('');ts.value=S.tool;$('customWrap').style.display=S.tool==='custom'?'block':'none';
+ ts.addEventListener('change',()=>{S.tool=ts.value;S.maxDur=TOOLS[S.tool].max;$('maxDur').value=S.maxDur;$('customWrap').style.display=S.tool==='custom'?'block':'none';save();renderShots()});
+ $('prov').value=S.prov;$('model').value=S.model;$('apikey').value=getKey();
+ $('prov').addEventListener('change',()=>{S.prov=$('prov').value;S.model=S.prov==='gemini'?'gemini-2.5-flash':'gpt-4o-mini';$('model').value=S.model;save()});
+ $('model').addEventListener('input',()=>{S.model=$('model').value;save()});
+ $('apikey').addEventListener('input',()=>setKey($('apikey').value));
+}
+
+/* ---------- characters ---------- */
+function renderChars(){
+ $('chars').innerHTML=S.chars.map((c,i)=>`
+ <div class="char"><h4>شخصية ${i+1}</h4>
+  <div class="grid3">
+   <div><label>الاسم (كما يظهر في الحوار):</label><input data-ci="${i}" data-f="name" value="${esc(c.name)}"></div>
+   <div><label>أسماء بديلة (مفصولة بفاصلة):</label><input data-ci="${i}" data-f="aliases" value="${esc(c.aliases)}"></div>
+   <div><label>الجهة في الكادر:</label><select data-ci="${i}" data-f="side">${['left','right','center'].map(s=>`<option ${c.side===s?'selected':''}>${s}</option>`).join('')}</select></div>
+  </div>
+  <div class="grid3">
+   <div><label>وصف قصير بالإنجليزية (يُستخدم في الأوامر):</label><input data-ci="${i}" data-f="short" value="${esc(c.short)}"></div>
+   <div><label>الوصف البصري الكامل:</label><input data-ci="${i}" data-f="visual" value="${esc(c.visual)}"></div>
+   <div><label>نبرة الصوت (TTS):</label><input data-ci="${i}" data-f="tone" value="${esc(c.tone)}"></div>
+  </div>
+  ${S.chars.length>2?`<button class="mini" onclick="delChar(${i})">حذف الشخصية</button>`:''}
+ </div>`).join('');
+}
+function addChar(){S.chars.push({id:'c'+Date.now(),name:'شخصية',aliases:'',short:'character',side:'center',visual:'',tone:'natural Egyptian tone'});save();renderChars();renderShots()}
+function delChar(i){const id=S.chars[i].id;S.chars.splice(i,1);S.shots.forEach(s=>{if(s.cid===id)s.cid=S.chars[0].id});save();renderChars();renderShots()}
+$('chars').addEventListener('input',e=>{const t=e.target;if(t.dataset.ci==null)return;S.chars[+t.dataset.ci][t.dataset.f]=t.value;save()});
+$('chars').addEventListener('change',e=>{if(e.target.dataset.f==='name'||e.target.dataset.f==='side'){renderShots()}});
+
+/* ---------- dialogue parse ---------- */
+function findChar(name){
+ const n=norm(name);
+ return S.chars.find(c=>[c.name,...c.aliases.split(/[,،]/)].map(norm).filter(Boolean).includes(n));
+}
+function parseDialogue(txt){
+ const out=[];let prev=null;
+ txt.split('\n').map(l=>l.trim()).filter(Boolean).forEach(l=>{
+  const m=l.match(/^([^:：]{1,24})[:：]\s*(.+)$/);
+  let c=null,text=l;
+  if(m){const f=findChar(m[1]);if(f){c=f;text=m[2].trim()}}
+  if(!c){const pi=prev?S.chars.findIndex(x=>x.id===prev.id):-1;c=S.chars[(pi+1)%S.chars.length]}
+  prev=c;out.push({cid:c.id,text,gesture:'auto',custom:'',camera:'auto',sfx:'',dur:parseFloat(S.defDur)||5});
+ });
+ return out;
+}
+function importDialogue(){
+ const r=parseDialogue($('dlg').value);
+ if(!r.length){toast('اكتب الحوار أولاً');return}
+ S.shots=r;save();renderShots();toast('تم إنشاء '+r.length+' لقطة');
+}
+function applyDurAll(){const d=parseFloat(S.defDur)||5;S.shots.forEach(s=>s.dur=d);save();renderShots();toast('تم تطبيق '+d+' ث على كل اللقطات')}
+function addShot(){const last=S.shots[S.shots.length-1];const pi=last?S.chars.findIndex(c=>c.id===last.cid):-1;S.shots.push({cid:S.chars[(pi+1)%S.chars.length].id,text:'',gesture:'auto',custom:'',camera:'auto',sfx:'',dur:parseFloat(S.defDur)||5});save();renderShots()}
+function delShot(i){S.shots.splice(i,1);save();renderShots()}
+function moveShot(i,d){const j=i+d;if(j<0||j>=S.shots.length)return;[S.shots[i],S.shots[j]]=[S.shots[j],S.shots[i]];save();renderShots()}
+
+/* ---------- build rows ---------- */
+const TOOLS={
+ generic:{n:'عام (Timeline منظم)',fam:'structured',max:10},
+ veo:{n:'Google Veo / Flow',fam:'prose',max:8},
+ sora:{n:'OpenAI Sora',fam:'prose',max:12},
+ kling:{n:'Kling',fam:'concise',max:10},
+ runway:{n:'Runway',fam:'short',max:10},
+ luma:{n:'Luma Dream Machine',fam:'short',max:9},
+ hailuo:{n:'Hailuo / MiniMax',fam:'bracket',max:10},
+ pika:{n:'Pika',fam:'short',max:10},
+ custom:{n:'قالب مخصص (أي أداة)',fam:'custom',max:10}
+};
+function tt(x){x=Math.round(x*10)/10;const m=Math.floor(x/60);const s=Math.round((x-m*60)*10)/10;const si=Number.isInteger(s)?String(s).padStart(2,'0'):s.toFixed(1).padStart(4,'0');return String(m).padStart(2,'0')+':'+si}
+function build(){
+ const last={};rows=[];let t0=0;
+ const T=TOOLS[S.tool]||TOOLS.generic;const fam=T.fam;
+ S.shots.forEach((s,idx)=>{
+  const sp=charById(s.cid);
+  const others=S.chars.filter(c=>c.id!==sp.id);
+  const D=Math.max(2,parseFloat(s.dur)||parseFloat(S.defDur)||5);
+  const R=ref(sp);
+  let gkey=s.gesture,gtxt;
+  if(gkey==='custom')gtxt=s.custom||G.palm;
+  else{
+   if(gkey==='auto'){
+    const t=s.text;
+    const cand=/[؟?]/.test(t)?['tilt','palm','smile']:/!/.test(t)?['point','clap','palm']:['palm','smile','point'];
+    gkey=cand.find(k=>k!==last[sp.id])||cand[0];
+   }
+   gtxt=G[gkey];
+  }
+  last[sp.id]=gkey;
+  let cam=s.camera;
+  if(cam==='auto'){cam=S.pacing==='dynamic'?(idx%3===1?'mcu':idx%3===2?'ots':'two'):'two'}
+  const camTxt={
+   two:"Static Medium Two-Shot (f/2.8), all characters fully visible",
+   mcu:`Medium Close-up favoring ${R} (subtle slow push-in), other characters partially visible`,
+   ots:"Over-the-shoulder shot that keeps both characters readable"
+  }[cam];
+  const camShort={two:'Locked-off static camera',mcu:'Slow push-in on the speaker',ots:'Static over-the-shoulder camera'}[cam];
+  const camBr={two:'Static shot',mcu:'Push in',ots:'Static shot'}[cam];
+  const wc=words(s.text);
+  const est=+(wc/2.7).toFixed(1);
+  const t1=t0+D;
+  const a0=0.5,a1=Math.max(1,D-1),a2=D-0.5;
+  const listeners=others.length?others.map(ref).join(' and ')+(others.length>1?' listen':' listens')+' attentively with a subtle facial reaction and strictly closed mouth':'';
+  const lis=listeners?listeners.charAt(0).toUpperCase()+listeners.slice(1)+'.':'';
+  const chars=S.chars.map(c=>`${ref(c)}: ${c.visual||c.short}`).join('. ')+'.';
+  const L=[
+   `${tt(0)}-${tt(a0)}: all characters in a neutral resting pose, mouths closed.`,
+   `${tt(a0)}-${tt(a1)}: ${R} ${gtxt}; ${LIP[S.lip]}.${listeners?` Meanwhile ${listeners}.`:''}`,
+   `${tt(a1)}-${tt(a2)}: ${R} settles smoothly back to the neutral pose.`,
+   `${tt(a2)}-${tt(D)}: everyone holds the exact neutral resting pose, completely still (clean cut frame).`
+  ];
+  const ambient=[S.ambient,s.sfx].filter(Boolean).join(', ');
+  const contOn=S.cont==='1'&&idx>0;
+  const contLine=contOn?`Start exactly from the provided first frame (last frame of Shot ${idx}).`:'';
+  const tail=`Everyone holds a still neutral pose for the final 0.5 seconds.`;
+  let prompt='',neg='';
+  if(fam==='structured'){
+   prompt=`[Shot ${idx+1} - ${D}s | ${S.aspect}] ${S.setting}\nCharacters: ${chars}\nStyle: ${S.style}.\nCamera: ${camTxt}.${contLine?'\n'+contLine:''}\nTiming & Action:\n- ${L.join('\n- ')}${ambient?`\nAmbient/SFX: ${ambient}.`:''}\nNegative: ${NEG}.`;
+  }else if(fam==='prose'){
+   prompt=`${S.setting} ${chars} ${camTxt}. ${R} ${gtxt}; ${LIP[S.lip]}. ${lis} Timing over ${D} seconds: ${L.join(' ')} ${contLine?contLine+' ':''}Style: ${S.style}. Aspect ratio ${S.aspect}. Silent video: no dialogue, no speech, no music, no subtitles or on-screen text.${ambient?` Quiet ambient sound only: ${ambient}.`:''} Avoid: ${NEG}.`;
+  }else if(fam==='concise'){
+   prompt=`${S.setting} ${chars} ${camTxt}. ${R} ${gtxt}; ${LIP[S.lip]}. ${lis} Calm still neutral pose during the first 0.5 seconds and the last 0.5 seconds, ${D} seconds total. ${S.style}.${contLine?' '+contLine:''}`;
+   neg=NEG;
+  }else if(fam==='short'){
+   prompt=`${contOn?'Image-to-video from the supplied first frame. ':''}${camShort}. ${R} ${gtxt}. ${lis} ${LIP[S.lip]}. ${tail} ${S.style}.`;
+   neg='';
+  }else if(fam==='bracket'){
+   prompt=`[${camBr}] ${contOn?'Start from the supplied first frame. ':''}${R} ${gtxt}; ${LIP[S.lip]}. ${lis} ${tail} ${S.style}.`;
+  }else{
+   const map={shot:idx+1,duration:D,aspect:S.aspect,setting:S.setting,characters:chars,style:S.style,camera:camTxt,speaker:R,gesture:gtxt,lip:LIP[S.lip],listeners:lis,timeline:L.join(' '),ambient:ambient,negative:NEG,continuity:contLine};
+   let tpl=(S.customTpl||'').trim();
+   if(tpl){prompt=tpl.replace(/\{(\w+)\}/g,(m,k)=>k in map?map[k]:m).replace(/[ \t]+\n/g,'\n').trim()}
+   else prompt=L.join('\n');
+  }
+  rows.push({
+   shot:'Shot '+(idx+1),time:fmt(t0)+' - '+fmt(t1),dur:D,t0,t1,cut:a2,camera:camTxt,camKey:cam,
+   gesture:gtxt,speaker:sp.name,speakerSide:sp.side,
+   listeners:others.map(o=>o.name+' ('+o.side+')').join('، '),
+   dialogue:s.text,wc,est,
+   tts:`[${sp.tone}] "${s.text}" [pause 0.5s]`,
+   prompt,neg,
+   lip:`المتحدث النشط: ${sp.name} (${sp.side})\nالمستمعون (فم مغلق): ${others.map(o=>o.name+' ('+o.side+')').join('، ')||'—'}\nنقطة القطع: سكون عند ${tt(a2)}ث`
+  });
+  t0=t1;
+ });
+}
+function badge(r){
+ if(!r.wc)return '<span class="badge er">فارغ</span>';
+ let b;
+ if(r.est>r.dur)b=`<span class="badge er">${r.wc} كلمة ≈ ${r.est}ث — أطول من ${r.dur}ث، اختصره أو زد المدة</span>`;
+ else if(r.est>r.dur-0.5)b=`<span class="badge wr">${r.wc} كلمة ≈ ${r.est}ث — ضيق، لا سكون كافٍ</span>`;
+ else if(r.wc<r.dur*1.2)b=`<span class="badge wr">${r.wc} كلمات — قصير نسبيًا لمدة ${r.dur}ث</span>`;
+ else b=`<span class="badge ok">${r.wc} كلمة ≈ ${r.est}ث ✓</span>`;
+ if(r.dur>(parseFloat(S.maxDur)||10))b+=` <span class="badge wr">تتجاوز حد الأداة (${S.maxDur}ث)</span>`;
+ return b;
+}
+
+/* ---------- shots editor ---------- */
+function renderShots(){
+ build();
+ $('shots').innerHTML=S.shots.map((s,i)=>`
+ <div class="shot" data-i="${i}">
+  <div class="shot-head">
+   <strong>Shot ${i+1} <span style="color:var(--muted)">${rows[i].time}</span></strong>
+   <span id="bd${i}">${badge(rows[i])}</span>
+   <span>
+    <button class="mini" onclick="moveShot(${i},-1)">▲</button>
+    <button class="mini" onclick="moveShot(${i},1)">▼</button>
+    <button class="mini" onclick="delShot(${i})">🗑</button>
+   </span>
+  </div>
+  <textarea rows="2" data-i="${i}" data-f="text">${esc(s.text)}</textarea>
+  <div class="gridn">
+   <div><label>المدة (ث):</label><input type="number" step="0.5" min="2" data-i="${i}" data-f="dur" value="${rows[i].dur}"></div>
+   <div><label>المتحدث:</label><select data-i="${i}" data-f="cid">${S.chars.map(c=>`<option value="${c.id}" ${c.id===s.cid?'selected':''}>${esc(c.name)}</option>`).join('')}</select></div>
+   <div><label>الحركة:</label><select data-i="${i}" data-f="gesture">${Object.keys(GL).map(k=>`<option value="${k}" ${k===s.gesture?'selected':''}>${GL[k]}</option>`).join('')}</select></div>
+   <div><label>الكاميرا:</label><select data-i="${i}" data-f="camera">${Object.keys(CL).map(k=>`<option value="${k}" ${k===s.camera?'selected':''}>${CL[k]}</option>`).join('')}</select></div>
+  </div>
+  ${s.gesture==='custom'?`<input data-i="${i}" data-f="custom" placeholder="الحركة بالإنجليزية، مثال: crosses arms and smirks" value="${esc(s.custom)}">`:''}
+  <input data-i="${i}" data-f="sfx" placeholder="مؤثر صوتي لهذه اللقطة (اختياري)" value="${esc(s.sfx)}">
+ </div>`).join('')||'<p class="hint">لا توجد لقطات بعد.</p>';
+}
+$('shots').addEventListener('input',e=>{
+ const t=e.target;if(t.dataset.i==null)return;
+ const i=+t.dataset.i;S.shots[i][t.dataset.f]=t.value;save();
+ if(t.dataset.f==='text'||t.dataset.f==='dur'){build();const b=$('bd'+i);if(b)b.innerHTML=badge(rows[i])}
+});
+$('shots').addEventListener('change',e=>{
+ const t=e.target;if(t.dataset.i==null||(t.tagName!=='SELECT'&&t.dataset.f!=='dur'))return;
+ S.shots[+t.dataset.i][t.dataset.f]=t.value;save();renderShots();
+});
+
+/* ---------- sheet ---------- */
+function renderSheet(force){
+ build();
+ if(!rows.length){$('sheet').innerHTML='<div class="out">لا توجد لقطات. أضف حوارًا في التبويب الثاني.</div>';$('summary').textContent='';return}
+ const total=rows.reduce((a,r)=>a+r.dur,0);
+ const bad=rows.filter(r=>r.est>r.dur-0.5||!r.wc||r.dur>(parseFloat(S.maxDur)||10)).length;
+ $('summary').textContent=`${rows.length} لقطة • المدة الكلية ${fmt(total)} • الأداة: ${(TOOLS[S.tool]||TOOLS.generic).n} • لقطات تحتاج مراجعة: ${bad}`;
+ $('sheet').innerHTML=`<table class="m"><thead><tr>
+  <th style="width:9%">اللقطة والزمن</th><th style="width:14%">الكادر والاستمرارية</th><th style="width:38%">أمر الفيديو الصامت</th><th style="width:20%">الصوت والتوقيت</th><th style="width:19%">الـ Lip-Sync والمونتاج</th></tr></thead><tbody>`+
+ rows.map((r,i)=>`<tr>
+  <td><strong>${r.shot}</strong><br><span style="color:var(--muted)">${r.time}</span><br><br>${badge(r)}</td>
+  <td><strong>الكاميرا:</strong><br><span dir="ltr">${esc(r.camera)}</span><br><br><strong>الربط:</strong><br>${i>0&&S.cont==='1'?'إطار أخير من '+rows[i-1].shot:'بداية جديدة'} • سكون ${tt(r.cut)}ث</td>
+  <td><div class="pc" id="pr${i}">${esc(r.prompt)}</div><button class="mini noprint" onclick="cpEl('pr${i}')">📋 نسخ</button>${r.neg?`<div class="pc" id="ng${i}" style="margin-top:6px;color:#fca5a5">${esc(r.neg)}</div><button class="mini noprint" onclick="cpEl('ng${i}')">📋 نسخ Negative</button>`:''}</td>
+  <td><strong>النص:</strong><br>"${esc(r.dialogue)}"<br><br><div class="pc" id="tt${i}" style="color:#38bdf8">${esc(r.tts)}</div><button class="mini noprint" onclick="cpEl('tt${i}')">📋 نسخ</button></td>
+  <td>${esc(r.lip).replace(/\n/g,'<br>')}<br><br><strong>المونتاج:</strong><br>كتم صوت الفيديو الأصلي + سحب الإطار الأخير</td></tr>`).join('')+`</tbody></table>`;
+ if(force)toast('تم تحديث الجدول');
+}
+
+/* ---------- export ---------- */
+function csvText(){
+ build();
+ const q=v=>`"${String(v).replace(/"/g,'""')}"`;
+ const head=['رقم اللقطة','الزمن','المدة (ث)','الكاميرا','المتحدث','عدد الكلمات','مدة النطق التقديرية','النص الحواري','كود الصوت TTS','أمر الفيديو','Negative Prompt','تعليمات Lip-Sync'];
+ return '﻿'+head.map(q).join(',')+'\n'+rows.map(r=>[r.shot,r.time,r.dur,r.camera,r.speaker,r.wc,r.est,r.dialogue,r.tts,r.prompt,r.neg,r.lip].map(q).join(',')).join('\n');
+}
+function jsonText(){const o=clone(S);return JSON.stringify(o,null,2)}
+function download(name,text,type){
+ try{const b=new Blob([text],{type});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();toast('جاري التحميل — إن لم يبدأ استخدم زر النسخ')}
+ catch(e){toast('التحميل غير متاح هنا، استخدم زر النسخ')}
+}
+function dl(k){k==='csv'?download('Master_Production_Sheet_5s.csv',csvText(),'text/csv;charset=utf-8'):download('studio5s_project.json',jsonText(),'application/json')}
+async function copyText(t,msg){
+ try{await navigator.clipboard.writeText(t);toast(msg||'تم النسخ ✓');return true}catch(e){}
+ try{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();const ok=document.execCommand('copy');ta.remove();if(ok){toast(msg||'تم النسخ ✓');return true}}catch(e){}
+ const box=$('exportBox');box.style.display='block';box.textContent=t;toast('النسخ مرفوض هنا — النص معروض أسفل الجدول');return false;
+}
+function cp(k){copyText(k==='csv'?csvText():jsonText())}
+function cpEl(id){copyText($(id).innerText)}
+function copyAll(k){build();copyText(rows.map(r=>k==='prompt'?r.prompt:r.tts).join('\n\n---\n\n'),'تم نسخ الكل ✓')}
+function importJSON(inp){
+ const f=inp.files[0];if(!f)return;
+ const r=new FileReader();
+ r.onload=()=>{try{const o=JSON.parse(r.result);if(!o.chars||!o.shots)throw 0;S=Object.assign(clone(DEF),o);save();location.reload()}catch(e){toast('ملف غير صالح')}};
+ r.readAsText(f);
+}
+function resetAll(){
+ if(!confirm('سيتم حذف المشروع الحالي والرجوع للنموذج الافتراضي. متأكد؟'))return;
+ S=clone(DEF);save();location.reload();
+}
+
+/* ---------- AI prompts ---------- */
+function charList(){return S.chars.map(c=>`${c.name} (${c.side}): ${c.visual}`).join(' | ')}
+function prePrompt(){
+ const dd=parseFloat(S.defDur)||5,lo=Math.round((dd-0.5)*2.2),hi=Math.round((dd-0.5)*2.9);
+ const names=S.chars.map(c=>c.name).join('، ');
+ return `اعمل كلجنة ما قبل إنتاج سينمائية (سيناريست، مخرج، مدير تصوير، مهندس صوت) لتطوير هذا المشهد لنظام لقطات مدة كل منها ${dd} ثوانٍ، علماً أن الصوت والـ Lip-Sync سيُركّبان لاحقاً.
+- البيئة: ${S.setting}
+- الشخصيات: ${charList()}
+- النص المبدئي: ${$('raw').value||'[أدخل النص هنا]'}
+
+المطلوب:
+1. اضبط كل سطر حواري ليكون بين ${lo} و${hi} كلمة باللهجة المصرية (مدة اللقطة ${dd} ثانية: نطق ${dd-0.5} ثانية + نصف ثانية سكون).
+2. سطر واحد لكل لقطة، وتبادل الكلام بين الشخصيات بشكل طبيعي.
+3. اجعل الإفيه في آخر السطر وتجنب أي حركة تقترب من الفم.
+4. أخرج الحوار فقط، بالشكل التالي بدون أي شرح أو ترقيم:
+اسم الشخصية: الحوار
+(الأسماء المسموحة: ${names})`;
+}
+function critPrompt(){
+ const n=parseInt($('critShot').value);build();
+ const r=n&&rows[n-1];
+ const notes=$('notes').value;
+ return `افحص هذا الفيديو (مدته ${r?r.dur:'حوالي 5'} ثوانٍ) عبر لجنة النقاد لتقييم جاهزيته لمرحلة الـ Lip-Sync والمونتاج.
+${r?`اللقطة ${n}: المتحدث ${r.speaker} (${r.speakerSide})، النص: "${r.dialogue}"\nالحركة المطلوبة: ${r.gesture}\n`:''}${notes?'ملاحظات المخرج: '+notes+'\n':''}
+1. قناع الـ Lip-Sync: هل فم وذقن المتحدث ظاهران طوال اللقطة دون تقاطع مع اليد؟ وهل فم المستمعين مغلق؟
+2. الأداء الحركي: هل نُفذت حركة واحدة سلسة وعادت الشخصية للسكون عند ${r?tt(r.cut):'قبل نهاية اللقطة بنصف ثانية'}؟
+3. التشوهات البصرية: هل الأصابع سليمة؟ وهل اللافتات العربية والملابس ثابتة؟
+4. الاستمرارية: هل الإضاءة وملامح الشخصيات مطابقة لباقي اللقطات؟
+5. القرار: (معتمد للـ Lip-Sync) أو (أعد التوليد) مع Prompt بديل معدّل بالإنجليزية.`;
+}
+function scriptPrompt(){
+ build();
+ const ask=($('scriptAsk').value||'').trim();
+ const lines=S.shots.map((s,i)=>`${i+1}. [${rows[i].dur}ث] ${charById(s.cid).name}: ${s.text}`).join('\n');
+ return `راجع هذا السكريبت الحواري لمقطع من ${S.shots.length} لقطة، ولكل لقطة مدة بالثواني. الفيديو يُولَّد صامتًا والصوت يُركَّب لاحقًا.
+الشخصيات: ${charList()}
+السكريبت:
+${lines}
+${ask?'طلب المخرج: '+ask+'\n':''}
+المطلوب:
+1. تقييم مختصر: قوة الإفيه، الإيقاع، سلامة اللهجة المصرية، الاستمرارية بين اللقطات.
+2. تحقق من ملاءمة عدد الكلمات لمدة كل لقطة (حوالي 2.7 كلمة في الثانية مع نصف ثانية سكون في الآخر) واذكر اللقطات المخالفة.
+3. في النهاية اكتب السطر «النسخة النهائية:» ثم النسخة المعدلة، سطر لكل لقطة وبنفس الترتيب بدون ترقيم، بالشكل:
+اسم الشخصية: الحوار
+(الأسماء المسموحة: ${S.chars.map(c=>c.name).join('، ')})`;
+}
+function videoPrompt(){
+ build();
+ const T=(TOOLS[S.tool]||TOOLS.generic).n;
+ const tl=rows.map(r=>`- ${r.shot} (${r.time}، ${r.dur}ث): المتحدث ${r.speaker} (${r.speakerSide}) — الحركة المتوقعة: ${r.gesture}. المستمعون فمهم مغلق. سكون كامل من ${tt(r.cut)} حتى ${tt(r.dur)}. الحوار الذي سيُركَّب لاحقًا: "${r.dialogue}"`).join('\n');
+ return `شاهد الفيديو المرفق كاملًا، وهو مؤلف من ${rows.length} لقطات متتالية مولَّدة صامتة بأداة ${T}، وسيُركَّب عليها الصوت والـ Lip-Sync لاحقًا.
+البيئة المطلوبة: ${S.setting}
+الشخصيات المطلوبة: ${charList()}
+الخطة الزمنية المتوقعة:
+${tl}
+
+قيّم كل لقطة بالترتيب مع ذكر الثانية الدقيقة لأي ملاحظة:
+1. جاهزية الـ Lip-Sync: فم وذقن المتحدث ظاهران دون تقاطع مع اليد، وفم المستمع مغلق.
+2. الأداء: حركة واحدة سلسة ثم سكون قبل نهاية اللقطة بنصف ثانية.
+3. التشوهات: الأصابع، الوجوه، اللافتات العربية، الملابس.
+4. الاستمرارية عند كل قطع: الوضعية والإضاءة وأماكن الشخصيات مقارنة باللقطة السابقة.
+5. مطابقة المكان والشخصيات للوصف.
+
+المخرجات:
+- جدول: اللقطة | الحكم (✅ / ⚠️ / ❌) | المشكلة وزمنها | الإصلاح المقترح.
+- الحكم العام: هل الفيديو جاهز للـ Lip-Sync والمونتاج؟
+- لكل لقطة ❌ أو ⚠️ اكتب Prompt بديلًا بالإنجليزية جاهزًا للنسخ لأداة ${T}.`;
+}
+function outEl(k){return {pre:$('preOut'),crit:$('critOut'),script:$('scriptOut'),video:$('videoOut')}[k]}
+function promptFor(k){return {pre:prePrompt,crit:critPrompt,script:scriptPrompt,video:videoPrompt}[k]()}
+function showKind(k){outEl(k).textContent=promptFor(k)}
+function showPre(){$('preOut').textContent=prePrompt()}
+function showCrit(){$('critOut').textContent=critPrompt()}
+
+/* ---------- AI connection ---------- */
+async function openChat(app,kind){
+ const p=promptFor(kind);
+ outEl(kind).textContent=p;
+ await copyText(p,kind==='video'?'تم نسخ الأمر ✓ — الصقه وأرفق الفيديو':'تم نسخ الأمر ✓ — الصقه في المحادثة');
+ const url=app==='chatgpt'?(p.length<1800?'https://chatgpt.com/?q='+encodeURIComponent(p):'https://chatgpt.com/'):'https://gemini.google.com/app';
+ try{window.open(url,'_blank')}catch(e){}
+ const l=document.createElement('a');l.href=url;l.target='_blank';l.rel='noopener';l.textContent=' ↗ افتح '+(app==='chatgpt'?'ChatGPT':'Gemini');
+ const o=outEl(kind);if(!o.querySelector('a'))o.appendChild(l);
+}
+async function callAI(prompt,vid){
+ const key=getKey().trim();if(!key)throw new Error('أدخل مفتاح API أولاً');
+ if(S.prov==='gemini'){
+  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(S.model)+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{parts:(vid?[{inline_data:{mime_type:vid.mime,data:vid.data}}]:[]).concat([{text:prompt}])}]})});
+  const j=await r.json();if(!r.ok)throw new Error(j.error&&j.error.message||('HTTP '+r.status));
+  return ((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||'').join('');
+ }
+ if(vid)throw new Error('مراجعة الفيديو عبر API متاحة مع Gemini فقط');
+ const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:S.model,messages:[{role:'user',content:prompt}]})});
+ const j=await r.json();if(!r.ok)throw new Error(j.error&&j.error.message||('HTTP '+r.status));
+ return j.choices?.[0]?.message?.content||'';
+}
+async function runAI(kind){
+ const out=outEl(kind);
+ const p=promptFor(kind);
+ out.textContent='⏳ جاري الاتصال...';
+ try{
+  let vid=null;
+  if(kind==='video'){
+   const f=$('vidFile').files[0];
+   if(!f)throw new Error('اختر ملف الفيديو أولاً');
+   if(f.size>14*1024*1024)throw new Error('الملف أكبر من 14MB. ارفعه يدويًا في تطبيق Gemini أو Google AI Studio وانسخ الأمر بزر «نسخ + فتح Gemini».');
+   vid=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res({mime:f.type||'video/mp4',data:String(r.result).split(',')[1]});r.onerror=()=>rej(new Error('تعذر قراءة الملف'));r.readAsDataURL(f)});
+  }
+  const t=await callAI(p,vid);
+  if(kind==='pre'||kind==='script'){$('aiResult').value=t.trim();out.textContent='✅ وصل الرد — راجعه في صندوق «رد الذكاء الاصطناعي» أعلاه ثم اضغط «طبّق على اللقطات».'}
+  else out.textContent=t;
+ }catch(e){
+  out.textContent='تعذّر الاتصال: '+e.message+'\n\nإن كنت داخل صفحة معاينة فالاتصال الخارجي محجوب؛ افتح الملف على جهازك أو استخدم أزرار «نسخ + فتح».';
+ }
+}
+function applyAI(){
+ let txt=$('aiResult').value;
+ const k=txt.indexOf('النسخة النهائية');
+ if(k>=0)txt=txt.slice(k).split('\n').slice(1).join('\n');
+ txt=txt.replace(/^\s*\d+[\).\-]\s*/gm,'').replace(/^\s*\[[^\]]*\]\s*/gm,'').replace(/^```.*$/gm,'');
+ const r=parseDialogue(txt);
+ if(!r.length){toast('الصق الرد أولاً');return}
+ r.forEach((x,i)=>{if(S.shots[i]&&S.shots[i].dur)x.dur=S.shots[i].dur});
+ S.shots=r;S.dlgDraft=$('aiResult').value;$('dlg').value=S.dlgDraft;save();renderShots();tab(1);toast('تم تطبيق '+r.length+' لقطة');
+}
+
+/* ---------- init ---------- */
+bindFields();renderChars();renderShots();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>
