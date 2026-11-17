@@ -2993,10 +2993,14 @@ async function clrShots(){
  await clrArchive();S.shots=[];S.epId='';save();location.reload()}
 async function copyEp(native){
  if(!native)await ensureTr();
+ const t=epCopyText();if(t==null)return;
+ await copyText(t,'تم نسخ الحلقة كاملة ✓ ('+arN(rows.length,'لقطة')+')');
+}
+function epCopyText(){
  build();
- if(!rows.length){toast('لا توجد لقطات بعد — ابدأ من التبويب ②');return}
+ if(!rows.length){toast('لا توجد لقطات بعد — ابدأ من التبويب ②');return null}
  const on=id=>$(id)&&$(id).checked;
- if(!on('ecP')&&!on('ecT')&&!on('ecD')){toast('اختر نوعًا واحدًا على الأقل للنسخ');return}
+ if(!on('ecP')&&!on('ecT')&&!on('ecD')){toast('اختر نوعًا واحدًا على الأقل للنسخ');return null}
  const parts=[];const pre=($('epInstr').value||'').trim();
  if(pre)parts.push(pre);
  parts.push('الحلقة: '+(S.epTitle||'بدون عنوان')+' — '+arN(rows.length,'لقطة'));
@@ -3007,8 +3011,7 @@ async function copyEp(native){
   if(on('ecP'))b.push('[أمر الفيديو]\n'+(r.prompt||''));
   if(on('ecN')&&r.neg)b.push('[Negative]\n'+r.neg);
   parts.push(b.join('\n'))});
- const t=parts.join('\n\n');
- await copyText(t,'تم نسخ الحلقة كاملة ✓ ('+arN(rows.length,'لقطة')+')');
+ return parts.join('\n\n');
 }
 
 /* ===== v50: shorten dialogue to fit shot duration ===== */
@@ -3344,7 +3347,7 @@ function ez0(){
 }
 
 
-const APPV='html35';
+const APPV='html36';
 async function pjDup(){const n=(prompt('اسم النسخة الجديدة من «'+pjName()+'»',pjName()+' (نسخة ٢)')||'').trim();if(!n)return;if(pjList().includes(n)){alert('فيه مشروع بنفس الاسم');return}
  try{await pjSaveCur()}catch(e){alert('تعذر حفظ المشروع الحالي');return}ezBusy('⏳ بعمل نسخة من المشروع والصور…');
  const f=JSON.parse(JSON.stringify(S));f.projName=n;f.epTitle=n;f.epId='';
@@ -3718,8 +3721,9 @@ function ez2(){
  const _p=ez1(1).split('<div class="ezc"><h4>💡'),typeCard=_p[0],ideaCard=('<div class="ezc"><h4>💡'+_p[1]).replace('💡 الفكرة والهوك والعاطفة','① عندي فكرة بس').replace(/<\/div>$/,'<div class="ezm">اللي بيحصل: الذكاء بيكتب لك سيناريو من فكرتك، وبعدين تحوّله لقطات.</div><button class="ezb bl" onclick="ezCopy(ezAIPrompt(),\'تم نسخ أمر كتابة السيناريو ✓\')">📋 نسخ أمر كتابة السيناريو من الفكرة</button></div>').replace('<div class="ezc">','<div class="ezc" style="border:2px solid #38bdf8">');
  return `${ezVstyHTML()}<div class="ezc"><h4>🎬 اختار طريقتك</h4><div class="ezm">① <b>فكرة بس</b>: املأ الفكرة تحت، والذكاء يكتب السيناريو ثم يقسمه لقطات.<br>② <b>سيناريو جاهز</b>: الصق سيناريوك، والذكاء يقسمه لقطات من غير ما يغيّره.<br>وفي الاتنين: الرد بتلصقه في الخانة اللي تحت وتضغط «حوّل الرد إلى لقطات».</div><button class="ezb" style="color:#fcd34d" onclick="ezNewScript()">🆕 سيناريو جديد (امسح القديم)</button></div>
  ${typeCard}${ezMcol('idea',ideaCard)}
- ${ezMcol('ready',`<div class="ezc" style="border:2px solid #86efac"><h4>② عندي سيناريو جاهز</h4><div class="ezm">الصق السيناريو كله هنا. الأمر بيحوّله لقطات بنفس الأحداث والكلام. </div><label class="ezl">⏱️ المدة الكلية (ثانية)</label><input data-fx="1" type="number" value="${esc(S.targetSec||50)}" oninput="ezSetS('targetSec',+this.value)">
- <textarea id="ezReady" data-fx="1" rows="6" placeholder="الصق السيناريو الجاهز كله هنا" oninput="S.readyScript=this.value;save()">${esc(S.readyScript||'')}</textarea>
+ ${ezMcol('ready',`<div class="ezc" style="border:2px solid #86efac"><h4>② عندي سيناريو جاهز</h4><div class="ezm">الصق السيناريو كله هنا. الأمر بيحوّله لقطات بنفس الأحداث والكلام. </div><label class="ezl">⏱️ المدة الكلية (ثانية)</label><input id="ezTargetSec" data-fx="1" type="number" value="${esc(S.targetSec||50)}" oninput="ezSetS('targetSec',+this.value);ezDurSug()">
+ <textarea id="ezReady" data-fx="1" rows="6" placeholder="الصق السيناريو الجاهز كله هنا" oninput="S.readyScript=this.value;save();ezDurSug()">${esc(S.readyScript||'')}</textarea>
+ <div id="ezDurSug">${ezDurSugHTML()}</div>
  <button class="ezb bl" onclick="ezCopyReady()">📋 نسخ أمر تحويل السيناريو الجاهز لقطات</button></div>`)}
  <div class="ezc"><h4>🎬 رد الذكاء الاصطناعي (للطريقتين)</h4><div class="ezm">انسخ الأمر في Claude أو ChatGPT والصق الرد هنا.</div>
  <textarea id="ezPaste" data-fx="1" rows="4" placeholder="الصق رد الذكاء الاصطناعي هنا (لقطة 1 | ...)"></textarea>
@@ -3947,8 +3951,8 @@ PROBLEMS (Egyptian Arabic, one short line each with the approximate second, or "
 EDIT PROMPT: (only if FIX or REGENERATE) ONE single line in English on this same line: a short instruction to ADD to the video prompt so the next generation fixes ONLY the listed problems and keeps everything else the same.
 Write nothing after the EDIT PROMPT line.`}
 function ezVQAshow(i,pr,why){const o=document.createElement('div');o.id='ezVQ';o.style.cssText='position:fixed;inset:0;background:#000d;z-index:95;overflow:auto;padding:12px;color:#fff';
- o.innerHTML=`<div style="max-width:520px;margin:auto;background:#0f172a;border:1px solid #334155;border-radius:14px;padding:12px"><b style="font-size:16px">🤖 فحص فيديو لقطة ${i+1}</b><div style="font-size:13px;color:#cbd5e1;margin:8px 0;line-height:1.7">${why}</div><textarea id="ezVQt" readonly style="width:100%;height:30vh;direction:ltr;font-size:12px"></textarea><button class="ezb g" id="ezVQc" style="width:100%;margin-top:6px">📋 انسخ أمر الفحص</button><a class="ezb bl" href="https://gemini.google.com/app" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:6px">فتح Gemini</a><button class="ezb" id="ezVQx" style="width:100%;margin-top:6px">تم</button></div>`;
- document.body.appendChild(o);$('ezVQt').value=pr;$('ezVQc').onclick=async()=>{await copyText(pr,'اتنسخ أمر الفحص ✓');};$('ezVQx').onclick=()=>o.remove()}
+ o.innerHTML=`<div style="max-width:520px;margin:auto;background:#0f172a;border:1px solid #334155;border-radius:14px;padding:12px"><b style="font-size:16px">🤖 فحص فيديو لقطة ${i+1}</b><div style="font-size:13px;color:#cbd5e1;margin:8px 0;line-height:1.7">${why}</div><textarea id="ezVQt" readonly style="width:100%;height:30vh;direction:ltr;font-size:12px"></textarea><button class="ezb g" id="ezVQc" style="width:100%;margin-top:6px">📋 انسخ أمر الفحص</button><button class="ezb ai-sh" id="ezVQs" style="width:100%;margin-top:6px">📤 أرسل لتطبيق</button><a class="ezb bl" href="https://gemini.google.com/app" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:6px">فتح Gemini</a><button class="ezb" id="ezVQx" style="width:100%;margin-top:6px">تم</button></div>`;
+ document.body.appendChild(o);$('ezVQt').value=pr;$('ezVQc').onclick=async()=>{await copyText(pr,'اتنسخ أمر الفحص ✓');};$('ezVQs').onclick=()=>aiSend(pr,$('ezVQs'));$('ezVQx').onclick=()=>o.remove()}
 async function ezAIVQA(i){const s=S.shots[i],f=EZV[s.uid];if(!f){toast('اختار الفيديو الأول من «🎞️ اختر الفيديو»');return}
  const pr=ezVQAprompt(i);let cp=false;try{await navigator.clipboard.writeText(pr);cp=true}catch(e){}
  let fs=[new File([f],s.vname||ezFn(i),{type:f.type||'video/mp4'})];
@@ -3963,8 +3967,8 @@ async function ezAIVQApaste(i){let t='';try{t=await navigator.clipboard.readText
  if(P.pass){if(s.st!=='vid'){ezTplSave(i);bkTick()}s.st='vid';s.vqa={pass:true,at:Date.now()};save();ezRender();toast('🤖 الفيديو سليم — اتعلّم تمام ✓');return}
  s.vqa={pass:false,regen:!!P.regen,probs:P.probs,ed:P.ed,at:Date.now()};(s.tries=s.tries||[]).push({x:'فحص AI: '+(P.probs||'').replace(/\n/g,' ')});save();ezRender();
  const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:#000d;z-index:95;overflow:auto;padding:12px;color:#fff';
- o.innerHTML=`<div style="max-width:520px;margin:auto;background:#0f172a;border:1px solid ${P.regen?'#ef4444':'#92400e'};border-radius:14px;padding:12px"><b style="font-size:16px">${P.regen?'🔁 فيديو لقطة '+(i+1)+' لازم يتولّد من جديد':'🔧 فيديو لقطة '+(i+1)+' محتاج تعديل بسيط'}</b>${P.regen?'<div style="font-size:13px;color:#fca5a5;margin-top:4px">المشكلة أساسية. راجع صورة البداية الأول، ولو هي السبب غيّرها، وبعدين ولّد بالأمر الجديد.</div>':''}<div style="white-space:pre-wrap;margin:8px 0;font-size:14px">${esc(P.probs||'-')}</div>${P.ed?`<label style="font-size:12px;color:#94a3b8">جملة تتضاف لأمر الفيديو:</label><textarea id="vqEd" style="width:100%;height:90px;direction:ltr;font-size:13px">${esc(P.ed)}</textarea><button class="ezb g" id="vqCp" style="width:100%;margin-top:6px">📋 انسخ الأمر + الجملة دي</button>`:''}<button class="ezb" id="vqX" style="width:100%;margin-top:6px">إغلاق</button></div>`;
- document.body.appendChild(o);$('vqX').onclick=()=>o.remove();if(P.ed)$('vqCp').onclick=async()=>{build();const base=(rows[i]&&rows[i].prompt)||'';await copyText(base+'\n'+$('vqEd').value,'اتنسخ الأمر مع التعديل ✓ — ولّد من جديد');}}
+ o.innerHTML=`<div style="max-width:520px;margin:auto;background:#0f172a;border:1px solid ${P.regen?'#ef4444':'#92400e'};border-radius:14px;padding:12px"><b style="font-size:16px">${P.regen?'🔁 فيديو لقطة '+(i+1)+' لازم يتولّد من جديد':'🔧 فيديو لقطة '+(i+1)+' محتاج تعديل بسيط'}</b>${P.regen?'<div style="font-size:13px;color:#fca5a5;margin-top:4px">المشكلة أساسية. راجع صورة البداية الأول، ولو هي السبب غيّرها، وبعدين ولّد بالأمر الجديد.</div>':''}<div style="white-space:pre-wrap;margin:8px 0;font-size:14px">${esc(P.probs||'-')}</div>${P.ed?`<label style="font-size:12px;color:#94a3b8">جملة تتضاف لأمر الفيديو:</label><textarea id="vqEd" style="width:100%;height:90px;direction:ltr;font-size:13px">${esc(P.ed)}</textarea><button class="ezb g" id="vqCp" style="width:100%;margin-top:6px">📋 انسخ الأمر + الجملة دي</button><button class="ezb ai-sh" id="vqSh" style="width:100%;margin-top:6px">📤 أرسل لتطبيق</button>`:''}<button class="ezb" id="vqX" style="width:100%;margin-top:6px">إغلاق</button></div>`;
+ document.body.appendChild(o);$('vqX').onclick=()=>o.remove();if(P.ed){$('vqCp').onclick=async()=>{build();const base=(rows[i]&&rows[i].prompt)||'';await copyText(base+'\n'+$('vqEd').value,'اتنسخ الأمر مع التعديل ✓ — ولّد من جديد');};$('vqSh').onclick=()=>{build();const base=(rows[i]&&rows[i].prompt)||'';aiSend(base+'\n'+$('vqEd').value,$('vqSh'))}}}
 function ezPreCheck(i){const s=S.shots[i],P=[],d=+s.dur||0,mx=(TOOLS[S.tool]||TOOLS.generic).max,c=S.chars.find(x=>x.id===s.cid);
  if(!(s.descAr||'').trim())P.push({l:'err',t:'مفيش وصف «ماذا يحدث»'});
  if(!ezImg(s))P.push({l:'err',t:'مفيش صورة بداية'});else if(s.imgSt!=='ok')P.push({l:'warn',t:'الصورة لسه ما اتعتمدتش'});
@@ -4083,6 +4087,120 @@ function ugTour(i){
  if(q('skip'))q('skip').onclick=()=>{ugTourDone();o.remove()};
 }
 document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{try{if(localStorage.getItem(UG_TOUR_KEY)!=='1'&&document.body.classList.contains('ezon')&&!document.getElementById('ugTour'))ugTour(0)}catch(e){}},1500)});
+
+/* ---------- اقتراح مدة الحلقة من السيناريو (الخطوة ٢) ---------- */
+/* الأرقام قابلة للتعديل هنا. المدة اللي بتتقترح مجرد اقتراح: مفيش حاجة بتتغيّر غير لما المستخدم يضغط «استخدم الاقتراح». */
+const DUR_CFG={
+ wps:2.5,        // كلمات الحوار في الثانية (٢ إلى ٣ بالعربي)
+ gap:0.3,        // فاصل بين كل جملتين حوار (ثانية)
+ actBase:1.2,    // ثواني لكل سطر وصف/حركة
+ actWps:5,       // كلمات الوصف اللي بتتقرا في الثانية (بتزوّد وقت السطر)
+ paren:0.8,      // ثواني لكل توجيه بين أقواس داخل الحوار
+ sceneIn:1.5,    // تأسيس كل مشهد جديد
+ silentMin:4,    // أقل وقت لمشهد صامت (من غير حوار)
+ silentExtra:2   // وقت إضافي لكل مشهد صامت
+};
+const DUR_NOT_NAMES=/^(ملاحظة|ملحوظة|وصف|الوصف|تنويه|موسيقى|المؤثرات|مؤثر|صوت|مكان|المكان|زمن|الزمن|انتقال|قطع|note|desc|sfx|music)$/i;
+const DUR_HEAD=/^(?:[#*\-–\s]*)(?:مشهد|المشهد|scene|sc\.?|داخلي|خارجي|د\.|خ\.|int\.?|ext\.?)(?=[\s\d٠-٩:.\-–)]|$)/i;
+function durWords(s){return (String(s||'').match(/[؀-ۿA-Za-z0-9٠-٩]+/g)||[]).length}
+function ezDurEstimate(text){
+ const C=DUR_CFG,lines=String(text||'').split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+ if(!durWords(text))return null;
+ let scenes=[],cur={d:0,a:0,dl:0},dlgWords=0,dlgLines=0;
+ const push=()=>{if(cur.d||cur.a||cur.dl)scenes.push(cur);cur={d:0,a:0,dl:0}};
+ for(const ln of lines){
+  if(DUR_HEAD.test(ln)){push();cur.a+=durWords(ln)>4?C.actBase:0;continue}
+  const m=ln.match(/^[-–•*\s]*([؀-ۿA-Za-z][^:：\n]{0,30}?)\s*[:：]\s*(\S[\s\S]*)$/);
+  if(m&&m[1].trim().split(/\s+/).length<=4&&!DUR_NOT_NAMES.test(m[1].trim())){
+   let t=m[2],np=0;t=t.replace(/[(\[（][^)\]）]*[)\]）]/g,()=>{np++;return ' '});
+   const w=durWords(t);dlgWords+=w;dlgLines++;cur.d+=w/C.wps+C.gap;cur.dl++;cur.a+=np*C.paren;continue}
+  const w=durWords(ln);if(w)cur.a+=C.actBase+w/C.actWps}
+ push();
+ let total=0,silent=0;
+ for(const s of scenes){let t=s.d+s.a+C.sceneIn;if(!s.dl){silent++;t=Math.max(t,C.silentMin)+C.silentExtra}total+=t}
+ let sec=total<20?Math.ceil(total):total<120?Math.round(total/5)*5:Math.round(total/10)*10;
+ sec=Math.max(3,sec);
+ return {sec,scenes:scenes.length,silent,dlgWords,dlgLines,raw:total};
+}
+function durFmt(sec){if(sec<90)return sec+' ثانية';const m=Math.floor(sec/60),r=sec%60;return m+' دقيقة'+(r?' و'+r+' ثانية':'')+' ('+sec+' ثانية)'}
+function ezDurSugHTML(){
+ const e=ezDurEstimate(S.readyScript||'');if(!e)return '';
+ const mine=+S.targetSec||0,same=mine===e.sec;
+ return '<div class="ezm" style="border:1px dashed #38bdf8;border-radius:10px;padding:8px;margin:6px 0">⏱️ المدة المقترحة حوالي <b>'+durFmt(e.sec)+'</b>'+
+  (same?' <span style="color:#86efac">✓ هي نفس مدتك</span>':' <button class="ezb" style="padding:6px 10px;margin:0 6px;font-size:13px" onclick="ezDurUse()">استخدم الاقتراح</button>')+
+  '<div style="font-size:11px;margin-top:4px">تقدير من '+e.dlgWords+' كلمة حوار و'+e.scenes+' مشهد'+(e.silent?' ('+e.silent+' صامت)':'')+'. المدة اللي في الخانة فوق هي اللي بتحدّدها إنت، وما بتتغيّرش غير لما تضغط الزر.</div></div>'}
+function ezDurSug(){const d=$('ezDurSug');if(d)d.innerHTML=ezDurSugHTML()}
+function ezDurUse(){const e=ezDurEstimate(S.readyScript||'');if(!e)return;ezSetS('targetSec',e.sec);const i=$('ezTargetSec');if(i)i.value=e.sec;ezDurSug();toast('تم ضبط المدة الكلية على '+e.sec+' ثانية')}
+
+/* ---------- 📤 أرسل لتطبيق: مشاركة الأمر عبر قايمة المشاركة ---------- */
+const AI_SHARE_MAX=6000; // أقصى طول (حرف) للإرسال المباشر. أطول من كده: الأمر بيتنسخ كامل ويتبعت نص قصير بس.
+const AI_SHARE_SHORT='الصق الأمر هنا (اتنسخ)';
+function aiCanShare(){return typeof navigator.share==='function'}
+function aiCanShareFile(f){try{return typeof navigator.canShare==='function'&&navigator.canShare({files:[f]})}catch(e){return false}}
+async function aiGetText(t){const get=()=>typeof t==='function'?t():t;let txt=get();
+ if(typeof t==='function'&&/[؀-ۿ]/.test(txt)){try{await ensureTr()}catch(e){}txt=get()}
+ return String(txt==null?'':txt)}
+async function aiCopy(txt){let ok=false;
+ try{await navigator.clipboard.writeText(txt);ok=true}catch(e){}
+ if(!ok)ok=ezCpSync(txt);
+ return ok}
+function aiHint(btn,txt){if(!btn||!btn.parentNode)return;let h=btn.nextElementSibling;if(!(h&&h.classList&&h.classList.contains('ai-sh-hint'))){h=document.createElement('div');h.className='ai-sh-hint ezm';h.style.cssText='font-size:11px;flex-basis:100%;width:100%;margin:2px 0';btn.parentNode.insertBefore(h,btn.nextSibling)}h.textContent=txt}
+function aiLongSheet(txt,copied){
+ const old=document.getElementById('aiLong');if(old)old.remove();
+ const f=new File([txt],'prompt.txt',{type:'text/plain'}),canF=aiCanShareFile(f),o=document.createElement('div');o.id='aiLong';
+ o.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:97;background:#0f172a;border:1px solid #38bdf8;border-radius:14px;padding:12px;color:#fff;box-shadow:0 0 0 100vmax #0006';
+ o.innerHTML='<b style="font-size:15px">📤 الأمر طويل ('+txt.length+' حرف)</b>'+
+  '<div style="font-size:14px;line-height:1.7;margin:6px 0">'+(copied?'الأمر طويل واتنسخ كامل، افتح التطبيق والصقه.':'الأمر طويل، والنسخ التلقائي اتمنع. انسخه من الخانة تحت (اضغط مطوّلًا ← تحديد الكل ← نسخ) وبعدين افتح التطبيق والصقه.')+'</div>'+
+  (copied?'':'<textarea readonly dir="ltr" style="width:100%;box-sizing:border-box;height:90px;font-size:12px"></textarea>')+
+  '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="ezb" data-a="again" style="flex:1">📤 افتح قايمة المشاركة</button>'+(canF?'<button class="ezb" data-a="file" style="flex:1">📄 أرسل كملف</button>':'')+'<button class="ezb g" data-a="close" style="flex:1">تمام</button></div>';
+ document.body.appendChild(o);const ta=o.querySelector('textarea');if(ta)ta.value=txt;
+ o.querySelector('[data-a=close]').onclick=()=>o.remove();
+ o.querySelector('[data-a=again]').onclick=async()=>{try{await navigator.share({text:AI_SHARE_SHORT})}catch(e){}};
+ const fb=o.querySelector('[data-a=file]');if(fb)fb.onclick=async()=>{try{await navigator.share({files:[f]})}catch(e){if(!e||e.name!=='AbortError')toast('تعذّر إرسال الملف — الأمر متنسخ، الصقه في التطبيق')}};
+}
+async function aiSend(t,btn){
+ let txt;try{txt=await aiGetText(t)}catch(e){toast('تعذّر تجهيز الأمر');return false}
+ if(!txt.trim()){toast('مفيش أمر للإرسال');return false}
+ if(!aiCanShare()){const ok=await aiCopy(txt);if(ok)toast('المتصفح مش بيدعم المشاركة — اتنسخ الأمر ✓ الصقه في التطبيق');else ezShowTxt(txt);return ok}
+ if(txt.length>AI_SHARE_MAX){
+  const ok=await aiCopy(txt);aiLongSheet(txt,ok);
+  aiHint(btn,'الأمر طويل: بيتنسخ كامل وبتفتح التطبيق وتلصقه (أو أرسله كملف).');
+  try{await navigator.share({text:AI_SHARE_SHORT})}catch(e){}
+  return true}
+ try{await navigator.share({text:txt});return true}
+ catch(e){const ok=await aiCopy(txt);if(ok)toast('📋 اتنسخ الأمر — الصقه في التطبيق');else ezShowTxt(txt);return ok}
+}
+function aiBtn(){try{const e=window.event,c=e&&e.currentTarget;return c&&c.classList&&c.classList.contains('ai-sh')?c:null}catch(e){return null}}
+function aiShareText(t){return aiSend(t,aiBtn())}
+function aiShareE(t){return aiSend(t,aiBtn())}
+async function aiShareEl(id){const b=aiBtn();try{await ensureTr()}catch(e){}const el=$(id);return aiSend(el?el.innerText:'',b)}
+function aiShareChar(i){return aiSend(()=>charProfilePrompt(i),aiBtn())}
+function aiShareReady(){const b=aiBtn(),v=((($('ezReady')||{}).value)||S.readyScript||'').trim();if(!v){alert('الصق السيناريو الجاهز الأول');return}S.readyScript=v;return aiSend(()=>ezAIPromptReady(v),b)}
+function aiShareF(i){return aiSend(()=>{build();const r=rows[i];return (r&&r.framePrompt)||''},aiBtn())}
+function aiShareV(){return aiSend(()=>{build();const r=rows[EZ.cur];return r?r.prompt:''},aiBtn())}
+function aiShareChat(kind){return aiSend(()=>promptFor(kind),aiBtn())}
+function aiShareRw(i){return aiSend(()=>rwPrompt(i),aiBtn())}
+function aiShareEp(){return aiSend(()=>{const t=epCopyText();return t==null?'':t},aiBtn())}
+function aiShareSh(){const b=aiBtn();if(!shShow())return;return aiSend(()=>shPrompt(),b)}
+function aiShareTr(){const b=aiBtn();trLast=trItems();if(!trLast.length){toast('لا يوجد نص يحتاج ترجمة');return}return aiSend(()=>trPrompt(trLast),b)}
+function aiShareAll(k){return aiSend(()=>{build();return rows.map(r=>k==='prompt'?r.prompt:r.tts).join('\n\n---\n\n')},aiBtn())}
+/* أي زر نسخ أمر للذكاء الاصطناعي يتحط جنبه زر «📤 أرسل لتطبيق» تلقائيًا (واحد لكل أمر في نفس المكان) */
+const AI_SH_RE=/\b(?:openChat|rwCopy|copyEp|shCopy|manualTrCopy|sheetPrompt|cpCopy|lvBgPrompt|lvTrPrompt|thPrompt|sunoStyle|musicPrompt|sbMaster|sbShot|ezSheetP|ezCSPrompt|ezAIPrompt|ezCopyReady|ezCopyF|ezCopyV|ezVQAprompt)\(|copyText\(\$\('stFrame'\)|cpEl\('(?:stFrame|stPrompt|stNeg|pr\d+|ng\d+)'\)|copyAll\('prompt'\)/;
+const AI_SH_MAP={rwCopy:'aiShareRw',shCopy:'aiShareSh',manualTrCopy:'aiShareTr',ezCopyReady:'aiShareReady',ezCopyF:'aiShareF',ezCopyV:'aiShareV',cpCopy:'aiShareChar',cpEl:'aiShareEl',ezCopy:'aiShareE',copyText:'aiShareText',copyAll:'aiShareAll'};
+function aiDecorate(){
+ document.querySelectorAll('button[onclick],a[onclick]').forEach(b=>{
+  if(b.dataset.aiSh)return;b.dataset.aiSh='1';
+  const oc=b.getAttribute('onclick')||'';if(!AI_SH_RE.test(oc))return;
+  const tr=oc.replace(/\bopenChat\('(?:gemini|chatgpt)','(\w+)'[^)]*\)/g,"aiShareChat('$1')").replace(/\bcopyEp\([^)]*\)/g,'aiShareEp()')
+   .replace(/\b(rwCopy|shCopy|manualTrCopy|ezCopyReady|ezCopyF|ezCopyV|cpCopy|cpEl|ezCopy|copyText|copyAll)\(/g,(m,n)=>AI_SH_MAP[n]+'(');
+  if(tr===oc)return;
+  const key=tr.replace(/,\s*(?:\\?'[^']*\\?'|"[^"]*")\s*\)\s*$/,')'),p=b.parentNode;if(!p)return;
+  const seen=p._aiKeys||(p._aiKeys=new Set());if(seen.has(key))return;seen.add(key);
+  const n=document.createElement('button');n.type='button';n.className=((b.className||'')+' ai-sh').trim();n.dataset.aiSh='1';
+  n.textContent='📤 أرسل لتطبيق';n.title='افتح قايمة المشاركة واختار ChatGPT أو Gemini أو Claude';n.setAttribute('onclick',tr);
+  b.parentNode.insertBefore(n,b.nextSibling)})}
+let _aiT=0;new MutationObserver(()=>{clearTimeout(_aiT);_aiT=setTimeout(aiDecorate,80)}).observe(document.body,{childList:true,subtree:true});
+document.addEventListener('DOMContentLoaded',aiDecorate);
 </script>
 
 </body>
