@@ -1068,7 +1068,7 @@ function pbRender(){const o=$('pbOv');if(!o)return;build();const c=pbCount(),n=S
  list.forEach(({s,i})=>pbThumbs(i))}
 async function pbThumbs(i){const p=await prodGet(S.shots[i].uid);['img','last'].forEach(k=>{const d=$('pb_'+k+'_'+i);if(!d)return;if(p[k]){const u=URL.createObjectURL(p[k].blob);d.innerHTML=`<img src="${safeSrc(u)}" onclick="libView('${u}')" style="max-width:100%;max-height:100%;cursor:zoom-in">`}})}
 function pbSet(i,f,v){S.shots[i][f]=v;save();if(f==='st'||f==='text'){if(f==='text')build();pbRender()}}
-async function pbImg(i,k,el){const f=el.files[0];el.value='';if(!f)return;ensureUids();const u=S.shots[i].uid;const p=await prodGet(u);p[k]={name:f.name,type:f.type,blob:f};try{await kvSet('prod',u,p)}catch(e){toast('المساحة غير كافية');return}
+async function pbImg(i,k,el){const f=el.files[0];el.value='';if(!f)return;ensureUids();const u=S.shots[i].uid;const p=await prodGet(u);p[k]={name:f.name,type:f.type,blob:f};try{await kvSet('prod',u,p)}catch(e){toast('المساحة غير كافية');return}if(k==='img'){if(EZI[u])URL.revokeObjectURL(EZI[u]);EZI[u]=URL.createObjectURL(f)}
  const s=S.shots[i];if(k==='img'&&(!s.st||s.st==='todo'))s.st='img';if(k==='last'&&s.st!=='redo')s.st='vid';save();pbRender();toast('تم الحفظ ✓')}
 async function pbImgDel(i,k){const u=S.shots[i].uid;const p=await prodGet(u);if(!p[k])return;if(!confirm('حذف هذه الصورة؟'))return;delete p[k];await kvSet('prod',u,p);pbRender()}
 
@@ -3347,7 +3347,7 @@ function ez0(){
 }
 
 
-const APPV='html36';
+const APPV='html37';
 async function pjDup(){const n=(prompt('اسم النسخة الجديدة من «'+pjName()+'»',pjName()+' (نسخة ٢)')||'').trim();if(!n)return;if(pjList().includes(n)){alert('فيه مشروع بنفس الاسم');return}
  try{await pjSaveCur()}catch(e){alert('تعذر حفظ المشروع الحالي');return}ezBusy('⏳ بعمل نسخة من المشروع والصور…');
  const f=JSON.parse(JSON.stringify(S));f.projName=n;f.epTitle=n;f.epId='';
@@ -3783,7 +3783,7 @@ function ezReport(){const o=document.createElement('div');o.id='ezRep';o.style.c
   o.querySelectorAll('.dl').forEach(b=>b.onchange=()=>{S.compChk[b.dataset.k]=b.checked;save()})};
  document.body.appendChild(o);draw()}
 function ezQAprompt(i){build();const cs=ezShotChars(i),s=S.shots[i],r=rows[i]||{};const st=true;
- return `You are a strict continuity and quality checker for an animated series. Attached: IMAGE 1 = the generated start frame to check. The other images = the official character sheets${!!ezFrefOf(i)?' and, LAST, the approved FRAME REFERENCE':(ezShotPl(i).lib?' and the location reference':'')}.
+ return `You are a strict continuity and quality checker for an animated series. Attached: the image whose file name starts with CHECK (the first image) = the ONLY image to check. Every image whose name starts with REF is a reference only (character sheets${(()=>{const A=ezFrefOf(i),k=frefKey(cs.map(c=>c.id));return A&&A.lib&&cs.length&&frefKey(A.cids||[])===k?', and the approved FRAME REFERENCE for placement':(s.place&&ezShotPl(i).lib?', and the location reference':'')})()}); never judge or edit a REF image, and ignore any other image in this chat from earlier messages.
 Characters that must appear (exactly ${cs.length}, no one else): ${cs.map(c=>c.name+(c.visual?' ('+String(c.visual).trim()+')':'')).join('; ')}.
 What the shot should show: ${(s.descAr||'').trim()||'-'}${(s.lookAr||'').trim()?'\nAllowed temporary change in this shot only: '+s.lookAr.trim():''}
 Camera: ${r.camera||'-'}
@@ -3811,11 +3811,16 @@ PROBLEMS (Egyptian Arabic, one short line each, or "لا يوجد"):
 - ...
 EDIT PROMPT: (only if FIX) ONE single line in English on this same line: an edit instruction for the attached image that fixes ONLY the listed problems and ends with "Keep everything else exactly the same."
 Write nothing after the EDIT PROMPT line, and do not end with a question.`}
-async function ezAIQA(i){const s=S.shots[i],u=ezImg(s);if(!u){toast('ارفع الصورة الأول');return}const pr=ezQAprompt(i);let cp=false;try{await navigator.clipboard.writeText(pr);cp=true}catch(e){}
- let fs=[];try{const bl=await (await fetch(u)).blob();fs.push(new File([bl],'1-check-shot'+(i+1)+'.'+((bl.type||'').includes('png')?'png':'jpg'),{type:bl.type||'image/jpeg'}))}catch(e){}
- for(const c of ezShotChars(i))fs=fs.concat(await charImgs(c,1));{const A=ezFrefOf(i);if(A&&A.lib)fs=fs.concat(toFiles((await imgGet(A.lib)).slice(0,1),'frame-reference'));else{const pl=ezShotPl(i);if(pl.lib)fs=fs.concat(toFiles((await imgGet(pl.lib)).slice(0,1),pl.name||'place'))}}
+async function ezQAref(i){build();const s=S.shots[i];const ids=ezShotChars(i).map(c=>c.id);const k=frefKey(ids);const A=ezFrefOf(i);if(A&&A.lib&&ids.length&&frefKey(A.cids||[])===k)return A;return null}
+async function ezAIQA(i){const s=S.shots[i];if(!s||!s.uid){toast('ارفع الصورة الأول');return}
+ let shot=null;try{const p=await prodGet(s.uid);if(p&&p.img&&p.img.blob){const bl=p.img.blob;shot=new File([bl],'CHECK-shot-'+(i+1)+'.'+((bl.type||'').includes('png')?'png':'jpg'),{type:bl.type||'image/jpeg'});if(EZI[s.uid])URL.revokeObjectURL(EZI[s.uid]);EZI[s.uid]=URL.createObjectURL(bl)}}catch(e){}
+ if(!shot){toast('صورة اللقطة '+(i+1)+' مش موجودة — ارفعها تاني الأول');return}
+ build();const pr=ezQAprompt(i);let cp=false;try{await navigator.clipboard.writeText(pr);cp=true}catch(e){}
+ let fs=[shot];
+ for(const c of ezShotChars(i)){const a=await charImgs(c,1);fs=fs.concat(a.slice(0,1).map(f=>new File([f],'REF-character-'+(c.name||'char')+'.'+((f.type||'').includes('png')?'png':'jpg'),{type:f.type||'image/jpeg'})))}
+ {const A=await ezQAref(i);if(A)fs=fs.concat((await imgGet(A.lib)).slice(0,1).map(x=>new File([x.blob],'REF-frame.jpg',{type:x.type||x.blob.type||'image/jpeg'})));else if(s.place){const pl=ezShotPl(i);if(pl.lib)fs=fs.concat((await imgGet(pl.lib)).slice(0,1).map(x=>new File([x.blob],'REF-place.jpg',{type:x.type||x.blob.type||'image/jpeg'})))}}
  if(!cp)cp=await copyText(pr,'');
- try{if(navigator.canShare&&navigator.canShare({files:fs})){await navigator.share({files:fs,text:pr,title:'فحص لقطة '+(i+1)});toast('✓ أمر الفحص اتنسخ — لو مظهرش: دوس مطوّل ← لصق. وبعد الرد انسخه ودوس «📋 الصق نتيجة الفحص»');return}}catch(x){if(x&&x.name==='AbortError')return}
+ try{if(navigator.canShare&&navigator.canShare({files:fs})){await navigator.share({files:fs,text:pr,title:'فحص لقطة '+(i+1)});toast('✓ اتبعتت صورة اللقطة '+(i+1)+' + '+(fs.length-1)+' مرجع — أمر الفحص اتنسخ. بعد الرد انسخه ودوس «📋 الصق النتيجة»');return}}catch(x){if(x&&x.name==='AbortError')return}
  fs.forEach((f,k)=>setTimeout(()=>{const l=document.createElement('a');l.href=URL.createObjectURL(f);l.download=f.name;l.click()},k*400));toast('نزّلت الصور واتنسخ أمر الفحص — ارفعهم في ChatGPT أو Gemini')}
 function ezQAparse(t){t=String(t).replace(/\r/g,'').replace(/\\([-*_#>.()\[\]`])/g,'$1').replace(/\*\*|__|```[a-z]*|`/gi,'');
  const regen=/VERDICT\s*:?\s*REGEN/i.test(t);const pass=/VERDICT\s*:?\s*PASS/i.test(t)&&!/VERDICT\s*:?\s*(FIX|REGEN)/i.test(t);
