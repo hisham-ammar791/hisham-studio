@@ -1121,11 +1121,11 @@ function gdPut(o){const c=Object.assign(gdCfg(),o);try{localStorage.setItem(GDK,
 function gdDirty(){GD.dirty=true}
 function gdOK(){return GD.tok&&Date.now()<GD.exp-60000}
 function gdLoadGIS(){return new Promise((r,j)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return r();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=()=>r();s.onerror=()=>j(new Error('تعذر تحميل خدمة تسجيل جوجل — تأكد من الإنترنت'));document.head.appendChild(s)})}
-async function gdConnect(silent){const cid=(gdCfg().cid||'').trim();if(!/\.apps\.googleusercontent\.com$/.test(cid)){if(!silent)toast('الصق «Client ID» أولًا (ينتهي بـ apps.googleusercontent.com)');return false}
- try{await gdLoadGIS()}catch(e){if(!silent)toast(e.message);return false}
+async function gdConnect(){const cid=(gdCfg().cid||'').trim();if(!/\.apps\.googleusercontent\.com$/.test(cid)){toast('الصق «Client ID» أولًا (ينتهي بـ apps.googleusercontent.com)');return false}
+ try{await gdLoadGIS()}catch(e){toast(e.message);return false}
  return new Promise(res=>{GD.client=google.accounts.oauth2.initTokenClient({client_id:cid,scope:'https://www.googleapis.com/auth/drive.file',
-  callback:async t=>{if(t&&t.access_token){GD.tok=t.access_token;GD.exp=Date.now()+(+t.expires_in||3600)*1000;gdPut({linked:1});gdStatus('✓ متصل بـ Google Drive');res(true);try{await gdFind();await gdCheckRemote(true)}catch(e){}}else{if(!silent)gdStatus('لم يتم الربط');res(false)}},
-  error_callback:e=>{if(!silent)gdStatus('لم يتم الربط: '+((e&&e.type)||'أُغلقت النافذة'));res(false)}});GD.client.requestAccessToken({prompt:silent?'none':(gdCfg().linked?'':'consent')})})}
+  callback:async t=>{if(t&&t.access_token){GD.tok=t.access_token;GD.exp=Date.now()+(+t.expires_in||3600)*1000;gdPut({linked:1});gdStatus('✓ متصل بـ Google Drive');res(true);try{await gdFind();await gdCheckRemote(true)}catch(e){}}else{gdStatus('لم يتم الربط');res(false)}},
+  error_callback:e=>{gdStatus('لم يتم الربط: '+((e&&e.type)||'أُغلقت النافذة'));res(false)}});GD.client.requestAccessToken({prompt:gdCfg().linked?'':'consent'})})}
 async function gdFetch(url,opt){opt=opt||{};opt.headers=Object.assign({Authorization:'Bearer '+GD.tok},opt.headers||{});const r=await fetch(url,opt);if(r.status===401){GD.tok='';gdStatus('انتهت الجلسة — اضغط «🔗 ربط» مرة أخرى');throw new Error('401')}if(!r.ok)throw new Error('Drive '+r.status+': '+(await r.text()).slice(0,140));return r}
 async function gdFind(){const c=gdCfg();if(c.fileId){try{const r=await gdFetch(GDAPI+'/drive/v3/files/'+c.fileId+'?fields=id,modifiedTime,size,trashed');const j=await r.json();if(!j.trashed)return j}catch(e){if(e.message==='401')throw e}}
  const q=encodeURIComponent(`name='${GDN}' and trashed=false`);const r=await gdFetch(GDAPI+'/drive/v3/files?q='+q+'&orderBy=modifiedTime%20desc&fields=files(id,modifiedTime,size)&spaces=drive');const j=await r.json();const f=(j.files||[])[0];gdPut({fileId:f?f.id:''});return f||null}
@@ -1154,11 +1154,6 @@ document.addEventListener('visibilitychange',()=>{const c=gdCfg();if(document.vi
 svGetIdb().then(raw=>{let o=null;try{o=raw&&JSON.parse(raw)}catch(e){}
  if(o&&(o._ts||0)>(SV.loadTs||0)){S=fromSaved(o);SV.ready=true;save();try{if(document.body.classList.contains('ezon'))ezRender();else{renderChars();renderShots()}}catch(e){}toast('اترجعت آخر نسخة محفوظة ✓')}else{SV.ready=true;svFlush()}});
 document.addEventListener('click',e=>{try{const c=gdCfg();if(c.auto==='1'&&c.cid&&c.linked&&!gdOK()&&!GD.busy&&GD.dirty&&Date.now()-(GD.lastTry||0)>120000){GD.lastTry=Date.now();gdConnect().then(ok=>{if(ok)gdUpload()})}}catch(x){}},true);
-/* تجديد تلقائي صامت للربط بـ Drive (عند الفتح، والرجوع للتطبيق، وكل فترة) */
-async function gdSilent(){try{const c=gdCfg();if(!c.cid||!c.linked||gdOK()||GD.busy||GD.silentBusy||Date.now()-(GD.silentAt||0)<20000)return;GD.silentBusy=true;GD.silentAt=Date.now();const ok=await Promise.race([gdConnect(true),new Promise(r=>setTimeout(()=>r(false),8000))]);if(ok&&GD.dirty)gdUpload()}catch(e){}GD.silentBusy=false}
-setTimeout(gdSilent,1500);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')gdSilent()});
-setInterval(gdSilent,300000);
 /* ---------- backup reminder ---------- */
 function bkHide(){const b=$('bkBar');if(b)b.remove()}
 function bkLater(){try{localStorage.setItem('studio_bkSnooze',Date.now()+3*864e5)}catch(e){}bkHide()}
