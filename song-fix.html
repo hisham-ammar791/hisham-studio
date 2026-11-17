@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مُصلّح الأغنية — استبدال الجزء الغلط بصوتك</title>
+<style>
+:root{--bg:#0f1115;--card:#181b22;--line:#2a2f3a;--txt:#e9ecf2;--mut:#9aa3b2;--acc:#ffb020;--blue:#5aa9ff;--green:#4fd88a;--red:#ff5d5d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.6 system-ui,"Segoe UI",Tahoma,sans-serif;padding:12px;padding-bottom:60px}
+h1{font-size:20px;margin:4px 0 2px}
+.sub{color:var(--mut);margin:0 0 12px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+.card h2{font-size:16px;margin:0 0 8px}
+.n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--acc);color:#000;font-weight:700;margin-left:6px;font-size:13px}
+label{display:block;margin:6px 0 2px;color:var(--mut);font-size:13px}
+input[type=file]{width:100%;color:var(--mut)}
+button{background:#262b36;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px 12px;font:inherit;cursor:pointer;margin:3px 0}
+button:active{transform:scale(.97)}
+button.pri{background:var(--acc);color:#000;border:0;font-weight:700}
+button.rec{background:var(--red);color:#fff;border:0;font-weight:700}
+button.ok{background:var(--green);color:#000;border:0;font-weight:700}
+button:disabled{opacity:.4}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.wavebox{direction:ltr;position:relative}
+canvas{width:100%;height:150px;background:#0b0d11;border-radius:8px;border:1px solid var(--line);touch-action:none;display:block}
+.time{direction:ltr;display:flex;justify-content:space-between;color:var(--mut);font-size:12px;margin-top:2px}
+.num{width:92px;background:#0b0d11;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px;font:inherit;direction:ltr;text-align:center}
+.sl{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
+.sl input[type=range]{width:100%}
+.sl span{direction:ltr;min-width:70px;text-align:center;color:var(--acc);font-size:13px}
+.msg{padding:8px 10px;border-radius:8px;background:#11261a;color:#bff5d3;font-size:13px;margin-top:6px;display:none}
+.msg.err{background:#2a1414;color:#ffc9c9}
+.note{font-size:12.5px;color:var(--mut)}
+.warn{font-size:13px;background:#2b2210;color:#ffe2a6;border-radius:8px;padding:8px;margin-top:6px;display:none}
+.recbadge{color:var(--red);font-weight:700;display:none}
+</style>
+</head>
+<body>
+
+<h1>🎙️ مُصلّح الأغنية</h1>
+<p class="sub">بتقص الجزء اللي سونو غناه غلط، وتحط مكانه صوتك، وتدمجه بنعومة، وتصدّر الأغنية كاملة. كل الشغل جوه المتصفح على جهازك.</p>
+
+<div class="card">
+  <h2><span class="n">1</span>حمّل ملفات الأغنية</h2>
+  <label>ملف الموسيقى بس (Instrumental) — من الـ Stems</label>
+  <input type="file" id="fInst" accept="audio/*">
+  <label>ملف الغناء بس (Vocals) — أو الأغنية كاملة لو مفيش Stems</label>
+  <input type="file" id="fVoc" accept="audio/*">
+  <div class="warn" id="noInstWarn">⚠️ من غير ملف الموسيقى المنفصل، الجزء اللي هتستبدله هيشيل الموسيقى معاه. الأفضل تحمّل الـ Stems (موسيقى + غناء منفصلين).</div>
+  <div class="msg" id="m1"></div>
+</div>
+
+<div class="card">
+  <h2><span class="n">2</span>حدد الجزء الغلط</h2>
+  <p class="note">اسحب بصباعك على الموجة عشان تحدد. اسحب طرف التحديد عشان تعدّله. خلّي التحديد أوسع شوية من الغلط، ويبدأ وينتهي في نَفَس أو سكتة لو تقدر.</p>
+  <div class="wavebox">
+    <canvas id="wave"></canvas>
+    <div class="time"><span id="tA">0:00</span><span id="tPos"></span><span id="tB">0:00</span></div>
+  </div>
+  <div class="row" style="margin-top:6px">
+    <button id="bPlayAll">▶ من البداية</button>
+    <button id="bPlaySel">▶ اسمع الجزء المحدد</button>
+    <button id="bStop">⏹ إيقاف</button>
+    <button id="bZoom">🔍 كبّر على التحديد</button>
+    <button id="bZoomAll">↔ الأغنية كلها</button>
+  </div>
+  <div class="row" style="margin-top:6px">
+    <span class="note">البداية</span>
+    <button data-n="s" data-d="-0.1">−</button><input class="num" id="iS" type="number" step="0.01"><button data-n="s" data-d="0.1">+</button>
+    <span class="note">النهاية</span>
+    <button data-n="e" data-d="-0.1">−</button><input class="num" id="iE" type="number" step="0.01"><button data-n="e" data-d="0.1">+</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2><span class="n">3</span>سجّل الجزء بصوتك</h2>
+  <p class="note">🎧 <b>لازم سماعة</b> عشان الموسيقى ما تدخلش في المايك. التسجيل بيبدأ قبل الجزء بكام ثانية عشان تلحق تدخل في الإيقاع.</p>
+  <div class="sl"><label>ثواني قبل الجزء (عدّ تمهيدي)</label><span></span></div>
+  <div class="sl"><input type="range" id="rPre" min="1" max="8" step="0.5" value="3"><span id="vPre"></span></div>
+  <div class="sl"><label>صوت سونو كمرشد وانت بتغني</label><span></span></div>
+  <div class="sl"><input type="range" id="rGuide" min="0" max="100" value="35"><span id="vGuide"></span></div>
+  <div class="row" style="margin-top:6px">
+    <button class="rec" id="bRec">⏺ سجّل</button>
+    <button id="bRecStop" disabled>⏹ وقّف التسجيل</button>
+    <span class="recbadge" id="recBadge">● بيسجّل…</span>
+  </div>
+  <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
+  <label>أو ارفع تسجيل جاهز ليك (من أي برنامج تسجيل)</label>
+  <input type="file" id="fTake" accept="audio/*">
+  <div class="sl"><label>تسجيلك بيبدأ قبل بداية الجزء بكام ثانية تقريبًا؟</label><span></span></div>
+  <div class="sl"><input type="range" id="rLead" min="0" max="10" step="0.5" value="0"><span id="vLead"></span></div>
+  <div class="msg" id="m3"></div>
+</div>
+
+<div class="card">
+  <h2><span class="n">4</span>اظبط الدمج واسمع</h2>
+  <div class="row">
+    <button id="bAlign">🎯 ظبط التوقيت تلقائي</button>
+    <button id="bAutoGain">🔊 ظبط العلوّ تلقائي</button>
+  </div>
+  <div class="sl"><label>تقديم/تأخير صوتك (بالملّي ثانية)</label><span></span></div>
+  <div class="sl"><input type="range" id="rOff" min="-500" max="500" value="0"><span id="vOff"></span></div>
+  <div class="sl"><label>علوّ صوتك</label><span></span></div>
+  <div class="sl"><input type="range" id="rGain" min="-24" max="24" step="0.5" value="0"><span id="vGain"></span></div>
+  <div class="sl"><label>نعومة القطع (Crossfade)</label><span></span></div>
+  <div class="sl"><input type="range" id="rCf" min="10" max="600" value="120"><span id="vCf"></span></div>
+  <div class="sl"><label>صدى (Reverb) عشان صوتك يتلحم مع صوت سونو</label><span></span></div>
+  <div class="sl"><input type="range" id="rRev" min="0" max="100" value="20"><span id="vRev"></span></div>
+  <label style="display:flex;gap:6px;align-items:center;color:var(--txt)"><input type="checkbox" id="cHp" checked> شيل الزنّة والهمهمة الواطية (High-pass)</label>
+  <div class="row" style="margin-top:8px">
+    <button class="pri" id="bPreview">▶ اسمع النتيجة قبل التطبيق</button>
+    <button class="ok" id="bApply">✔ طبّق الإصلاح</button>
+    <button id="bUndo">↶ تراجع</button>
+  </div>
+  <p class="note">بعد ما تطبّق، تقدر تحدد جزء تاني غلط وتكرر نفس الخطوات.</p>
+  <div class="msg" id="m4"></div>
+</div>
+
+<div class="card">
+  <h2><span class="n">5</span>صدّر</h2>
+  <div class="row">
+    <button class="pri" id="bExpMix">⬇ الأغنية كاملة (WAV)</button>
+    <button id="bExpVoc">⬇ الغناء بس (WAV)</button>
+  </div>
+  <p class="note">ما ترجّعش الملف لسونو يعمل له Cover/Remix، لأنه هيعيد الغنا ويمسح صوتك. الملف النهائي ده جاهز للنشر.</p>
+  <div class="msg" id="m5"></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let ctx=null,SR=48000;
+function AC(){if(!ctx){ctx=new(window.AudioContext||window.webkitAudioContext)();SR=ctx.sampleRate;}if(ctx.state==='suspended')ctx.resume();return ctx;}
+let inst=null,voc=null,hist=[],take=null,takeProc=null,takeBase=0,ver=0;
+let sel={s:0,e:0},view={a:0,b:1},dur=0,playing=null,rec=null;
+
+function msg(id,t,err){const m=$(id);m.textContent=t;m.className='msg'+(err?' err':'');m.style.display=t?'block':'none';}
+function fmt(t){if(!isFinite(t))t=0;const m=Math.floor(t/60),s=t-m*60;return m+':'+(s<10?'0':'')+s.toFixed(2);}
+function decode(buf){return new Promise((res,rej)=>{const p=AC().decodeAudioData(buf,res,rej);if(p&&p.catch)p.catch(rej);});}
+function toStereo(ab){const L=ab.getChannelData(0).slice();const R=ab.numberOfChannels>1?ab.getChannelData(1).slice():L.slice();return[L,R];}
+function vlen(){return voc?voc[0].length:0}
+function calcDur(){dur=Math.max(inst?inst[0].length:0,vlen())/SR;}
+const dbl=d=>Math.pow(10,d/20);
+const offSec=()=>(+$('rOff').value)/1000;
+const cfSec=()=>(+$('rCf').value)/1000;
+
+// ---------- Loading ----------
+$('fInst').onchange=async e=>{const f=e.target.files[0];if(!f)return;msg('m1','بفتح ملف الموسيقى…');
+  try{inst=toStereo(await decode(await f.arrayBuffer()));calcDur();msg('m1','✔ الموسيقى جاهزة ('+fmt(inst[0].length/SR)+')');$('noInstWarn').style.display='none';draw();}
+  catch(err){msg('m1','مقدرتش أفتح الملف ده. جرّب MP3 أو WAV.',true);}};
+$('fVoc').onchange=async e=>{const f=e.target.files[0];if(!f)return;msg('m1','بفتح ملف الغناء…');
+  try{voc=toStereo(await decode(await f.arrayBuffer()));hist=[];ver++;calcDur();
+    sel={s:Math.min(10,dur*0.25),e:Math.min(dur,Math.min(10,dur*0.25)+5)};view={a:0,b:dur};syncInputs();
+    msg('m1','✔ الغناء جاهز ('+fmt(vlen()/SR)+'). حدد الجزء الغلط في الخطوة 2.');
+    $('noInstWarn').style.display=inst?'none':'block';draw();}
+  catch(err){msg('m1','مقدرتش أفتح الملف ده. جرّب MP3 أو WAV.',true);}};
+
+// ---------- Waveform ----------
+let pkCache={key:'',pk:null};
+function getPeaks(W){const key=view.a+'|'+view.b+'|'+W+'|'+ver;if(pkCache.key===key)return pkCache.pk;
+  const pk=new Float32Array(W*2),L=voc[0],R=voc[1],n=L.length;
+  for(let i=0;i<W;i++){const a=Math.floor((view.a+(view.b-view.a)*i/W)*SR),b=Math.floor((view.a+(view.b-view.a)*(i+1)/W)*SR);
+    let mn=0,mx=0;const step=Math.max(1,Math.floor((b-a)/400));
+    for(let j=Math.max(0,a);j<Math.min(n,Math.max(b,a+1));j+=step){const v=(L[j]+R[j])*0.5;if(v<mn)mn=v;if(v>mx)mx=v;}
+    pk[2*i]=mn;pk[2*i+1]=mx;}
+  pkCache={key,pk};return pk;}
+function draw(){const c=$('wave'),dpr=window.devicePixelRatio||1,W=Math.max(1,Math.floor(c.clientWidth*dpr)),H=Math.floor(c.clientHeight*dpr);
+  if(c.width!==W)c.width=W;if(c.height!==H)c.height=H;const g=c.getContext('2d');g.clearRect(0,0,W,H);
+  if(!voc){g.fillStyle='#9aa3b2';g.font=(14*dpr)+'px sans-serif';g.textAlign='center';g.fillText('حمّل ملف الغناء الأول',W/2,H/2);return;}
+  const span=view.b-view.a,x=t=>(t-view.a)/span*W;
+  g.fillStyle='rgba(255,176,32,.18)';g.fillRect(x(sel.s),0,x(sel.e)-x(sel.s),H);
+  const pk=getPeaks(W);g.fillStyle='#5aa9ff';
+  for(let i=0;i<W;i++){const y1=(1-pk[2*i+1])*H/2,y2=(1-pk[2*i])*H/2;g.fillRect(i,y1,1,Math.max(1,y2-y1));}
+  if(takeProc){const ts=takeBase+offSec(),T=takeProc[0],gn=dbl(+$('rGain').value);g.fillStyle='rgba(79,216,138,.75)';
+    const x0=Math.max(0,Math.floor(x(Math.max(ts,sel.s)))),x1=Math.min(W,Math.ceil(x(Math.min(ts+T.length/SR,sel.e))));
+    for(let i=x0;i<x1;i++){const a=Math.floor((view.a+span*i/W-ts)*SR),b=Math.floor((view.a+span*(i+1)/W-ts)*SR);let mx=0;const st=Math.max(1,Math.floor((b-a)/200));
+      for(let j=Math.max(0,a);j<Math.min(T.length,Math.max(b,a+1));j+=st){const v=Math.abs(T[j]);if(v>mx)mx=v;}
+      const h=Math.min(1,mx*gn)*H/2;g.fillRect(i,H/2-h,1,Math.max(1,2*h));}}
+  g.fillStyle='#ffb020';g.fillRect(x(sel.s)-1,0,3*dpr,H);g.fillRect(x(sel.e)-1,0,3*dpr,H);
+  if(playing){const p=playing.from+(ctx.currentTime-playing.t0);g.fillStyle='#fff';g.fillRect(x(p),0,2*dpr,H);$('tPos').textContent=fmt(Math.max(playing.from,p));}else $('tPos').textContent='';
+  $('tA').textContent=fmt(view.a);$('tB').textContent=fmt(view.b);}
+window.addEventListener('resize',draw);
+
+let drag=null;
+const cv=$('wave');
+function tAt(ev){const r=cv.getBoundingClientRect();return Math.max(0,Math.min(dur,view.a+(ev.clientX-r.left)/r.width*(view.b-view.a)));}
+cv.addEventListener('pointerdown',ev=>{if(!voc)return;cv.setPointerCapture(ev.pointerId);const t=tAt(ev),r=cv.getBoundingClientRect(),px=(view.b-view.a)/r.width*14;
+  if(Math.abs(t-sel.s)<px)drag={m:'s'};else if(Math.abs(t-sel.e)<px)drag={m:'e'};else{drag={m:'new',a:t,old:{...sel}};sel={s:t,e:t};}draw();});
+cv.addEventListener('pointermove',ev=>{if(!drag)return;const t=tAt(ev);
+  if(drag.m==='s')sel.s=Math.min(t,sel.e-0.05);else if(drag.m==='e')sel.e=Math.max(t,sel.s+0.05);else{sel.s=Math.min(drag.a,t);sel.e=Math.max(drag.a,t);}syncInputs();draw();});
+cv.addEventListener('pointerup',()=>{if(drag&&drag.m==='new'&&sel.e-sel.s<0.1)sel=drag.old;drag=null;syncInputs();draw();});
+function syncInputs(){$('iS').value=sel.s.toFixed(2);$('iE').value=sel.e.toFixed(2);}
+$('iS').onchange=()=>{sel.s=Math.max(0,Math.min(+$('iS').value,sel.e-0.05));syncInputs();draw();};
+$('iE').onchange=()=>{sel.e=Math.min(dur,Math.max(+$('iE').value,sel.s+0.05));syncInputs();draw();};
+document.querySelectorAll('button[data-n]').forEach(b=>b.onclick=()=>{const d=+b.dataset.d;
+  if(b.dataset.n==='s')sel.s=Math.max(0,Math.min(sel.s+d,sel.e-0.05));else sel.e=Math.min(dur,Math.max(sel.e+d,sel.s+0.05));syncInputs();draw();});
+$('bZoom').onclick=()=>{if(!voc)return;const p=Math.max(1.5,(sel.e-sel.s)*0.3);view={a:Math.max(0,sel.s-p),b:Math.min(dur,sel.e+p)};draw();};
+$('bZoomAll').onclick=()=>{view={a:0,b:dur||1};draw();};
+
+// ---------- Playback ----------
+function makeBuf(chs,from,to,base){const a=Math.floor(from*SR)-base,b=Math.min(chs[0].length,Math.floor(to*SR)-base),a0=Math.max(0,a);if(b<=a0)return null;
+  const ab=ctx.createBuffer(2,b-a0,SR);ab.getChannelData(0).set(chs[0].subarray(a0,b));ab.getChannelData(1).set(chs[1].subarray(a0,b));return{ab,delay:(a0-a)/SR};}
+function stop(){if(playing){playing.srcs.forEach(s=>{try{s.stop()}catch(e){}});playing=null;}draw();}
+function play(from,to,opt={}){stop();AC();from=Math.max(0,from);to=Math.min(dur,to);const t0=ctx.currentTime+0.1,srcs=[];
+  const add=(chs,base,gain)=>{if(!chs)return;const r=makeBuf(chs,from,to,base);if(!r)return;const s=ctx.createBufferSource();s.buffer=r.ab;const g=ctx.createGain();g.gain.value=gain;s.connect(g);g.connect(ctx.destination);s.start(t0+r.delay);srcs.push(s);};
+  add(inst,0,1);const vw=opt.vocWin||{chs:voc,a:0};add(vw.chs,vw.a,opt.vocGain==null?1:opt.vocGain);
+  playing={srcs,t0,from,to};const tick=()=>{if(!playing)return;if(ctx.currentTime-playing.t0>playing.to-playing.from+0.05){if(!rec)stop();return;}draw();requestAnimationFrame(tick);};tick();return{t0,from};}
+$('bPlayAll').onclick=()=>{if(voc)play(0,dur);};
+$('bPlaySel').onclick=()=>{if(voc)play(sel.s-1,sel.e+1);};
+$('bStop').onclick=()=>{if(rec)finishRec();else stop();};
+
+// ---------- Take processing ----------
+function makeIR(c,sec){const n=Math.floor(SR*sec),b=c.createBuffer(2,n,SR);for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,4);}return b;}
+async function processTake(){if(!take){takeProc=null;draw();return;}
+  const rev=+$('rRev').value/100,hp=$('cHp').checked,len=take.length+Math.floor(SR*(rev>0?2:0));
+  const oc=new(window.OfflineAudioContext||window.webkitOfflineAudioContext)(2,len,SR);
+  const b=oc.createBuffer(1,take.length,SR);b.getChannelData(0).set(take);const src=oc.createBufferSource();src.buffer=b;let node=src;
+  if(hp){const f=oc.createBiquadFilter();f.type='highpass';f.frequency.value=90;f.Q.value=0.7;node.connect(f);node=f;}
+  node.connect(oc.destination);
+  if(rev>0){const c=oc.createConvolver();c.buffer=makeIR(oc,1.8);const w=oc.createGain();w.gain.value=rev*0.7;node.connect(c);c.connect(w);w.connect(oc.destination);}
+  src.start();const r=await oc.startRendering();takeProc=[r.getChannelData(0),r.getChannelData(1)];draw();}
+let ptm=null;const reproc=()=>{clearTimeout(ptm);ptm=setTimeout(processTake,250);};
+$('rRev').oninput=()=>{lbl();reproc();};$('cHp').onchange=reproc;
+
+function rmsRange(arr,a,b){let s=0,n=0;for(let i=Math.max(0,a);i<Math.min(arr.length,b);i++){s+=arr[i]*arr[i];n++;}return n?Math.sqrt(s/n):0;}
+function autoAlign(maxLag){if(!take||!voc)return 0;const h=Math.round(SR*0.01),sA=Math.floor(sel.s*SR),N=Math.floor((sel.e-sel.s)*SR/h),L=Math.round(maxLag*SR/h);if(N<10)return 0;
+  const mono=i=>(voc[0][i]+voc[1][i])*0.5;const O=new Float32Array(N);
+  for(let i=0;i<N;i++){let s=0;const a=sA+i*h;for(let j=a;j<a+h&&j<vlen();j++){const v=mono(j);s+=v*v;}O[i]=Math.log10(Math.sqrt(s/h)+1e-4);}
+  const ts=Math.round((takeBase+offSec())*SR),M=N+2*L,T=new Float32Array(M);
+  for(let j=0;j<M;j++){const a=sA-L*h+j*h-ts;let s=0;for(let k=a;k<a+h;k++){if(k>=0&&k<take.length)s+=take[k]*take[k];}T[j]=Math.log10(Math.sqrt(s/h)+1e-4);}
+  let mo=0;for(const v of O)mo+=v;mo/=N;for(let i=0;i<N;i++)O[i]-=mo;
+  let best=-Infinity,bk=0;
+  for(let k=-L;k<=L;k++){let sum=0,ss=0,mt=0;const off=L-k;for(let i=0;i<N;i++)mt+=T[i+off];mt/=N;
+    for(let i=0;i<N;i++){const t=T[i+off]-mt;sum+=O[i]*t;ss+=t*t;}const c=ss>0?sum/Math.sqrt(ss):-Infinity;if(c>best){best=c;bk=k;}}
+  const d=bk*h/SR;takeBase+=d;return d;}
+function autoGain(){if(!takeProc||!voc)return;const a=Math.floor(sel.s*SR),b=Math.floor(sel.e*SR),ts=Math.round((takeBase+offSec())*SR);
+  const ro=(rmsRange(voc[0],a,b)+rmsRange(voc[1],a,b))/2,rt=rmsRange(takeProc[0],a-ts,b-ts);if(rt<1e-6)return;
+  let db=20*Math.log10(ro/rt);db=Math.max(-24,Math.min(24,Math.round(db*2)/2));$('rGain').value=db;lbl();draw();}
+
+async function afterTake(maxLag,txt){$('rOff').value=0;await processTake();const d=autoAlign(maxLag);autoGain();lbl();draw();
+  msg('m3',txt+' (اتظبط التوقيت '+(d>=0?'+':'')+Math.round(d*1000)+' ملّي ثانية). روح للخطوة 4 واسمع النتيجة.');}
+
+// ---------- Recording ----------
+$('bRec').onclick=async()=>{if(!voc){msg('m3','حمّل ملف الغناء الأول.',true);return;}AC();
+  let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});}
+  catch(e){msg('m3','مقدرتش أفتح المايك. اسمح للصفحة باستخدام الميكروفون، أو ارفع تسجيل جاهز تحت.',true);return;}
+  const src=ctx.createMediaStreamSource(stream),sp=ctx.createScriptProcessor(4096,1,1),mute=ctx.createGain();mute.gain.value=0;
+  src.connect(sp);sp.connect(mute);mute.connect(ctx.destination);
+  const P=Math.max(0,sel.s-(+$('rPre').value)),end=Math.min(dur,sel.e+0.8);const chunks=[];
+  rec={stream,src,sp,mute,chunks,P,end,t0:0};
+  const pl=play(P,end,{vocGain:+$('rGuide').value/100});rec.t0=pl.t0;
+  sp.onaudioprocess=e=>{if(!rec)return;const d=e.inputBuffer.getChannelData(0);chunks.push({t:ctx.currentTime,d:new Float32Array(d)});
+    if(ctx.currentTime>rec.t0+(rec.end-rec.P)+0.2)finishRec();};
+  $('bRec').disabled=true;$('bRecStop').disabled=false;$('recBadge').style.display='inline';msg('m3','');};
+$('bRecStop').onclick=()=>finishRec();
+async function finishRec(){if(!rec)return;const r=rec;rec=null;
+  try{r.sp.disconnect();r.src.disconnect();r.mute.disconnect();}catch(e){}r.stream.getTracks().forEach(t=>t.stop());stop();
+  $('bRec').disabled=false;$('bRecStop').disabled=true;$('recBadge').style.display='none';
+  if(!r.chunks.length){msg('m3','ما اتسجلش حاجة. جرّب تاني.',true);return;}
+  let n=0;r.chunks.forEach(c=>n+=c.d.length);const t=new Float32Array(n);let o=0;r.chunks.forEach(c=>{t.set(c.d,o);o+=c.d.length;});
+  const firstT=r.chunks[0].t-r.chunks[0].d.length/SR;const lat=(ctx.outputLatency||0)+(ctx.baseLatency||0);
+  take=t;takeBase=r.P+(firstT-r.t0)-lat;
+  await afterTake(0.4,'✔ اتسجّل صوتك');}
+$('fTake').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(!voc){msg('m3','حمّل ملف الغناء الأول.',true);return;}msg('m3','بفتح التسجيل…');
+  try{const ab=await decode(await f.arrayBuffer());const L=ab.getChannelData(0),R=ab.numberOfChannels>1?ab.getChannelData(1):L;
+    take=new Float32Array(L.length);for(let i=0;i<L.length;i++)take[i]=(L[i]+R[i])*0.5;takeBase=sel.s-(+$('rLead').value);
+    await afterTake(2.5,'✔ التسجيل اتحمّل');}catch(err){msg('m3','مقدرتش أفتح التسجيل. جرّب MP3 أو WAV أو M4A.',true);}};
+
+// ---------- Compose / apply ----------
+function renderRegion(){const a=Math.max(0,Math.floor(sel.s*SR)),b=Math.min(vlen(),Math.ceil(sel.e*SR)),n=b-a;
+  const out=[new Float32Array(n),new Float32Array(n)],g=dbl(+$('rGain').value),ts=Math.round((takeBase+offSec())*SR),cfN=Math.max(1,Math.min(Math.floor(cfSec()*SR),Math.floor(n/2)));
+  for(let ch=0;ch<2;ch++){const O=voc[ch],T=takeProc[ch],R=out[ch];
+    for(let i=0;i<n;i++){const ti=a+i-ts,tv=(ti>=0&&ti<T.length)?T[ti]*g:0;
+      const w=i<cfN?i/cfN:(i>=n-cfN?(n-1-i)/cfN:1);R[i]=tv*Math.sin(w*Math.PI/2)+O[a+i]*Math.cos(w*Math.PI/2);}}
+  return{a,chs:out};}
+$('bPreview').onclick=()=>{if(!takeProc){msg('m4','سجّل أو ارفع صوتك الأول (خطوة 3).',true);return;}msg('m4','');
+  const from=Math.max(0,sel.s-2.5),to=Math.min(dur,sel.e+2.5),A=Math.floor(from*SR),B=Math.min(vlen(),Math.floor(to*SR));
+  const chs=[voc[0].slice(A,B),voc[1].slice(A,B)],r=renderRegion();chs[0].set(r.chs[0],r.a-A);chs[1].set(r.chs[1],r.a-A);
+  play(from,to,{vocWin:{chs,a:A}});};
+$('bApply').onclick=()=>{if(!takeProc){msg('m4','سجّل أو ارفع صوتك الأول (خطوة 3).',true);return;}stop();
+  const r=renderRegion();hist.push({a:r.a,chs:[voc[0].slice(r.a,r.a+r.chs[0].length),voc[1].slice(r.a,r.a+r.chs[0].length)]});if(hist.length>15)hist.shift();
+  voc[0].set(r.chs[0],r.a);voc[1].set(r.chs[1],r.a);ver++;take=null;takeProc=null;$('fTake').value='';draw();
+  msg('m4','✔ اتطبّق الإصلاح ('+fmt(sel.s)+' → '+fmt(sel.e)+'). حدد جزء تاني أو صدّر من خطوة 5.');};
+$('bUndo').onclick=()=>{const h=hist.pop();if(!h){msg('m4','مفيش حاجة أتراجع عنها.',true);return;}stop();voc[0].set(h.chs[0],h.a);voc[1].set(h.chs[1],h.a);ver++;draw();msg('m4','↶ اتراجعت عن آخر إصلاح.');};
+
+// ---------- Export ----------
+function wavBlob(chs){const n=chs[0].length;let pk=0;for(let c=0;c<2;c++)for(let i=0;i<n;i++){const v=Math.abs(chs[c][i]);if(v>pk)pk=v;}
+  const k=pk>0.98?0.98/pk:1,buf=new ArrayBuffer(44+n*4),v=new DataView(buf),ws=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');v.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,2,true);
+  v.setUint32(24,SR,true);v.setUint32(28,SR*4,true);v.setUint16(32,4,true);v.setUint16(34,16,true);ws(36,'data');v.setUint32(40,n*4,true);
+  let o=44;for(let i=0;i<n;i++)for(let c=0;c<2;c++){const s=Math.max(-1,Math.min(1,chs[c][i]*k));v.setInt16(o,s<0?s*32768:s*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},8000);}
+$('bExpMix').onclick=()=>{if(!voc)return;msg('m5','بجهّز الملف…');setTimeout(()=>{const n=Math.max(inst?inst[0].length:0,vlen()),L=new Float32Array(n),R=new Float32Array(n);
+  [inst,voc].forEach(s=>{if(!s)return;for(let i=0;i<s[0].length;i++){L[i]+=s[0][i];R[i]+=s[1][i];}});dl(wavBlob([L,R]),'song-fixed.wav');msg('m5','✔ اتحمّل song-fixed.wav');},50);};
+$('bExpVoc').onclick=()=>{if(!voc)return;dl(wavBlob(voc),'vocals-fixed.wav');msg('m5','✔ اتحمّل vocals-fixed.wav');};
+
+// ---------- Labels ----------
+function lbl(){$('vPre').textContent=$('rPre').value+' ث';$('vGuide').textContent=$('rGuide').value+'%';$('vLead').textContent=$('rLead').value+' ث';
+  const o=+$('rOff').value;$('vOff').textContent=(o>0?'+':'')+o+' ms';const g=+$('rGain').value;$('vGain').textContent=(g>0?'+':'')+g+' dB';
+  $('vCf').textContent=$('rCf').value+' ms';$('vRev').textContent=$('rRev').value+'%';}
+['rPre','rGuide','rLead','rCf'].forEach(id=>$(id).oninput=lbl);
+$('rOff').oninput=()=>{lbl();draw();};$('rGain').oninput=()=>{lbl();draw();};
+$('bAlign').onclick=()=>{if(!take){msg('m4','سجّل أو ارفع صوتك الأول.',true);return;}const d=autoAlign(0.4);draw();msg('m4','🎯 اتحرك صوتك '+(d>=0?'+':'')+Math.round(d*1000)+' ملّي ثانية.');};
+$('bAutoGain').onclick=()=>{autoGain();msg('m4','🔊 اتظبط العلوّ على '+$('rGain').value+' dB.');};
+lbl();draw();
+</script>
+</body>
+</html>
