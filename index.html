@@ -1098,12 +1098,18 @@ async function backupData(silentEp){if(S.shots.length||S.epId)await epSave(true)
  const imgs={};for(const [k,v] of await kvAll('imgs'))imgs[k]=await ser(v);
  const prod={};for(const [k,v] of await kvAll('prod')){const o={};for(const f of ['img','last'])if(v&&v[f])o[f]=(await ser([v[f]]))[0];prod[k]=o}
  const eps=(await kvAll('eps')).map(x=>x[1]);let tpls=[];try{tpls=uTpls()}catch(e){}
- return {type:'studio-backup',v:1,at:Date.now(),project:JSON.stringify(S),chars:libAll(),places:plAll(),imgs,prod,eps,tpls,rules:xpAll(),props:prAll(),movetpl:(()=>{try{return JSON.parse(localStorage.getItem('studio_movetpl')||'[]')}catch(e){return []}})()}}
+ const projs={};try{for(const n of pjList()){if(n===pjName())continue;const raw=await pjGet(n);if(raw)projs[n]=raw}}catch(e){}
+ return {type:'studio-backup',v:1,at:Date.now(),project:JSON.stringify(S),projs,projlist:pjList(),chars:libAll(),places:plAll(),imgs,prod,eps,tpls,rules:xpAll(),props:prAll(),movetpl:(()=>{try{return JSON.parse(localStorage.getItem('studio_movetpl')||'[]')}catch(e){return []}})()}}
 async function fullBackup(){toast('جارٍ تجهيز النسخة الاحتياطية...');const d=await backupData();
  const nm='نسخة-الاستوديو-'+new Date().toISOString().slice(0,10)+'.json';const f=new File([JSON.stringify(d)],nm,{type:'application/json'});stamp();bkHide();
  if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:nm}).catch(()=>{});return}
  const u=URL.createObjectURL(f),l=document.createElement('a');l.href=u;l.download=nm;l.click();setTimeout(()=>URL.revokeObjectURL(u),3000);toast('تم تنزيل النسخة — ارفعها إلى Drive')}
-async function restoreData(d){const de=async a=>{const o=[];for(const x of a||[])o.push({name:x.name,type:x.type,blob:await (await fetch(x.data)).blob()});return o};
+async function restoreData(d){try{await pjSaveCur()}catch(e){}
+ // Other projects: add the missing ones, and replace a local copy only when the backup's copy is newer.
+ try{const ts=r=>{try{return +JSON.parse(r)._ts||0}catch(e){return 0}};for(const n in d.projs||{}){const cur=await pjGet(n);if(!cur||ts(d.projs[n])>ts(cur))await pjPut(n,d.projs[n])}
+  let inc='';try{inc=JSON.parse(d.project||'{}').projName||''}catch(e){}
+  pjSetList([...pjList(),...(d.projlist||[]),...Object.keys(d.projs||{}),...(inc?[inc]:[])].filter((x,i,a)=>x&&a.indexOf(x)===i))}catch(e){}
+ const de=async a=>{const o=[];for(const x of a||[])o.push({name:x.name,type:x.type,blob:await (await fetch(x.data)).blob()});return o};
  try{for(const k in d.imgs||{})await imgSet(k,await de(d.imgs[k]));
   for(const k in d.prod||{}){const v=d.prod[k],o={};for(const f2 of ['img','last'])if(v[f2])o[f2]=(await de([v[f2]]))[0];await kvSet('prod',k,o)}
   for(const e of d.eps||[])await kvSet('eps',e.id,e)}catch(e){toast('بعض الصور لم تُسترجع — المساحة غير كافية')}
