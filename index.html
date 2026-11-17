@@ -10,8 +10,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="الاستوديو">
-<title>استوديو الإخراج الذكي v3 - مدة لقطات مرنة وقوالب لكل أداة</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap">
+<title>استوديو الإخراج الذكي</title>
+<style>/* Cairo font, stored with the app so it works offline */
+@font-face{font-family:'Cairo';font-style:normal;font-weight:400 900;font-display:swap;src:url(fonts/cairo-arabic.woff2) format('woff2');unicode-range:U+0600-06FF, U+0750-077F, U+0870-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC7, U+10EC9-10EEE, U+10EF0-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1}
+@font-face{font-family:'Cairo';font-style:normal;font-weight:400 900;font-display:swap;src:url(fonts/cairo-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+@font-face{font-family:'Cairo';font-style:normal;font-weight:400 900;font-display:swap;src:url(fonts/cairo-latin.woff2) format('woff2');unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+</style>
 <style>
 :root{--bg:#090d16;--card:#131c2e;--panel:#1e293b;--accent:#10b981;--accent2:#059669;--blue:#3b82f6;--warn:#f59e0b;--bad:#ef4444;--text:#f8fafc;--muted:#94a3b8;--border:#334155}
 *{box-sizing:border-box;font-family:'Cairo','Noto Sans Arabic','Segoe UI',Tahoma,sans-serif}
@@ -92,7 +96,7 @@ body.simple #stFrame,body.simple #stPrompt{max-height:170px;overflow:auto}
 <button id="simpleBtn" onclick="setSimple(!document.body.classList.contains('simple'))"></button>
 <div class="container">
 <header>
- <h1>🎬 استوديو الإخراج الذكي v3</h1>
+ <h1>🎬 استوديو الإخراج الذكي</h1>
  <p>مدة لكل لقطة (من 1 ثانية حتى دقيقتين أو أكثر) • قوالب جاهزة لأدوات الفيديو • مراجعة السكريبت والفيديو عبر ChatGPT وGemini • حفظ تلقائي</p>
  <p style="color:#10b981;font-weight:700">الإصدار 51 — 13 نوفمبر: اختصار الجملة بنفس المعنى (الجملة الأساسية ظاهرة + الصياغة المعدلة في خانة مستقلة + «اختصر إلى») + اختصار الحوار للحلقة كلها + مسح النصوص + نسخ الحلقة كاملة</p>
 </header>
@@ -726,6 +730,8 @@ function impProj(inp){
 function save(){try{if(typeof gdDirty==='function')gdDirty();ensureUids();S._ts=Date.now();localStorage.setItem(LS,JSON.stringify(S));SV.ok=true;SV.err=''}catch(e){SV.ok=false;SV.err=String((e&&e.name)||e)}SV.at=Date.now();try{SV.ok?svQueue():svFlush()}catch(e){}svChip()}
 function getKey(){try{return localStorage.getItem(KS)||''}catch(e){return window.__k||''}}
 function setKey(v){try{localStorage.setItem(KS,v)}catch(e){window.__k=v}}
+// Media URLs put into the page: only our own image/video/audio data, blob or https links, quote-safe.
+function safeSrc(u){u=String(u==null?'':u).trim();return /^(data:(image|video|audio)\/|blob:|https:)/i.test(u)?esc(u):''}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function $(id){return document.getElementById(id)}
 const ARN={'لقطة':['لقطة واحدة','لقطتان','لقطات','لقطة'],'سطر':['سطر واحد','سطران','أسطر','سطرًا'],'جملة':['جملة واحدة','جملتان','جمل','جملة'],'كلمة':['كلمة واحدة','كلمتان','كلمات','كلمة'],'صورة':['صورة واحدة','صورتان','صور','صورة'],'شخصية':['شخصية واحدة','شخصيتان','شخصيات','شخصية'],'ثانية':['ثانية واحدة','ثانيتان','ثوانٍ','ثانية'],'فيديو':['فيديو واحد','فيديوهان','فيديوهات','فيديو'],'مؤثر':['مؤثر واحد','مؤثران','مؤثرات','مؤثرًا']};
@@ -789,7 +795,7 @@ async function ezFrefAdd(inp,cids,ang){const fs=[...inp.files];inp.value='';let 
 function ezFrefTog(id,cid){const f=frefAll().find(x=>x.id===id);if(!f)return;f.cids=f.cids||[];const k=f.cids.indexOf(cid);if(k>=0)f.cids.splice(k,1);else f.cids.push(cid);save();ezRender()}
 function ezFrefDel(id){if(!confirm('تمسح مرجع الكادر ده؟'))return;S.frefs=frefAll().filter(x=>x.id!==id);save();ezRender()}
 function ezFrefHTML(){const cs=S.chars.filter(c=>!c.vo&&c.name);return `<div class="ezc"><h4>🖼️ مرجع الكادر</h4><div class="ezm">صور المكان والشخصيات واقفين في أماكنهم الصح. علّم مين ظاهر في كل صورة، والأداة بتختار الصورة اللي فيها نفس شخصيات اللقطة. المكان وأماكن الوقوف بتتاخد من المرجع، والتعبير والحركة من أمر اللقطة. صورة من غير ما تعلّم حد = المكان فاضي، ودي بتستخدم لأي تركيبة مالهاش مرجع.</div>
- ${frefAll().map(f=>`<div style="display:flex;gap:8px;align-items:flex-start;border-top:1px dashed var(--border);margin-top:8px;padding-top:8px"><img src="${f.img}" style="width:84px;height:64px;object-fit:cover;border-radius:8px;flex:none"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;margin-bottom:4px">${esc(frefName(f))}</div><div style="display:flex;flex-wrap:wrap;gap:4px">${cs.map(c=>`<button class="ezb" style="margin:0;font-size:12px;padding:5px 8px;${(f.cids||[]).includes(c.id)?'background:#166534':''}" onclick="ezFrefTog('${f.id}','${c.id}')">${(f.cids||[]).includes(c.id)?'✓ ':''}${esc(c.name)}</button>`).join('')}<button class="ezb r" style="margin:0;font-size:12px;padding:5px 8px" onclick="ezFrefDel('${f.id}')">🗑️</button></div>${(f.cids||[]).length>1?`<select style="margin-top:6px;font-size:12px" onchange="ezFrefAng('${f.id}',this.value)"><option value="">الزاوية: من قدام</option>${(f.cids||[]).map(id=>{const c=cs.find(x=>x.id===id);return c?`<option value="ots:${id}" ${f.ang==='ots:'+id?'selected':''}>من ورا كتف ${esc(c.name)}</option>`:''}).join('')}</select>`:''}</div></div>`).join('')}
+ ${frefAll().map(f=>`<div style="display:flex;gap:8px;align-items:flex-start;border-top:1px dashed var(--border);margin-top:8px;padding-top:8px"><img src="${safeSrc(f.img)}" style="width:84px;height:64px;object-fit:cover;border-radius:8px;flex:none"><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;margin-bottom:4px">${esc(frefName(f))}</div><div style="display:flex;flex-wrap:wrap;gap:4px">${cs.map(c=>`<button class="ezb" style="margin:0;font-size:12px;padding:5px 8px;${(f.cids||[]).includes(c.id)?'background:#166534':''}" onclick="ezFrefTog('${f.id}','${c.id}')">${(f.cids||[]).includes(c.id)?'✓ ':''}${esc(c.name)}</button>`).join('')}<button class="ezb r" style="margin:0;font-size:12px;padding:5px 8px" onclick="ezFrefDel('${f.id}')">🗑️</button></div>${(f.cids||[]).length>1?`<select style="margin-top:6px;font-size:12px" onchange="ezFrefAng('${f.id}',this.value)"><option value="">الزاوية: من قدام</option>${(f.cids||[]).map(id=>{const c=cs.find(x=>x.id===id);return c?`<option value="ots:${id}" ${f.ang==='ots:'+id?'selected':''}>من ورا كتف ${esc(c.name)}</option>`:''}).join('')}</select>`:''}</div></div>`).join('')}
  <label class="ezb bl" style="display:block;text-align:center;margin-top:8px">➕ ارفع مرجع كادر<input type="file" accept="image/*" multiple style="display:none" onchange="ezFrefAdd(this)"></label></div>`}
 function mentionedChars(s){const raw=[s.descAr,s.holdAr,s.frontAr,s.facingAr,s.behindAr].filter(Boolean).join(' . ');if(!raw)return [];
  if(/خارج الكادر|خارج الشاشة|برا الكادر|بره الكادر|بعيد عن الكادر|صوته فقط|off.?screen/i.test(raw))return [];
@@ -903,7 +909,7 @@ function renderChars(){
   </details>
   ${S.chars.length>2?`<button class="mini" onclick="delChar(${i})">حذف الشخصية</button>`:''}
  </div>`).join('');
- try{S.chars.forEach((c,i)=>{if(CIMG[c.id])cpPrev(i);else if(c.img){const d=$('cpPrev'+i);if(d)d.innerHTML='<img src="'+c.img+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #334155">'}})}catch(e){}
+ try{S.chars.forEach((c,i)=>{if(CIMG[c.id])cpPrev(i);else if(c.img){const d=$('cpPrev'+i);if(d)d.innerHTML='<img src="'+safeSrc(c.img)+'" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid #334155">'}})}catch(e){}
  try{libRender()}catch(e){}
 }
 function idb(){return new Promise((r,j)=>{const q=indexedDB.open('studio_charimg',2);q.onupgradeneeded=()=>{const d=q.result;['imgs','prod','eps'].forEach(n=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n)})};q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error)})}
@@ -917,8 +923,8 @@ async function libImgDel(id,k){if(!confirm('حذف هذه الصورة من ال
 async function libShare(id){const e=libGet(id);const a=await imgGet(id);if(!a.length){toast('لا توجد صور محفوظة لهذه الشخصية');return}const fs=toFiles(a,e.name);
  try{if(navigator.canShare&&navigator.canShare({files:fs})){await navigator.share({files:fs,title:'شيت '+e.name});return}}catch(x){if(x&&x.name==='AbortError')return}libDown(id)}
 async function libDown(id){const e=libGet(id);const a=await imgGet(id);toFiles(a,e.name).forEach((f,k)=>setTimeout(()=>{const u=URL.createObjectURL(f),l=document.createElement('a');l.href=u;l.download=f.name;l.click();setTimeout(()=>URL.revokeObjectURL(u),3000)},k*400));toast('جارٍ تنزيل '+arN(a.length,'صورة')+'')}
-function libView(u){const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:#000d;z-index:9999;display:flex;align-items:center;justify-content:center';o.innerHTML='<img src="'+u+'" style="max-width:96%;max-height:92%;border-radius:8px">';o.onclick=()=>o.remove();document.body.appendChild(o)}
-async function libGallery(id){const g=$('lg_'+id);if(!g)return;const a=await imgGet(id);g.innerHTML=a.length?a.map((x,k)=>{const u=URL.createObjectURL(x.blob);return `<div style="position:relative"><img src="${u}" onclick="libView('${u}')" style="width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid #334155;cursor:zoom-in"><button class="mini" style="position:absolute;top:2px;left:2px;padding:0 5px" onclick="libImgDel('${id}',${k})">✕</button></div>`}).join(''):'<span class="hint">لا صور بعد — أضف الشيت والزوايا</span>'}
+function libView(u){const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:#000d;z-index:9999;display:flex;align-items:center;justify-content:center';o.innerHTML='<img src="'+safeSrc(u)+'" style="max-width:96%;max-height:92%;border-radius:8px">';o.onclick=()=>o.remove();document.body.appendChild(o)}
+async function libGallery(id){const g=$('lg_'+id);if(!g)return;const a=await imgGet(id);g.innerHTML=a.length?a.map((x,k)=>{const u=URL.createObjectURL(x.blob);return `<div style="position:relative"><img src="${safeSrc(u)}" onclick="libView('${u}')" style="width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid #334155;cursor:zoom-in"><button class="mini" style="position:absolute;top:2px;left:2px;padding:0 5px" onclick="libImgDel('${id}',${k})">✕</button></div>`}).join(''):'<span class="hint">لا صور بعد — أضف الشيت والزوايا</span>'}
 const b64=bl=>new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(bl)});
 const LIBK='studio_charlib_v1';
 function libAll(){try{return JSON.parse(localStorage.getItem(LIBK)||'[]')}catch(e){return[]}}
@@ -939,7 +945,7 @@ function libEdit(id,f,v){const a=libAll();const e=a.find(x=>x.lib===id);if(!e)re
 function libDel(id){const e=libGet(id);if(!e||!confirm('حذف «'+e.name+'» من المكتبة؟ (لا تُحذف من العمل الحالي)'))return;libPut(libAll().filter(x=>x.lib!==id));imgDelAll(id);libRender();renderChars()}
 function libRender(){const d=$('libList');if(!d)return;const a=libAll();
  d.innerHTML=a.length?a.map(e=>`<div style="display:flex;gap:8px;align-items:center;border:1px solid #334155;border-radius:10px;padding:6px;margin:6px 0">
-  ${e.img?`<img src="${e.img}" style="width:56px;height:56px;object-fit:cover;border-radius:8px">`:'<div style="width:56px;height:56px;border-radius:8px;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:24px">🧍</div>'}
+  ${e.img?`<img src="${safeSrc(e.img)}" style="width:56px;height:56px;object-fit:cover;border-radius:8px">`:'<div style="width:56px;height:56px;border-radius:8px;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:24px">🧍</div>'}
   <div style="flex:1;min-width:0"><b>${esc(e.name)}</b>${e.vo?' 🎤':''}<div class="hint" style="margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(e.shortAr||'')} — ${esc((e.voiceAr||'').slice(0,60))}</div></div>
   <button class="mini" onclick="libUse('${e.lib}')">➕ استدعاء</button><button class="mini" onclick="libDel('${e.lib}')">🗑️</button></div>
   <details style="margin:-2px 0 4px 0;padding:0 6px"><summary style="cursor:pointer" class="hint">✏️ تعديل بيانات «${esc(e.name)}» في المكتبة</summary>
@@ -995,7 +1001,7 @@ function plEdit(id,f,v){const a=plAll();const e=a.find(x=>x.lib===id);if(!e)retu
 function plDel(id){const e=plGet(id);if(!e||!confirm('حذف «'+e.name+'» من مكتبة الأماكن؟'))return;plPut(plAll().filter(x=>x.lib!==id));imgDelAll(id);if(S.placeLib===id){S.placeLib='';save()}plRender()}
 function plRender(){const d=$('plList');if(!d)return;const a=plAll();
  d.innerHTML=a.length?a.map(e=>`<div style="border:1px solid ${S.placeLib===e.lib?'#10b981':'#334155'};border-radius:10px;padding:6px;margin:6px 0">
-  <div style="display:flex;gap:8px;align-items:center">${e.img?`<img src="${e.img}" style="width:56px;height:56px;object-fit:cover;border-radius:8px">`:'<div style="width:56px;height:56px;border-radius:8px;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:24px">📍</div>'}
+  <div style="display:flex;gap:8px;align-items:center">${e.img?`<img src="${safeSrc(e.img)}" style="width:56px;height:56px;object-fit:cover;border-radius:8px">`:'<div style="width:56px;height:56px;border-radius:8px;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:24px">📍</div>'}
   <div style="flex:1;min-width:0"><b>${esc(e.name)}</b>${S.placeLib===e.lib?' <span class="hint">(المكان الحالي)</span>':''}<div class="hint" style="margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(e.settingAr||'')}</div></div>
   <button class="mini" onclick="plUse('${e.lib}')">➕ استدعاء</button><button class="mini" onclick="plDel('${e.lib}')">🗑️</button></div>
   <details><summary class="hint" style="cursor:pointer">✏️ تعديل البيانات</summary>
@@ -1059,7 +1065,7 @@ function pbRender(){const o=$('pbOv');if(!o)return;build();const c=pbCount(),n=S
     <button class="b green" onclick="shareShot(${i},'video')">📤 أمر الفيديو + صورة البداية</button>
     <button class="b gray" onclick="pbClose();cur=${i};tab(2)">✏️ تعديل اللقطة كاملة</button></div></div>`}).join('')}<div class="btns"><button class="b green" onclick="pbClose();mOpen()">🎬 المونتاج النهائي + الموسيقى والمؤثرات</button></div>`;
  list.forEach(({s,i})=>pbThumbs(i))}
-async function pbThumbs(i){const p=await prodGet(S.shots[i].uid);['img','last'].forEach(k=>{const d=$('pb_'+k+'_'+i);if(!d)return;if(p[k]){const u=URL.createObjectURL(p[k].blob);d.innerHTML=`<img src="${u}" onclick="libView('${u}')" style="max-width:100%;max-height:100%;cursor:zoom-in">`}})}
+async function pbThumbs(i){const p=await prodGet(S.shots[i].uid);['img','last'].forEach(k=>{const d=$('pb_'+k+'_'+i);if(!d)return;if(p[k]){const u=URL.createObjectURL(p[k].blob);d.innerHTML=`<img src="${safeSrc(u)}" onclick="libView('${u}')" style="max-width:100%;max-height:100%;cursor:zoom-in">`}})}
 function pbSet(i,f,v){S.shots[i][f]=v;save();if(f==='st'||f==='text'){if(f==='text')build();pbRender()}}
 async function pbImg(i,k,el){const f=el.files[0];el.value='';if(!f)return;ensureUids();const u=S.shots[i].uid;const p=await prodGet(u);p[k]={name:f.name,type:f.type,blob:f};try{await kvSet('prod',u,p)}catch(e){toast('المساحة غير كافية');return}
  const s=S.shots[i];if(k==='img'&&(!s.st||s.st==='todo'))s.st='img';if(k==='last'&&s.st!=='redo')s.st='vid';save();pbRender();toast('تم الحفظ ✓')}
@@ -1115,11 +1121,11 @@ function gdPut(o){const c=Object.assign(gdCfg(),o);try{localStorage.setItem(GDK,
 function gdDirty(){GD.dirty=true}
 function gdOK(){return GD.tok&&Date.now()<GD.exp-60000}
 function gdLoadGIS(){return new Promise((r,j)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return r();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=()=>r();s.onerror=()=>j(new Error('تعذر تحميل خدمة تسجيل جوجل — تأكد من الإنترنت'));document.head.appendChild(s)})}
-async function gdConnect(){const cid=(gdCfg().cid||'').trim();if(!/\.apps\.googleusercontent\.com$/.test(cid)){toast('الصق «Client ID» أولًا (ينتهي بـ apps.googleusercontent.com)');return false}
- try{await gdLoadGIS()}catch(e){toast(e.message);return false}
+async function gdConnect(silent){const cid=(gdCfg().cid||'').trim();if(!/\.apps\.googleusercontent\.com$/.test(cid)){if(!silent)toast('الصق «Client ID» أولًا (ينتهي بـ apps.googleusercontent.com)');return false}
+ try{await gdLoadGIS()}catch(e){if(!silent)toast(e.message);return false}
  return new Promise(res=>{GD.client=google.accounts.oauth2.initTokenClient({client_id:cid,scope:'https://www.googleapis.com/auth/drive.file',
-  callback:async t=>{if(t&&t.access_token){GD.tok=t.access_token;GD.exp=Date.now()+(+t.expires_in||3600)*1000;gdPut({linked:1});gdStatus('✓ متصل بـ Google Drive');res(true);try{await gdFind();await gdCheckRemote(true)}catch(e){}}else{gdStatus('لم يتم الربط');res(false)}},
-  error_callback:e=>{gdStatus('لم يتم الربط: '+((e&&e.type)||'أُغلقت النافذة'));res(false)}});GD.client.requestAccessToken({prompt:gdCfg().linked?'':'consent'})})}
+  callback:async t=>{if(t&&t.access_token){GD.tok=t.access_token;GD.exp=Date.now()+(+t.expires_in||3600)*1000;gdPut({linked:1});gdStatus('✓ متصل بـ Google Drive');res(true);try{await gdFind();await gdCheckRemote(true)}catch(e){}}else{if(!silent)gdStatus('لم يتم الربط');res(false)}},
+  error_callback:e=>{if(!silent)gdStatus('لم يتم الربط: '+((e&&e.type)||'أُغلقت النافذة'));res(false)}});GD.client.requestAccessToken({prompt:silent?'none':(gdCfg().linked?'':'consent')})})}
 async function gdFetch(url,opt){opt=opt||{};opt.headers=Object.assign({Authorization:'Bearer '+GD.tok},opt.headers||{});const r=await fetch(url,opt);if(r.status===401){GD.tok='';gdStatus('انتهت الجلسة — اضغط «🔗 ربط» مرة أخرى');throw new Error('401')}if(!r.ok)throw new Error('Drive '+r.status+': '+(await r.text()).slice(0,140));return r}
 async function gdFind(){const c=gdCfg();if(c.fileId){try{const r=await gdFetch(GDAPI+'/drive/v3/files/'+c.fileId+'?fields=id,modifiedTime,size,trashed');const j=await r.json();if(!j.trashed)return j}catch(e){if(e.message==='401')throw e}}
  const q=encodeURIComponent(`name='${GDN}' and trashed=false`);const r=await gdFetch(GDAPI+'/drive/v3/files?q='+q+'&orderBy=modifiedTime%20desc&fields=files(id,modifiedTime,size)&spaces=drive');const j=await r.json();const f=(j.files||[])[0];gdPut({fileId:f?f.id:''});return f||null}
@@ -1148,6 +1154,11 @@ document.addEventListener('visibilitychange',()=>{const c=gdCfg();if(document.vi
 svGetIdb().then(raw=>{let o=null;try{o=raw&&JSON.parse(raw)}catch(e){}
  if(o&&(o._ts||0)>(SV.loadTs||0)){S=fromSaved(o);SV.ready=true;save();try{if(document.body.classList.contains('ezon'))ezRender();else{renderChars();renderShots()}}catch(e){}toast('اترجعت آخر نسخة محفوظة ✓')}else{SV.ready=true;svFlush()}});
 document.addEventListener('click',e=>{try{const c=gdCfg();if(c.auto==='1'&&c.cid&&c.linked&&!gdOK()&&!GD.busy&&GD.dirty&&Date.now()-(GD.lastTry||0)>120000){GD.lastTry=Date.now();gdConnect().then(ok=>{if(ok)gdUpload()})}}catch(x){}},true);
+/* تجديد تلقائي صامت للربط بـ Drive (عند الفتح، والرجوع للتطبيق، وكل فترة) */
+async function gdSilent(){try{const c=gdCfg();if(!c.cid||!c.linked||gdOK()||GD.busy||GD.silentBusy||Date.now()-(GD.silentAt||0)<20000)return;GD.silentBusy=true;GD.silentAt=Date.now();const ok=await Promise.race([gdConnect(true),new Promise(r=>setTimeout(()=>r(false),8000))]);if(ok&&GD.dirty)gdUpload()}catch(e){}GD.silentBusy=false}
+setTimeout(gdSilent,1500);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')gdSilent()});
+setInterval(gdSilent,300000);
 /* ---------- backup reminder ---------- */
 function bkHide(){const b=$('bkBar');if(b)b.remove()}
 function bkLater(){try{localStorage.setItem('studio_bkSnooze',Date.now()+3*864e5)}catch(e){}bkHide()}
@@ -1335,7 +1346,7 @@ function lvRender(){const o=$('lvOv');if(!o)return;const c=lvCfg(),L=lvLines(),T
   <div class="hint">${LV.imgs.length?LV.imgs.length+' صورة مختارة'+(LV.imgs.length>1?' — تتبدّل بالتساوي على طول الأغنية':''):'لم تختر صورة بعد (بدونها خلفية داكنة)'}</div>
   <label>② ملف الأغنية (mp3 / m4a / wav):</label>
   <input type="file" accept="audio/*" onchange="lvPickAudio(this)"><div class="hint">${LV.audio?'✓ '+esc(LV.audio.name):'بدون أغنية يخرج الفيديو صامتًا بالتوقيتات المحسوبة'}</div>
-  <audio id="lvAud" controls style="width:100%;margin-top:6px;${LV.url?'':'display:none'}" src="${LV.url}"></audio></div>
+  <audio id="lvAud" controls style="width:100%;margin-top:6px;${LV.url?'':'display:none'}" src="${safeSrc(LV.url)}"></audio></div>
  <div class="char"><label>③ التوقيت:</label>
   <p class="hint">«🤖 آلي» يحلل الصوت ويحدد بداية ونهاية كل سطر وبداية ونهاية الأغنية. «🎯 هجين» للأغاني ذات الموسيقى العالية: انقر مع بداية كل سطر تقريبًا، والاستوديو يضبط كل نقرة على بداية الصوت الفعلية. بعدها راجع الأسطر المعلّمة ⚠️ فقط.</p>
   <label>بداية الغناء بعد (ثانية) — للتوقيت التلقائي:</label><input type="number" step="0.1" value="${c.offset}" onchange="lvCfg().offset=+this.value;save();lvRender()">
@@ -2754,8 +2765,8 @@ function frameBox(i){
  const s=S.shots[i];const id=fidOf(s);const mine=FR[id];
  const prev=i>0?FR[S.shots[i-1]&&S.shots[i-1].fid]:null;
  let html=`<div class="frbox"><strong>🎞️ آخر إطار من هذه اللقطة:</strong><br><label class="b blue" style="display:block;text-align:center;cursor:pointer;margin:6px 0;padding:12px">📂 ارفع فيديو هذه اللقطة (من موبايلك)<input type="file" accept="video/*" style="display:none" onchange="pickVid(${i},this)"></label>`;
- if(mine)html+=`<img src="${mine.url}" alt="آخر إطار"><button type="button" class="mini" onclick="saveFrame(${i})">💾 حفظ الصورة</button><button type="button" class="mini" onclick="shareFrame(${i})">📤 مشاركة</button><span style="color:var(--muted)"> — استخدمها كإطار أول للقطة التالية</span>`;
- if(prev)html+=`<div style="margin-top:8px;border-top:1px dashed var(--border);padding-top:6px"><strong>⏮️ الإطار الأول لهذه اللقطة</strong> (آخر إطار من لقطة ${i}):<img src="${prev.url}" alt="الإطار الأول"><button type="button" class="mini" onclick="saveFrame(${i-1})">💾 حفظ الصورة</button><button type="button" class="mini" onclick="shareFrame(${i-1})">📤 مشاركة</button></div>`;
+ if(mine)html+=`<img src="${safeSrc(mine.url)}" alt="آخر إطار"><button type="button" class="mini" onclick="saveFrame(${i})">💾 حفظ الصورة</button><button type="button" class="mini" onclick="shareFrame(${i})">📤 مشاركة</button><span style="color:var(--muted)"> — استخدمها كإطار أول للقطة التالية</span>`;
+ if(prev)html+=`<div style="margin-top:8px;border-top:1px dashed var(--border);padding-top:6px"><strong>⏮️ الإطار الأول لهذه اللقطة</strong> (آخر إطار من لقطة ${i}):<img src="${safeSrc(prev.url)}" alt="الإطار الأول"><button type="button" class="mini" onclick="saveFrame(${i-1})">💾 حفظ الصورة</button><button type="button" class="mini" onclick="shareFrame(${i-1})">📤 مشاركة</button></div>`;
  else if(i>0)html+=`<div style="margin-top:6px;color:var(--muted)">⏮️ الإطار الأول: ارفع فيديو لقطة ${i} ليظهر هنا.</div>`;
  return html+'</div>';
 }
@@ -3166,7 +3177,7 @@ async function ezSaveC(i){await libSave(i);ezRender()}
 function ezNewC(){S.chars.push({id:'c'+Date.now(),name:'شخصية جديدة',ar:'',shortAr:'',side:'',voiceAr:'',toneAr:''});save();schedTr();ezRender()}
 function ezDelC(i){const c=S.chars[i];if(S.shots.some(s=>s.cid===c.id)){toast('الشخصية مستخدمة في لقطات — غيّرها في اللقطات الأول');return}if(!confirm('حذف «'+(c.name||'')+'» من الحلقة؟ (بتفضل في المكتبة لو محفوظة)'))return;S.chars.splice(i,1);save();ezRender()}
 /* شيت الأماكن والأدوات */
-function ezThumb(src,title){return src?`<img src="${src}" title="${esc(title||'')}" onclick="libView('${src}')" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border)">`:'<div class="ezth" style="width:72px;height:72px;aspect-ratio:auto">بدون صورة</div>'}
+function ezThumb(src,title){return src?`<img src="${safeSrc(src)}" title="${esc(title||'')}" onclick="libView('${src}')" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border)">`:'<div class="ezth" style="width:72px;height:72px;aspect-ratio:auto">بدون صورة</div>'}
 function ezSheetBox(src,title,up,share,save,lib,dk,dkk){return `<div style="display:flex;gap:10px;align-items:center;margin:6px 0">${ezThumb(src,title)}<div style="flex:1">
  <label class="ezb ${src?'':'bl'}" style="display:block;font-size:13px;padding:8px;margin:2px 0">📷 ${src?'تغيير الصورة':'ارفع صورة مرجعية'}<input type="file" accept="image/*" multiple style="display:none" onchange="${up}"></label>
  ${lib?`<button class="ezb" style="width:100%;box-sizing:border-box;font-size:13px;padding:8px;margin:2px 0" onclick="${share}">📤 شارك الصورة</button>`:''}
@@ -3272,8 +3283,8 @@ async function ezRefs(i){build();const pr=((rows[i]&&rows[i].framePrompt)||'').t
  fs.forEach((f,k)=>setTimeout(()=>{const u=URL.createObjectURL(f),l=document.createElement('a');l.href=u;l.download=f.name;l.click();setTimeout(()=>URL.revokeObjectURL(u),3000)},k*400));toast('بنزّل '+fs.length+' صورة مرجع')}
 function ezCmp(i){const s=S.shots[i],u=ezImg(s);const cs=ezShotChars(i);const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:#000e;z-index:80;overflow:auto;padding:12px;color:#fff';o.onclick=()=>o.remove();
  o.innerHTML=`<div style="text-align:center;margin-bottom:8px">لقطة ${i+1} — قارن بالشيت: الوش، العلامات وناحيتها، الألوان، الحجم • اضغط للقفل</div>
- <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${u?`<img src="${u}" style="max-width:62%;max-height:80vh;border-radius:8px">`:''}
- <div style="display:flex;flex-direction:column;gap:8px;max-width:34%">${cs.map(c=>({n:c.name,src:c.img})).concat([(()=>{const pl=ezShotPl(i);return {n:'📍 '+(pl.name||''),src:ezPlImgSrc(pl.lib)}})()]).concat(ezShotPr(i).map(p=>({n:'🧰 '+(p.name||''),src:ezPrImgSrc(p.lib)}))).map(x=>x.src?`<div><img src="${x.src}" style="width:100%;border-radius:8px"><div style="font-size:12px;text-align:center">${esc(x.n||'')}</div></div>`:`<div style="font-size:12px">${esc(x.n||'')}: بدون صورة</div>`).join('')}</div></div>`;document.body.appendChild(o)}
+ <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">${u?`<img src="${safeSrc(u)}" style="max-width:62%;max-height:80vh;border-radius:8px">`:''}
+ <div style="display:flex;flex-direction:column;gap:8px;max-width:34%">${cs.map(c=>({n:c.name,src:c.img})).concat([(()=>{const pl=ezShotPl(i);return {n:'📍 '+(pl.name||''),src:ezPlImgSrc(pl.lib)}})()]).concat(ezShotPr(i).map(p=>({n:'🧰 '+(p.name||''),src:ezPrImgSrc(p.lib)}))).map(x=>x.src?`<div><img src="${safeSrc(x.src)}" style="width:100%;border-radius:8px"><div style="font-size:12px;text-align:center">${esc(x.n||'')}</div></div>`:`<div style="font-size:12px">${esc(x.n||'')}: بدون صورة</div>`).join('')}</div></div>`;document.body.appendChild(o)}
 /* قوالب حركة مجرّبة */
 function tplAll(){try{return JSON.parse(localStorage.getItem('studio_movetpl')||'[]')}catch(e){return []}}
 function tplPut(a){try{localStorage.setItem('studio_movetpl',JSON.stringify(a))}catch(e){}}
@@ -3292,7 +3303,7 @@ function ez0(){
  <label class="ezb" style="display:block">♻️ استرجاع نسخة كاملة<input type="file" accept=".json,application/json" style="display:none" onchange="fullRestore(this)"></label>
  <button class="ezb" style="width:100%;box-sizing:border-box;color:#fcd34d" onclick="ezNewEp()">🆕 حلقة جديدة (بنفس الشخصيات)</button></div>`+pjHTML()+ezGdHTML()+(ezTy().chars?ezCSHTML():'')+
  S.chars.map((c,i)=>`<div class="ezc"><div class="ezh"><h4 style="margin:0;flex:1">🎭 ${esc(c.name||'شخصية')}</h4>${c.lib?'<span class="ezm" style="font-size:12px">💾 في المكتبة</span>':''}<button class="ezb r" onclick="ezDelC(${i})">🗑️</button></div>
- <div style="display:flex;gap:10px;align-items:center;margin:6px 0">${c.img?`<img src="${c.img}" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border)" onclick="libView('${c.img}')">`:'<div class="ezth" style="width:72px;height:72px;aspect-ratio:auto">بدون شيت</div>'}
+ <div style="display:flex;gap:10px;align-items:center;margin:6px 0">${c.img?`<img src="${safeSrc(c.img)}" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border)" onclick="libView('${c.img}')">`:'<div class="ezth" style="width:72px;height:72px;aspect-ratio:auto">بدون شيت</div>'}
  <div style="flex:1"><label class="ezb ${c.img?'':'bl'}" style="display:block;font-size:13px;padding:8px;margin:2px 0">📷 ${c.img?'تغيير الشيت':'ارفع الشيت'}<input type="file" accept="image/*" multiple style="display:none" onchange="ezSheet(${i},this)"></label>
  ${c.lib?`<button class="ezb" style="width:100%;box-sizing:border-box;font-size:13px;padding:8px;margin:2px 0" onclick="ezCShare(${i})">📤 شارك الشيت</button>`:''}
  ${(c.ar||'').trim()&&!c.vo?`<button class="ezb" style="width:100%;box-sizing:border-box;font-size:13px;padding:8px;margin:2px 0;color:#7dd3fc" onclick="ezCopy(ezSheetP(${i}),'تم نسخ أمر صورة «${esc(c.name||'')}» — الصقه في Gemini أو ChatGPT ✓')">🧍 نسخ أمر صورة الشخصية (Gemini / ChatGPT)</button><div class="ezm" style="font-size:12px">بعد ما تولّد الصورة ارفعها من «📷 ارفع الشيت».</div>`:''}
@@ -3331,7 +3342,7 @@ function ez0(){
 }
 
 
-const APPV='html33';
+const APPV='html34';
 async function pjDup(){const n=(prompt('اسم النسخة الجديدة من «'+pjName()+'»',pjName()+' (نسخة ٢)')||'').trim();if(!n)return;if(pjList().includes(n)){alert('فيه مشروع بنفس الاسم');return}
  try{await pjSaveCur()}catch(e){alert('تعذر حفظ المشروع الحالي');return}ezBusy('⏳ بعمل نسخة من المشروع والصور…');
  const f=JSON.parse(JSON.stringify(S));f.projName=n;f.epTitle=n;f.epId='';
@@ -3341,7 +3352,7 @@ async function ezThumb(u,w){return new Promise(r=>{if(!u)return r('');const im=n
 async function ezClient(){if(!S.shots.length){alert('مفيش لقطات لسه');return}ezBusy('⏳ بجهّز نسخة العميل…');
  const e=x=>esc(String(x||'')).replace(/\n/g,'<br>');const rowsH=[];
  for(let i=0;i<S.shots.length;i++){const sh=S.shots[i],im=await ezThumb(ezImg(sh),520);const emo=EMO[sh.emo]&&sh.emo!=='auto'?EMO[sh.emo].ar:'';
-  rowsH.push(`<div class="sh"><div class="hd">لقطة ${i+1} • ${+sh.dur||0} ثانية${emo?' • '+e(emo):''}</div>${im?`<img src="${im}">`:'<div class="noimg">الصورة لسه ما اتعملتش</div>'}
+  rowsH.push(`<div class="sh"><div class="hd">لقطة ${i+1} • ${+sh.dur||0} ثانية${emo?' • '+e(emo):''}</div>${im?`<img src="${safeSrc(im)}">`:'<div class="noimg">الصورة لسه ما اتعملتش</div>'}
   <p><b>المشهد:</b> ${e(sh.descAr)}</p>${(sh.text||'').trim()?`<p><b>${sh.cid&&ezChName(sh.cid)!=='—'?e(ezChName(sh.cid)):'الكلام'}:</b> ${e(sh.text)}</p>`:''}${(sh.osAr||'').trim()?`<p><b>على الشاشة:</b> ${e(sh.osAr)}</p>`:''}${(sh.sfx||'').trim()?`<p class="m"><b>الصوت:</b> ${e(sh.sfx)}</p>`:''}<div class="ok">☐ موافق &nbsp;&nbsp; ☐ محتاج تعديل: ..................................</div></div>`)}
  const h=`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${e(pjName())} — عرض للموافقة</title>
 <style>body{font-family:Tahoma,Arial,sans-serif;background:#f6f7f9;color:#111;margin:0;padding:16px;line-height:1.7}h1{font-size:22px;margin:0 0 4px}.sub{color:#555;margin-bottom:14px}.sh{background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;margin:0 auto 14px;max-width:560px;page-break-inside:avoid}.hd{font-weight:700;color:#0b6b4f;margin-bottom:6px}img{width:100%;border-radius:8px;display:block}.noimg{background:#eee;padding:40px;text-align:center;color:#777;border-radius:8px}p{margin:6px 0}.m{color:#555;font-size:14px}.ok{margin-top:8px;border-top:1px dashed #ccc;padding-top:6px;color:#333}.sc{background:#fff;border:1px solid #ddd;border-radius:12px;padding:12px;max-width:560px;margin:0 auto 14px;white-space:pre-wrap}</style></head><body>
@@ -3826,7 +3837,7 @@ async function ezAIQApaste(i){let t='';try{t=await navigator.clipboard.readText(
 function ezQA(i){build();const s=S.shots[i],u=ezImg(s);const st=ezQAstrict(i);const o=document.createElement('div');o.id='ezQA';o.style.cssText='position:fixed;inset:0;background:#000d;z-index:90;overflow:auto;padding:12px;color:#fff';
  const it=(t,k)=>`<label style="display:flex;gap:8px;align-items:flex-start;margin:7px 0;font-size:14px"><input type="checkbox" class="qa" style="width:20px;height:20px;flex:none">${t}</label>`;
  o.innerHTML=`<div style="max-width:520px;margin:auto;background:#0f172a;border:1px solid #334155;border-radius:14px;padding:12px">
- <b style="font-size:16px">✅ فحص قبل الاعتماد — لقطة ${i+1}</b><div style="font-size:12px;color:#94a3b8">🤖 افحصها بالذكاء الاصطناعي، وهو اللي يحدد الخلل. بعد الرد انسخه والصقه هنا.</div>${u?`<img src="${u}" style="width:100%;max-height:38vh;object-fit:contain;margin:8px 0;border-radius:10px">`:''}
+ <b style="font-size:16px">✅ فحص قبل الاعتماد — لقطة ${i+1}</b><div style="font-size:12px;color:#94a3b8">🤖 افحصها بالذكاء الاصطناعي، وهو اللي يحدد الخلل. بعد الرد انسخه والصقه هنا.</div>${u?`<img src="${safeSrc(u)}" style="width:100%;max-height:38vh;object-fit:contain;margin:8px 0;border-radius:10px">`:''}
  <label style="display:flex;gap:8px;align-items:center;margin:6px 0;color:#fbbf24"><input type="checkbox" id="qaCover" ${s.cover?'checked':''} style="width:20px;height:20px"> ⭐ دي صورة الغلاف أو أول ٣ ثواني</label>
  <div id="qaList"></div>
  
@@ -3848,12 +3859,12 @@ function ez3(){build();const n=S.shots.filter(s=>ezImg(s)).length,ok=S.shots.fil
  <button class="ezb bl" onclick="ezAnPlay()">▶️ شغّل الحلقة كصور (${ezTot()} ث)</button>
  <button class="ezb" onclick="ezReport()">📊 تقرير الإنتاج${S.comp?' 🏆':''}</button></div>
  <div class="ezgrid">${S.shots.map((s,i)=>{const u=ezImg(s);return `<div class="ezc ${s.imgSt==='ok'?'ezimg-ok':s.imgSt==='fix'?'ezimg-fix':''}"><div class="ezh" style="margin-bottom:4px"><b>${i+1}</b><span class="ezm">${esc(ezChName(s.cid))} • ${s.dur}ث${ezPlName(s)?' • 📍'+esc(ezPlName(s)):''}</span></div>
- ${u?`<img class="ezth" src="${u}" onclick="ezCmp(${i})" title="قارن بالشيت">`:`<div class="ezth">لا توجد صورة</div>`}${u?'<div class="ezm" style="font-size:11px;text-align:center">اضغط الصورة للمقارنة بالشيت</div>':''}
+ ${u?`<img class="ezth" src="${safeSrc(u)}" onclick="ezCmp(${i})" title="قارن بالشيت">`:`<div class="ezth">لا توجد صورة</div>`}${u?'<div class="ezm" style="font-size:11px;text-align:center">اضغط الصورة للمقارنة بالشيت</div>':''}
  <div class="ezm" style="font-size:12px;max-height:54px;overflow:hidden;margin:4px 0">${esc(s.descAr||'')}</div>
  <textarea rows="2" style="width:100%;box-sizing:border-box;font-size:12px;border:1px solid #f59e0b;border-radius:8px;padding:6px;margin:2px 0" placeholder="👕 تغيير مؤقت في اللقطة دي بس (شكل، هدوم، حالة): مثلًا من غير نظارة، هدومه مبلولة، ماسك شنطة، وشه أحمر" onchange="ezSet(${i},'lookAr',this.value,true)">${esc(s.lookAr||'')}</textarea>
  ${(s.lookAr||'').trim()?`<div style="display:flex;gap:4px"><button class="ezb" style="flex:1;margin:2px 0;font-size:11px;padding:6px 4px" onclick="ezLookDown(${i})">⬇️ طبّقه على اللي بعدها</button><button class="ezb" style="flex:1;margin:2px 0;font-size:11px;padding:6px 4px" onclick="ezSet(${i},'lookAr','',true)">↩️ رجّع الشكل الأصلي</button></div>`:''}
  ${s.place?'':(()=>{const F=ezFrefOf(i);return F?'<div class="ezm" style="font-size:11px;color:'+(rows[i]&&rows[i].fmis?'#fcd34d':'#86efac')+'">🖼️ مرجع الكادر: '+esc(frefName(F))+(rows[i]&&rows[i].fmis?' — الزاوية المطلوبة (من ورا الكتف) مالهاش مرجع، اتبسّطت لزاوية المرجع. ارفع مرجع لها من خطوة ١':'')+'</div>':(frefAll().length?'<div class="ezm" style="font-size:11px;color:#fcd34d">⚠️ مفيش مرجع كادر للشخصيات دي</div>':'')})()}
- <div class="ezh" style="gap:3px">${ezShotChars(i).map(c=>c.img).concat([ezPlImgSrc(ezShotPl(i).lib)]).concat(ezShotPr(i).map(p=>ezPrImgSrc(p.lib))).filter(Boolean).map(src=>`<img src="${src}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid var(--border)">`).join('')}<span class="ezm" style="font-size:11px">المراجع</span></div>
+ <div class="ezh" style="gap:3px">${ezShotChars(i).map(c=>c.img).concat([ezPlImgSrc(ezShotPl(i).lib)]).concat(ezShotPr(i).map(p=>ezPrImgSrc(p.lib))).filter(Boolean).map(src=>`<img src="${safeSrc(src)}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid var(--border)">`).join('')}<span class="ezm" style="font-size:11px">المراجع</span></div>
  <button class="ezb" style="width:100%;box-sizing:border-box;font-size:13px;padding:8px" onclick="ezCopyF(${i})">📋 أمر الصورة</button>
  <button class="ezb" style="width:100%;box-sizing:border-box;font-size:13px;padding:8px" onclick="ezRefs(${i})">📤 صور المرجع + الأمر</button>
  ${u?`<div style="display:flex;gap:4px"><button class="ezb" style="flex:1;margin:2px 0;font-size:12px;padding:7px 4px;${s.imgSt==='ok'?'background:#166534':''}" onclick="ezImgSt(${i},'ok')">✅ معتمدة</button><button class="ezb" style="flex:1;margin:2px 0;font-size:12px;padding:7px 4px;${s.imgSt==='fix'?'background:#92400e':''}" onclick="ezImgSt(${i},'fix')">✏️ تعديل</button></div><div style="display:flex;gap:4px"><button class="ezb" style="flex:2;margin:2px 0;font-size:12px;padding:7px 4px;background:#1d4ed8" onclick="ezAIQA(${i})">🤖 فحص عميق</button><button class="ezb" style="flex:1;margin:2px 0;font-size:12px;padding:7px 4px;background:#334155" onclick="ezAIQApaste(${i})">📋 الصق النتيجة</button></div>${s.qa&&!s.qa.pass?'<div class="ezm" style="font-size:11px;color:#fbbf24">🤖 '+esc((s.qa.probs||'').split("\n")[0].slice(0,70))+'</div>':''}`:''}
@@ -3875,7 +3886,7 @@ function ezRulesLine(){const x=xpAll(),ks=Object.keys(x).filter(k=>RULES[k]);if(
 let ezAnT=null;
 function ezAnPlay(){const sh=S.shots;if(!sh.length)return;const o=$('ezAn');o.style.display='flex';let i=0;const tot=Math.max(1,sh.reduce((a,s)=>a+(+s.dur||3),0));let el=0;
  const step=()=>{if(i>=sh.length){ezAnStop();return}const s=sh[i],u=ezImg(s),d=(+s.dur||3)*1000;
-  $('ezAnBody').innerHTML=(u?`<img src="${u}">`:`<div class="blank">لقطة ${i+1}<br>بدون صورة</div>`)+`<div class="cap"><b>${i+1}/${sh.length}</b> • ${s.dur}ث — ${esc((s.descAr||'').slice(0,110))}</div>`;
+  $('ezAnBody').innerHTML=(u?`<img src="${safeSrc(u)}">`:`<div class="blank">لقطة ${i+1}<br>بدون صورة</div>`)+`<div class="cap"><b>${i+1}/${sh.length}</b> • ${s.dur}ث — ${esc((s.descAr||'').slice(0,110))}</div>`;
   const b=$('ezAnBar');b.style.transition='none';b.style.width=(el/tot*100)+'%';requestAnimationFrame(()=>{b.style.transition='width '+d+'ms linear';b.style.width=((el+(+s.dur||3))/tot*100)+'%'});
   el+=(+s.dur||3);i++;ezAnT=setTimeout(step,d)};step()}
 function ezAnStop(){clearTimeout(ezAnT);$('ezAn').style.display='none'}
@@ -3967,7 +3978,7 @@ function ez4(){
  build();EZ.cur=Math.max(0,Math.min(S.shots.length-1,EZ.cur));const i=EZ.cur,s=S.shots[i],r=rows[i],u=ezImg(s);
  const tr=(r.warn||[]).some(x=>/عربي/.test(x));if(tr&&typeof autoTr==='function')autoTr();
  return `<div class="eznums">${S.shots.map((x,k)=>`<button class="${k===i?'on':''}" style="border-color:${PST[x.st||'todo'].c}" onclick="ezCur(${k})">${k+1}</button>`).join('')}</div>
- <div class="ezc"><div style="display:flex;gap:10px">${u?`<a href="${u}" download="shot-${i+1}.png"><img src="${u}" style="width:84px;border-radius:8px"></a>`:''}
+ <div class="ezc"><div style="display:flex;gap:10px">${u?`<a href="${u}" download="shot-${i+1}.png"><img src="${safeSrc(u)}" style="width:84px;border-radius:8px"></a>`:''}
  <div><h3 style="margin:0 0 4px">لقطة ${i+1} من ${S.shots.length} — ${esc(ezChName(s.cid))} — ${r.dur} ث${ezPlName(s)?' — 📍'+esc(ezPlName(s)):''}</h3><div class="ezm">${esc(s.descAr||'')}</div>
  ${u?(s.imgSt==='ok'?'':`<div style="color:#fcd34d;font-size:13px">⚠️ الصورة لسه ما اتعتمدتش <button class="ezb" style="padding:4px 8px;font-size:12px" onclick="ezImgSt(${i},'ok')">✅ اعتمدها</button></div>`):'<div style="color:#fcd34d;font-size:13px">⚠️ مفيش صورة بداية — ارفعها من ستوري بورد</div>'}
  ${(s.osAr||'').trim()?'<div class="ezm" style="color:#93c5fd">🔤 نص الشاشة (يتضاف في المونتاج): '+esc(s.osAr)+'</div>':''}${(s.text||'').trim()&&((S.chars.find(c=>c.id===s.cid)||{}).vo)?'<div class="ezm" style="color:#c4b5fd">🎙️ الراوي: '+esc(s.text)+'</div>':''}<div style="margin-top:4px"><span class="ezfn">${esc(ezFn(i))}</span> <button class="ezb" style="padding:4px 8px;font-size:12px" onclick="ezCopy('${ezFn(i)}','تم نسخ اسم الملف ✓')">📋 اسم الملف</button></div></div></div></div>
@@ -4009,7 +4020,7 @@ function ez5(){const done=S.shots.filter(s=>s.st==='vid').length;const P=ezAsmCh
  <div class="ezm">إجمالي: ${ezCost().g} توليد فيديو${ezCost().per?' ≈ '+ezCost().tot+' نقطة':''}.</div></div>
  <div class="ezc"><h4>🤝 موافقة العميل</h4><div class="ezm">ملف فيه السيناريو وصورة كل لقطة وخانة موافقة. يفتح على أي موبايل.</div>${ezClientBtn()}</div>
  <div class="ezc"><h4>🎞️ ترتيب المونتاج</h4><div class="ezm">${done} من ${S.shots.length} فيديو جاهز • المدة ${ezTot()} ثانية. سمّي كل فيديو بالرقم ده عشان الترتيب يبقى سهل في المونتاج.</div></div>
- ${S.shots.map((s,i)=>`<div class="ezc" style="display:flex;gap:8px;align-items:center;padding:8px">${ezImg(s)?`<img src="${ezImg(s)}" style="width:44px;border-radius:6px">`:''}<b>${i+1}</b><span class="ezm" style="flex:1">${esc((s.descAr||'').slice(0,70))}</span><span>${s.dur}ث</span><span>${s.st==='vid'?'✅':'⏳'}</span></div><div class="ezm" style="direction:ltr;text-align:left;margin:-6px 0 6px;font-size:12px">${esc(ezFn(i))}</div>`).join('')}
+ ${S.shots.map((s,i)=>`<div class="ezc" style="display:flex;gap:8px;align-items:center;padding:8px">${ezImg(s)?`<img src="${safeSrc(ezImg(s))}" style="width:44px;border-radius:6px">`:''}<b>${i+1}</b><span class="ezm" style="flex:1">${esc((s.descAr||'').slice(0,70))}</span><span>${s.dur}ث</span><span>${s.st==='vid'?'✅':'⏳'}</span></div><div class="ezm" style="direction:ltr;text-align:left;margin:-6px 0 6px;font-size:12px">${esc(ezFn(i))}</div>`).join('')}
  <button class="ezb bl ezmain" onclick="ezCopy(ezAsm(),'تم نسخ ترتيب المونتاج ✓')">📋 نسخ ترتيب المونتاج</button>
  <button class="ezb ezmain" onclick="fullBackup()">📦 نسخة كاملة بالصور</button>
  <button class="ezb ezmain" onclick="dl('json')">💾 حفظ نسخة من المشروع</button>`;
