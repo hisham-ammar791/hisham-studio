@@ -98,6 +98,7 @@ body.simple #stFrame,body.simple #stPrompt{max-height:170px;overflow:auto}
 <header>
  <h1>🎬 استوديو الإخراج الذكي</h1>
  <p>مدة لكل لقطة (من 1 ثانية حتى دقيقتين أو أكثر) • قوالب جاهزة لأدوات الفيديو • مراجعة السكريبت والفيديو عبر ChatGPT وGemini • حفظ تلقائي</p>
+ <button class="mini" onclick="ugOpen()" style="margin:6px 0">📖 دليل الاستخدام</button>
  <p style="color:#10b981;font-weight:700">الإصدار 51 — 13 نوفمبر: اختصار الجملة بنفس المعنى (الجملة الأساسية ظاهرة + الصياغة المعدلة في خانة مستقلة + «اختصر إلى») + اختصار الحوار للحلقة كلها + مسح النصوص + نسخ الحلقة كاملة</p>
 </header>
 
@@ -3162,7 +3163,7 @@ function ezMethod(){const o=document.createElement('div');o.style.cssText='posit
  o.innerHTML=`<div style="max-width:520px;margin:auto;background:#0f172a;border:1px solid #334155;border-radius:14px;padding:12px"><b style="font-size:16px">📘 منهج ما قبل التنفيذ</b><div style="font-size:12px;color:#94a3b8;margin:4px 0 8px">المبدأ: اقفل كل حاجة في الصور الأول، وما تصرفش رصيد فيديو على صورة فيها خطأ مؤثر.</div>${EZ_METHOD.map(m=>`<div style="margin:9px 0"><b style="font-size:14px">${m[0]}</b><div style="font-size:13px;color:#cbd5e1;line-height:1.6">${m[1]}</div></div>`).join('')}<button class="ezb" style="width:100%">تمام</button></div>`;
  o.querySelector('button').onclick=()=>o.remove();document.body.appendChild(o)}
 function ezRender(){
- if(EZ.step===1)EZ.step=2;$('ezSteps').innerHTML=EZST.map((t,k)=>k===1?'':`<button class="${k===EZ.step?'on':''}" onclick="ezGo(${k})">${ezGate(k)?'✅':(k>1?k:k+1)} ${t}</button>`).join('')+`<button title="المنهج" onclick="ezMethod()">📘 المنهج</button><span class="ezm" style="font-size:11px;align-self:center;padding:0 4px;white-space:nowrap">${APPV}</span><button id="svChip" title="حالة الحفظ" onclick="svInfo()" style="font-size:12px"></button><button class="ezadv" title="الوضع المتقدم" onclick="ezAdv()">⚙️</button>`;
+ if(EZ.step===1)EZ.step=2;$('ezSteps').innerHTML=EZST.map((t,k)=>k===1?'':`<button class="${k===EZ.step?'on':''}" onclick="ezGo(${k})">${ezGate(k)?'✅':(k>1?k:k+1)} ${t}</button>`).join('')+`<button title="المنهج" onclick="ezMethod()">📘 المنهج</button><button title="دليل الاستخدام" onclick="ugOpen()">📖 دليل الاستخدام</button><span class="ezm" style="font-size:11px;align-self:center;padding:0 4px;white-space:nowrap">${APPV}</span><button id="svChip" title="حالة الحفظ" onclick="svInfo()" style="font-size:12px"></button><button class="ezadv" title="الوضع المتقدم" onclick="ezAdv()">⚙️</button>`;
  $('ezBody').innerHTML='<div class="ezdo">'+EZDO[EZ.step]+'</div>'+[ez0,ez1,ez2,ez3,ez4,ez5][EZ.step]();ezDeco();
  try{svChip()}catch(e){}const on=$('ezSteps').querySelector('.on');if(on)on.scrollIntoView({inline:'center',block:'nearest'});
 }
@@ -3343,7 +3344,7 @@ function ez0(){
 }
 
 
-const APPV='html34';
+const APPV='html35';
 async function pjDup(){const n=(prompt('اسم النسخة الجديدة من «'+pjName()+'»',pjName()+' (نسخة ٢)')||'').trim();if(!n)return;if(pjList().includes(n)){alert('فيه مشروع بنفس الاسم');return}
  try{await pjSaveCur()}catch(e){alert('تعذر حفظ المشروع الحالي');return}ezBusy('⏳ بعمل نسخة من المشروع والصور…');
  const f=JSON.parse(JSON.stringify(S));f.projName=n;f.epTitle=n;f.epId='';
@@ -4030,6 +4031,58 @@ document.addEventListener('DOMContentLoaded',()=>{try{localStorage.removeItem('s
  ezLoadImgs().then(()=>{if(document.body.classList.contains('ezon'))ezRender()});if(on)setTimeout(()=>ezOn(true),50)});
 
 ['impProj','importJSON','fullRestore'].forEach(n=>{const o=window[n];if(typeof o==='function')window[n]=function(){CIMG={};return o.apply(this,arguments)}});
+
+/* ---------- دليل الاستخدام + الجولة التعريفية ---------- */
+const UG_TOUR_KEY='studio_tour_done';
+const UG_SECTIONS=[
+ ['🚀 البداية','التطبيق بيحوّل فكرتك أو سيناريوك للقطات جاهزة لأدوات الفيديو بالذكاء الاصطناعي. الوضع المبسّط بيمشّيك في خمس خطوات: الشخصيات، الفكرة أو السيناريو، ستوري بورد، لقطة بلقطة، التجميع. والوضع الكامل (زر ⚙️) فيه كل التبويبات والإعدادات.'],
+ ['١. الشخصيات','اتأكد من شكل كل شخصية والمكان مرة واحدة للمسلسل كله. ارفع شيت الشخصية، واحفظها في المكتبة عشان تستدعيها في أي مشروع. لو حلقة جديدة بنفس الشخصيات اضغط «🆕 حلقة جديدة».'],
+ ['٢. الفكرة أو السيناريو','اختار طريقتك: فكرة بس (املأها وانسخ أمر الكتابة) أو سيناريو جاهز (الصقه وانسخ أمر التحويل). الصق الأمر في Claude أو ChatGPT، ورجّع الرد هنا واضغط «حوّل» ثم «طبّق». راجع «فحص السيناريو» و«الترجمة» قبل ما تكمّل.'],
+ ['٣. ستوري بورد','لكل لقطة: «📋 أمر الصورة» و«📤 صور المرجع» ← Gemini ← ارفع الصورة ← «🤖 افحصها بالذكاء الاصطناعي» ← «✅ معتمدة». في الآخر «▶️ شغّل الحلقة كصور».'],
+ ['٤. لقطة بلقطة','ابدأ بلقطة ١ كاختبار. اختار المنصة ← «📋 انسخ الأمر + 📥 نزّل الصورة» ← الصورة في Start والأمر في الخانة ← ولّد ← «🎞️ اختر الفيديو» ← «🤖 افحصه بـ Gemini». لو سليم يتعلّم «✅ تمام» لوحده، ولو فيه غلط انسخ الأمر مع التصليح وولّد تاني.'],
+ ['٥. التجميع','سمّي الفيديوهات بالأسماء اللي بيقترحها التطبيق، وانسخ ترتيب المونتاج، وركّب في CapCut. واحفظ «نسخة كاملة بالصور» في الآخر.'],
+ ['📁 المشاريع والحلقات','كل مشروع ليه شخصياته وأماكنه وسيناريوه لوحده، ومكتبة الشخصيات مشتركة بين كل المشاريع. «🗂️ أرشيف الحلقات» بيحفظ كل حلقة باسمها وتقدر تفتحها أو تاخد منها نسخة كقالب.'],
+ ['💾 الحفظ والنسخ الاحتياطي','كل تعديل بيتحفظ على جهازك فورًا. «📦 نسخة احتياطية كاملة» بتشمل كل المشاريع والحلقات والمكتبات والصور، و«♻️ استرجاع نسخة كاملة» بترجّعها. خد نسخة بانتظام، لأن مسح بيانات المتصفح بيمسح الصور.'],
+ ['☁️ ربط Google Drive','الصق «Client ID» مرة واحدة واضغط «🔗 ربط حسابي». بعدها التطبيق بيرفع نسخة كاملة على Drive كل دقيقتين تقريبًا بعد أي تعديل. على جهاز تاني اربط نفس الحساب واضغط «⬇️ افتح من Drive». لو ظهر «انتهت الجلسة» اضغط «🔗 ربط» تاني.']
+];
+const UG_TOUR=[
+ ['👋 أهلًا في الاستوديو','هنفتح بسرعة على الخطوات الخمس اللي هتمشي عليها من الفكرة للفيديو. تقدر تتخطى الجولة، وتفتحها تاني أي وقت من «📖 دليل الاستخدام».'],
+ ['١. الشخصيات','اضبط شكل كل شخصية والمكان مرة واحدة، واحفظهم في المكتبة عشان تستخدمهم في أي مشروع.'],
+ ['٢. الفكرة أو السيناريو','اكتب فكرتك أو الصق سيناريو جاهز، وخلّي Claude أو ChatGPT يقسّمه لقطات، وبعدين «حوّل» و«طبّق».'],
+ ['٣. ستوري بورد','لكل لقطة صورة بداية: انسخ الأمر، ولّد الصورة في Gemini، وراجعها واعتمدها.'],
+ ['٤. لقطة بلقطة','جرّب لقطة ١ الأول، وبعد ما تنجح كمّل باقي اللقطات بنفس الطريقة.'],
+ ['٥. التجميع','سمّي الفيديوهات وركّبها في CapCut بترتيب المونتاج اللي بيجهّزه التطبيق.'],
+ ['💾 احفظ شغلك','خد «نسخة كاملة» بانتظام، أو اربط Google Drive وخلّي التطبيق يرفع نسخة تلقائيًا.']
+];
+function ugOverlay(z){const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;background:#000d;z-index:'+z+';overflow:auto;padding:12px;color:#fff';document.body.appendChild(o);return o}
+function ugOpen(){
+ const o=ugOverlay(95);
+ o.innerHTML='<div style="max-width:520px;margin:auto;background:#0f172a;border:1px solid #334155;border-radius:14px;padding:12px"><b style="font-size:16px">📖 دليل الاستخدام</b>'+
+  '<div style="font-size:12px;color:#94a3b8;margin:4px 0 8px">اضغط على أي قسم لتفتحه.</div>'+
+  UG_SECTIONS.map((s,i)=>'<details'+(i===0?' open':'')+' style="border:1px solid #334155;border-radius:10px;padding:8px 10px;margin:6px 0"><summary style="cursor:pointer;font-weight:700;font-size:14px">'+s[0]+'</summary><div style="font-size:13px;color:#cbd5e1;line-height:1.7;margin-top:6px">'+s[1]+'</div></details>').join('')+
+  '<div style="display:flex;gap:6px;margin-top:10px"><button class="ezb" data-a="tour" style="flex:1">▶️ ابدأ الجولة التعريفية</button><button class="ezb" data-a="close" style="flex:1">تمام</button></div></div>';
+ o.querySelector('[data-a=close]').onclick=()=>o.remove();
+ o.querySelector('[data-a=tour]').onclick=()=>{o.remove();ugTour(0)};
+}
+function ugTourDone(){try{localStorage.setItem(UG_TOUR_KEY,'1')}catch(e){}}
+function ugTour(i){
+ i=i||0;const prev=document.getElementById('ugTour');if(prev)prev.remove();
+ const t=UG_TOUR[i],last=i===UG_TOUR.length-1,o=ugOverlay(96);o.id='ugTour';
+ o.style.display='flex';o.style.alignItems='center';
+ o.innerHTML='<div style="max-width:420px;margin:auto;width:100%;background:#0f172a;border:1px solid #10b981;border-radius:14px;padding:14px">'+
+  '<div style="font-size:12px;color:#94a3b8">'+(i+1)+' من '+UG_TOUR.length+'</div>'+
+  '<b style="font-size:17px;display:block;margin:4px 0 8px">'+t[0]+'</b>'+
+  '<div style="font-size:14px;color:#cbd5e1;line-height:1.8">'+t[1]+'</div>'+
+  '<div style="display:flex;gap:6px;margin-top:14px">'+
+  (i>0?'<button class="ezb" data-a="prev" style="flex:1">السابق</button>':'')+
+  '<button class="ezb" data-a="next" style="flex:2;background:#10b981;color:#052e16">'+(last?'خلّصنا ✓':'التالي')+'</button></div>'+
+  (last?'':'<button class="ezb" data-a="skip" style="width:100%;margin-top:4px;background:none;color:#94a3b8;font-size:13px">تخطّي الجولة</button>')+'</div>';
+ const q=a=>o.querySelector('[data-a='+a+']');
+ if(q('prev'))q('prev').onclick=()=>ugTour(i-1);
+ q('next').onclick=()=>{if(last){ugTourDone();o.remove()}else ugTour(i+1)};
+ if(q('skip'))q('skip').onclick=()=>{ugTourDone();o.remove()};
+}
+document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{try{if(localStorage.getItem(UG_TOUR_KEY)!=='1'&&document.body.classList.contains('ezon')&&!document.getElementById('ugTour'))ugTour(0)}catch(e){}},1500)});
 </script>
 
 </body>
