@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0f1115">
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjogItmF2Y/YtdmE2ZHYrSDYp9mE2KPYutmG2YrYqSIsICJzaG9ydF9uYW1lIjogItmF2Y/YtdmE2ZHYrSDYp9mE2KPYutmG2YrYqSIsICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLCAic3RhcnRfdXJsIjogIi4vc29uZy1maXguaHRtbCIsICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwZjExMTUiLCAidGhlbWVfY29sb3IiOiAiIzBmMTExNSIsICJsYW5nIjogImFyIiwgImRpciI6ICJydGwiLCAiaWNvbnMiOiBbeyJzcmMiOiAiZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFNQUFBQURBQ0FJQUFBRGR2dnRRQUFBRjRVbEVRVlI0WHUzZHZYTGNPQkJGWVVxMW1RUGJnUU05bm1NOWoySS9ubEluVGwxYlc2emlza2dPQjhCdC9IVGpmTEUwSEFsSERkQ2VrVjYrZnYreEFLVmVTejhSK0E4QlFVSkFrQkFRSkFRRUNRRkJRa0NRRUJBa0JBUUpBVUZDUUpEOEkzMjJrZCsvdmhnOTBseSsvZnpUL1F0KzZmV2ZxVVJqcmt0UHJRT2ltd1phbHRRdUlOSnByRTFHTFFKS1NlZnRuZU44dHMrUHYwOC9wM1pHZFFPNlNZZGliTjNIVkMraldnR1JUaTgzSmRYSXFFcEFsL1V3Y2xwNmxKRjVRL1lCbmVzaG5WNHVNN0p0eURJZ0JzK1l6aGtaTm1RV0VJTm5jSlV5c3JsNXBwN3huUThTS2YrODhwUkJRTlRqUlkyRzFJQ294eGZ6R3hvMW9BUHo1d2R6aHpVU056SXBvTU8xcWNjTHc0YktBNkllMTZ3YUtneUllZ0l3YWFnd29EMTJMci8wdFNzSlNEeDJZVmdGSzFzU0VPTW5FbkVJWlFlMGoxUzhOZ2F4WDhmY0laUWRFTENYRnhEako2cmlJWlFYRUhDUUVWRHU3Z2kvMHRlNjhKMnBzWS9QTnk4ckR2eUZ2NzIvcHJ6TjQ2QXdvSkJTdm4zYnh3UXVLVXZxS3hKakg1OVQwcmtVTDZQOXR5TGxsYSt6VDZEaWRGYnJwOGZMS0YzR0lUb2VzWjZOMWVONE5Pa0VNbC95YVVkUjBnUkt2Nmx6d2J5ZXFLTW9aZDJUQXRyenZ0L1hxMmQvS3ZJcmQzMnpBd0wyNWdxbzl2aUpNWVN5VEJSUW0zcG1hMmlpZ0ZERExBRzFIRDlURGFGWkFrSWxVd1RVZnZ6TU00U21DQWoxRUJBazhRUHF0WDlOc292RkR3aFZFUkFrQkFRSkFVRkNRSkFRRUNRRUJBa0JRVUpBa0JBUUpBUUVDUUZCUWtDUUVCQWtCQVFKQVVGQ1FKQVFFQ1FFQkFrQlFVSkFrQkFRSkFRRUNRRkJRa0NRRUJBa0JBUUpBVUVTUDZEYzMxdHJxKy9WRzRnZkVLb2lJRWltQ0tqWFB0THJ1aTFORVJEcW1TV2c5c09nL1JXN21DVWdWREpSUUMxSFFzdHI5VFZSUU0zK051VTg5U3pMWkFIQjNGd1RxTUVRbW1yOFREcUI2cTF4dlVjZTFxUi9kSGRkYWNQZlFUNWhPcXZwdHJBOXExVzNlaHlQUEUyZzg4RFFWMDRjUmZvVHVCeUVKZy9iaHFlQTZpbkl5TkVhVjBWQS85dWF1RGtiMGMwQkFWMmdrblJUSDZLaDh4VFFlVEFZM29mM1V1UE9vQ1ZQQVdGQUJBU0orNEJjNzJLdW4vektXVURoNzQvY2ZZSE9BcnJrOU9mWTZkTStpQkFRT3ZJWDBPV1FkL2ZUZlBtRTNlMWYvczVBR0kyL0NmVG9WWVdPaGxDWThlTjRBdm5keUNMVjR6aWdSd2FmUTRNL3ZRSXV0N0RWb3lQbnNJdjA2SWw1UER0dkhBZmtxNkdROVVUWXdsek1vYWoxUkFoby9Ea1V1SjRnQWQwMzFQRkk5UG54OE9xdXp6MTd2czlBZXpkTGNyT1FsZHhmTVV3OWNTYlEvWDNacWsxR1Q2OFNxWjVvQWFXODlmM3BBaGRMZWVSZzlTeEx4SGRsdkwyL1BqMzNiQitncitqVGEyMzBhdzBvNXR0NjB0OG9lRmorbERWT0x5WjJPcXVZQWUyUFJGbnJuZlhCS1ZLS2RDM09YZGdqSFpldzQ2V2JpVHlCemp1SStZQzVORU0zbXlrQ09wUlVMNk9wMG9sL0JucTZxVm1WTkdFM2swNmdnOFBDcC9jMGN6RUhjMjFoOTU3MlJEZG44ZS9DVUJVQlFVSkFrQkFRSkFRRUNRRkJRa0NRRUJBa0JBUUpBVUZDUUpBUUVDUUVCQWtCUVVKQWtCQVFKRWtCZmZ2NVo3dEkrc3YyNE5GK2ZmZnIva2hTUUFBQm9Zb3BYaE50dGUzbVBzNE1yNkV1MmNKeXY0L3dvbUJsVXdOS09VOGhrc1FWVHcwSXVGUVlVTUdzdytESzFqUWpvTVNaaGdEUzE3cjhMdXp6NDYrWHV3d3Z6N09qc3ZHVC9Uc1MwOE9FWDFtcm5MR0ZuUlZuaTZFbzY1Z2RVRmFlY0NkM2ZiTURPbERpeFFqRUZTd0pLRGRTRE90UVQ4SEtsZ1RFRUFxcG9KN3N1N0RONFdMaUdFUVhKcXRXUG9Gb3lEVjk4MXFWQjdRc05PU1ZWVDFxUURUa2tXRTlCZ0dkbWV5c3FNUzJIcHVBenFkM0docVRlVDNMc3J4OC9mN0Q1S3Y5L2V2TDRYSDRMOHh4bkgra3kyN2F6OHdDV3BIUmdPclZZem1CTmpRMGpzdXpoTlhzV1JsUG9FZHpLT1dQVWNMUW8yT29iVDIxQXJyY3l6YWNqYXBxbGs3RkNYU3puWkZSSmZkM3Z1YURaMU5sQ3pzNG40ck9HRXNGN3FOWjFVdW54UVRhUzhrSWhtcW4wenFnRlJrMTBDYWRQZ0Z0S01sY3kyNDJMYzVBVHhGVG1TN0ZIQXdSRVB5U1hnOEVFQkFrQkFRSkFVRkNRSkFRRUNRRUJBa0JRVUpBa0JBUUpQOEN2ekFFZXdGUExka0FBQUFBU1VWT1JLNUNZSUk9IiwgInNpemVzIjogIjE5MngxOTIiLCAidHlwZSI6ICJpbWFnZS9wbmcifSwgeyJzcmMiOiAiZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFnQUFBQUlBQ0FJQUFBQjdHa090QUFBU0RFbEVRVlI0WHUzZHU1WWNSUmFHMFVKTEhnWmdZT2p4c1BVOHNuazh1VGk0V3JPWVl0WDA5RFVpTWk0bjR1eHR6d3hVWk9uL01yT2I0YWRmZnZ2OUJrQStuL0o5WkFEK0lRQUFTUWtBUUZJQ0FKQ1VBQUFrSlFBQVNRa0FRRklDQUpDVUFBQWtKUUFBU1FrQVFGSUNBSkNVQUFBa0pRQUFTUWtBUUZJQ0FKQ1VBQUFrSlFBQVNRa0FRRklDQUpDVUFBQWtKUUFBU1FrQVFGSUNBSkNVQUFBa0pRQUFTUWtBUUZJQ0FKQ1VBQUFrSlFBQVNYMU8rcm5YK2V2UG45Zjl4U0cwWC8vNE8vVGYzM0YrK3VXMzM0LzdVRkhZZXVoQ0dBWVJnSjRzUGt5Z0I3MEl3RlZHSHhZU2d5c0VvSkhkaDFDVW9JRUFWREQ2RUo4U2xCT0FJcVlmdHFNRUh4S0E5OWg5T0lBU3ZFVUFYbWY2NFRBeThKSUFQR2Y2NFdBeThKUUEvTXZ1UXg0eWNDY0FwaCtTa29Ic0FWaHk0Ly9scS84UFBuakY5MjgvNXA5TDVnemtEY0NjNmJmMWNOR2NLdVRNUU1ZQURKMStpdy9qakk1QnRnemtDc0M0NmJmN01ObWdHS1JxUUtJQWRGOS9vdzhSakNoQmtneWtDRURmNmJmN0VGUGZFbVJvd1BrQjZMaitwaCsyMExFRVoyZmc4QUIwV1grN0R6dnFsWUdERzNCc0FFdy9jTmVsQkVkbTRNd0FYRjkvZC8xd21Pc1pPSzhCQndiZzR2cWJmampZeFF3YzFvQ2pBbUQ2Z1JKWE1uQlNBODRKd0pYMWQ5Y1AyVnhwd08xMlNBWU9DWUQxQnhwY3ljQUJqd0luQktCNS9kMzRBMWQrVFdqM0Jtei8vMHRzL1lHTG11OEZtL2NuaUwyZkFOcE92L2xpQTJkcmV5TzA3M1BBeGs4QTFoL29xKzN1c0cyTEl0ZzFBRzBuM25aMWdUemFWcUp0a1piYjhoVlF3MW0zWFZRZ3JZYlhRZHU5QzlydkNjRDZBeE0wM0RVMnJOTmFtd1dnNFh3YnJpTEE3ZGF5SGcwYnRkQk9BV2c0V2VzUFhOR3dJUTFMdGNvMlB3T29QZE9HeXdid3FsTi9IckRIRTREMUJ4WnF1S0dzWGEwbE5naEE3VGsyWENxQTkzMzUrdW04YmRrZ0FGWE91MEpBSEZVTFUzdnpPbC8wQUZTZFlOVzFBV2hRdFROVkN6WmY2QUJVblYzVlZRR1lvMnJISm9zYmdLcFRzLzdBTkxXRFU3Vm1NOFVOQUVCWXRRMklLV2dBcW9KNXhwVUE5bEsxUEZXYk5rM0VBRlNkVk5VMUFPaW9hbitxbG0yT2NBR29PcU9xMHdmb3JtcUZxdlp0Z25BQktGZDE3Z0NEN0x0RnNRSVFMWThBZllWYXVVQUJxRHFYZlpNTG5HZlRSUW9VZ0hLYm5qVndzUEpkcXJyWkhTcEtBTXBQcFB5VUFXWXFYNmZ5eFJzcVNnQUFtQ3hFQU1waldCNVlnUG5LTjZwODk4WUpFWUJDNVNjTHNNcEdTN1UrQUJFeUNERGY4dlZiSElEeXo3OVJWSUhrZHRtcnhRRW90TXRwQWxRcHZ3a2VZV1VBMW41eWdIRzJ1RzFkR1lCQ1c1d2p3RE9GMjdYd1ZuaURBQUF3d3JJQUZFYXZNS0VBQVJVdVdPRWVkcmNzQUFDc3RTWUFoYmtyakNkQVdJVTdWcmlLZmEwSkFBRExMUWhBWWVnS3N3a1FYT0dhRlc1alJ3c0NBRUFFUVFOUUdFeUFMY1RjdE5rQm1QK01BN0NMeVFzNU93QUFCREUxQUlWeGkvbXNCSEJGd0dXYkdnQUEzbGQ0bzl6RjV5Ny9LeDBGakNSbitQN3RSL2tIOFQxa2hDOWZQMVY5RDBjTEZ3RG81Y3FmdEdmL1hUM2dTUE1DTVBPNWhyU3VqUDQ3bnY3UGlnR2ovZlhuejcvKzhmZm92OHJ0TmpFQUpmelJvczJnM1gvVjQ2L2w2MHFEVUcrQjVqMEJ3QWd6cC8rWisxOWFCdGpYcEFCNC8wTmZDM2YvMVF3b0FYM05lUXMwS1FEUVM1enA5MERBN2dMOWN3QWVwZmxRMlBWL2lQOTN5SEp4dHM0VEFIdllhRmo5YklCZHpBaUFId0J3eFViVC81UU1jTkdFSHdORWVRVVU1NW1JVURaZGYyK0VlRitReFlzU0FIaHA5L1cvTytOVGNLUVpyNENnMW1HajZYVVFNWGtDSUp6RDF2L2gxTS9Gdm9ZSHdFK0FxWEwyU3A3OTZlaHU5SDRPRDBDSklEOFBZYmtNKzVqaE0xSWl3dTZGQ0FDayttR3BCaENFQUJCQ3RrM005bm1KU1FCWUwrY2E1dnpVaENJQUxKWjVCek4vZGlJUUFGYXlnRTZBaGNZR1lQVHZNTEUxMjNmbkhIakgwQlVkRzRBU0VYNFhDbUMrNWV1M1BnRGs1TGIzS2FmQkVnTEFBdmJ1SldmQ2ZBTEFiSmJ1TFU2R3lRUUFJQ2tCWUNvM3VlOXpQc3drQUFCSkNRRHp1TDB0NFpTWVJnQ1l4SzZWYzFiTUlRQUFTUWtBTTdpbHJlWEVtRUFBQUpJU0FJQ2tCSURodk0xbzQ5d1lUUUFBa2hJQXhuSWJlNFhUWXlnQkFFaEtBQUNTRWdBRzhnYmpPbWZJT0FJQWtKUUFBQ1FsQUFCSkNRQ2plSG5kaTVOa0VBRUFTRW9BQUpJU0FJQ2tCQUFnS1FGZ0NEKzM3TXQ1TW9JQUFDUWxBQUJKQ1FCQVVnSUFrSlFBQUNRbEFBQkpDUUJBVWdJQWtKUUFBQ1FsQUFCSkNRQkFVZ0lBa0pRQUFDUWxBQUJKQ1FCQVVnSUFrSlFBQUNRbEFBQkpDUUJBVWdJQWtKUUFBQ1FsQUFCSkNRQkFVZ0lBa0pRQUFDUWxBQUJKQ1FCQVVnSUFrSlFBQUNRbEFBQkpDUUJBVWdJQWtKUUFBQ1FsQUFCSkNRQkFVZ0lBa0pRQUFDUWxBQUJKQ1FCQVVnSUFrSlFBQUNRbEFBQkpDUUJBVWdJQWtKUUFBQ1FsQUFCSkNRQkFVZ0lBa0pRQUFDUWxBQUJKQ1FCQVVnSUFrSlFBQUNRbEFBQkpDUUJBVWdJQWtKUUFBQ1FsQUFCSkNRQkFVZ0lBa0pRQUFDUWxBQUJKQ1FCQVVnSUFrSlFBQUNRbEFBQkpDUUJEZlBucXE5V1Q4MlFFZjBvQmtoSUFnS1FFQUNBcEFRQklTZ0FZeGM4dGUzR1NEQ0lBQUVrSkFFQlNBZ0NRbEFBd2tKZlgxemxEeGhFQWdLUUVBQ0FwQVdBc2J6Q3VjSG9NSlFBQVNRa0F3N21OYmVQY0dFMEFBSklTQUlDa0JJQVp2TTJvNWNTWVFBQUFraElBSm5GTFc4NVpNWWNBTUk5ZEsrR1VtRVlBQUpJU0FLWnllL3MrNThOTUFnQ1FsQUF3bTV2Y3R6Z1pKaE1BRnJCMEx6a1Q1aE1BMXJCM1R6a05saEFBZ0tRRWdHWGM5dDQ1QjFZUkFGYXlmVTZBaFFTQXhUSXZZT2JQVGdRQ3dIbzVkekRucHlZVUFTQ0ViR3VZN2ZNU2t3QVFSWjVOelBOSkNVNEFDQ1RETW1iNGpPeENBSWpsN0gwOCs5T3hIUUVnbkZOWDh0VFB4YjQrNy91M3pzSHVXL245MjQ4elBxUHBKeVpQQU1SMXhtNmU4U2s0a2dBUTJ1N3J1ZnZmUDJmekNvam9ObjBkWlBxSlR3RFl3MFlaTVAzc3dpc2dkaEovVytQL0hjS0RKNEJ6dFAzT3pIYURGZlpSWUx1VGJQNDlxeDAvS2E4U0FMYjAyS0MyN0hWa0RkbVhBTEMzaFE4RXBwL2RDUUFubVBsQVlQYzVoZ0J3bEtmcjNQSHRrTkhuU0FMQXNaNnRkbFVQTEQ0WkNBQloySFI0eGo4SEFKQ1VBR1JYOVdLRWs3ajBDTUE1dk9KZ0FsK3prd2dBUUZJQ0FKQ1VBQUFrSlFBQVNRa0FmaHNrSTc4Q3hPMG1BR2Z4R3hvTTVRdDJHRThBQUVrSkFQL3dRaUFWbDVzN0FRQklTZ0FBa2hLQTB6VC9tTTVyZ1NTYUwzVHpWNHV3QkFBZ0tRRUFTRW9BRHRUOHFONzhjb0JkTkYvaTVpOFZrUWtBUUZJQ3dQOXB2a01rUGhlWFp3VGdUQjdZNmNqWDZWUUN3SFB1RTQva3N2S1NBQUFrSlFESHV2TFk3bTd4TUZjdTZKVXZFc0VKQUVCU0FuQ3lLL2R1Vis0WkNlWEtwYnp5RlNJK0FRQklTZ0FPZCtVTzdzcWRJMEZjdVloWHZqeHNRUUI0ejVYNVlEbVhqL2NKd1BuY3g5SEExeVlEQWVBRDdpSTM1Y0x4SVFGSTRlTGRuQ25aenNWTGR2RUx3eTRFZ0NJWEI0V1pYQ3dLQ1VBVzErL3B6TW9XcmwrbTYxOFZkaUVBQUVrSlFDTFg3K3l1MzEweTFQVUxkUDFMd2tZRUlKZnJmN3l2VHd5RFhMODAxNzhlN0VVQXFIWjlhT2pPUmFHQkFLVFQ1UzdQM0lUUzVYSjArV0t3RndISXFNc2Y5UzZqdzNWZExrU1hyd1RiRVlDa3V2eUI3ekk5WE5IbEVuVDVNckFqQWVDU0xnTkVHNGZQUlFLUVY2LzdQak8wUks5ajcvVTFZRWNDa0ZxdlAvemZ2LzNvdFVkOHFPTnA5L29Dc0NrQnlLN2pCR2pBQkIwUHVlT2xaMU1DUUU4ZDU0bVhIQzk5Q1FDZDd3U04xQ0I5RDlidFA3ZWJBUEJmZmVlZzQwdHFicmYrNTluM2NyTXZUd0Q4cS9zbzlMMWpUYXY3TVhhLzBPeExBUGlmN3RQZ1VlQ0tFYWZYL1JLek5RSGcvNHdZaUJGRGRyWkJKemJpNHJJMUFlQzVRVFBSL1ZYR3FRWWQxS0RMeXRZRWdGY01Hb3RCTjdiSEdIYytneTRvdXhNQVhqZHVNc2JOM0w2R25zbTRTOG51QklBM0RSMk9vWk8za2RIbk1QUWlzanNCNEQyajUyUDAvRVUyNGJPUHZuenM3dlB1SDREUjdpTXk2Q2VUZDQvLzhReUROZlFrSHpLY0pOZDVBcURJbkVHWmNGTzgwTFJQTitkaWNRQlBBSlQ2OHZYVG5Mdlh3eDRJNWh5YWUzOGFDQUFWcGpYZ2J1c1NUTjc5Ty9mK1ZCRUE2a3o0a2NCTEc1Vmd5ZTZiZnRvSUFDMG1Qd284UEozWE9IZTdxMGIvSWM1UnNCY0JvTkdxQnJ3YWc4bTN3TXNYL3luclR6TUJvTjJTMTBGdmVXdVVyK3hqcUtGLzZjcEhnOXROQUxocythUEErNEtQZURQcnozV2VBT2dnMUtQQThVdy92UWdBM2NqQWFLYWZ2dnlUd0hSbXBBWnhzSFRuQ1lEK1BBcjBaZm9aUkFBWVJRYXVNLzBNSlFDTUpRTnRURDhUQ0FBenlFQTUwODgwQXNBOE12QSswODlrQXNCc2o1azc5Ui9ScW1YM1dVVUFXTVlEZ2VsbkxRRmdzWVFQQkhhZklBU0FLSTR2Z2QwbkdnRWduTU5LWVBjSlN3Q0k2K2wwN3ZVVFk2UFBGZ1NBUFR5YjFHZzlzUGpzU0FEWTB2SWVXSHdPSUFDYzRLMDV2djZnWU9nNW1BQndzb3MvVDdiK25NMi9Ed0FnS1FFQVNFb0FBSklTQUlDa0JBQWdLUUVBU0VvQUFKSVNBSUNrQkFBZ0tRRUFTRW9BQUpJU0FJQ2tCQUFnS1FFQVNFb0FBSklTQUlDa0JBQWdLUUVBU0VvQUFKSVNBSUNrQkFBZ0tRRUFTRW9BQUpJU0FJQ2tCQUFnS1FFQVNFb0FBSklTQUlDa0JBQWdLUUVBU0VvQUFKSVNBSUNrQkFBZ0tRRUFTRW9BQUpJU0FJQ2tCQUFnS1FFQVNFb0FBSklhRzRCZi8vajd3M1A5L3UzSGgvOFpnUE9VckYvSmlqWWJHd0FBd2hJQWdLUUVBQ0FwQVFCSVNnQUFraElBZ0FWS2ZnVm90QkFCaUhBUUFORU0vUjNRMjIxOEFFWi9BQURhaEhnQ0FHQStBUUJJS2tvQS9CZ0F5Q1BJNG4zT2MrS3NFdVM3M21EdDMvbVhyMUh1ejFoaXdnOVFaM3pESm53TUFHck5DQUFBQVFVS3dOckhiWUE1NG14ZG9BQUFNTk9rQVBneEFFQzVPWnM1S1FDRjRqd1pBWXdRYXVWaUJRQ0FhZVlGWU00VERjRHVwcTNsdkFBVUN2VjhCTkJSdEgwTEZ3QUE1cGdhZ0duUE5RQ2Jtcm1UVXdOUUtOcFRFc0IxQVpjdFlnQUFtR0IyQUFxZmJnS21FcUJaNGFZVkxtUXZzd01BUUJBQ0FCREM1TnYvR2Y5UytKY0tQMlRoRXhOQWNHSFh6TDhSak9IOG02MGdwald2Z0R3RUFFa1UzdjRYcm1KZmF3SUF3SExMQWxDWXU4SjRBZ1JVdUdDRmU5amRzZ0FBbksxdy9SZGFHWURDNk1VL1JJQm1oVXM0d3NvQWxOTUFZQzlick5iaUFDeE1IOEJ5YXpkd2NRREtiWkZUZ050dG03MWFINEMxQVFUb3EveHVkZm42clE5QXVmSmpCZUJESVFKUW5rRU5BQ0lyMzZqeTNSc25SQUFBRGxDKy9rRkVDVUI1RExjN1lvQm55aGR2cUNnQnVOMHFUa1FEZ0dqS2R5bkkrcS81OXdGMFVYN1dBS050dWtpQm5nQ3FIZ0lBZ3FoYS96aTMveEdmQU1wUHArclFBWllyMzdjNVlqMEIxTklBWUsydFZ5aGlBS29pdWZYcEExdXIycCtxWlpzallnQnFmeGhRZFEwQXVxaGFub0RySC9GbkFHMnFyZ1RBUlZXYkUzUDlRd2VnOXNpcXJnZEFzMlBXSnVncm9MdmFCZ0NNVnJ2K2tYY3NkQUJxRzFCN1lRQ3ExSTVNNVBVUC9Rcm9vZW9FYXk4UFFLSGFlYW5hcmlXaVB3RTArUDd0UisxMUFuaGY3YXJFWC84OW5nQnFYd1RkMVY0dGdMZWN1aWZiUEFFMDVQVFVhd2JNMUxBa0RYdTF4RFlCOEJ3QXpIZncrbS96Q3VpaG9hc04xdytnN1UxeXcwWXQ5Tk12di8yKzhDL2Y1cTgvZjY3OUwzNzV1dE96RHJCVzI0M2pYdXQvdSswWmdOdXRwUUczbXd3QUgwdXkvdnU5QW5wb0syM2JkUVh5YUZ1SnRrVmFic3RYUUE4Tjc0SThCd0N2YXB2K3R0OVBDV0x2QURTL0M1SUI0S21FNjcveHp3Q2VhbnNPMEFDZzdWZDlIalo5OC9Pdy9SUEFYWE1EWkFBeWE3N3gzL3JOejJrQnVOZ0FHWUJza2svLzNTRlBBQThlQllEM1habitNMjc4RDN3QzZOSUFqd0p3TnV2LzFHbFBBSGRYbmdQdS9KUERjSmlMMDMvWXZmL2RtUUhvMGdBWmdET1kvcmNjRzRCZWp3SXlBSnU2dnZ0M3UvK3U1enNPRDBDdlI0RTc3NFZnQzcybS8rejFQL2tWMEZQWGZ5VHdsQXhBVEIxMy8vanB2enYvQ2VDaGJ3WThFRUFRZlhmLzd1RFhQazhsQ3NCZDl3emNlU3lBeVVic2ZwN3B2MHNYZ0hFTlVBSVliZERvUHlTNThYL0lHSUNoandMUGVES0FLMFl2ZnRycHovc0U4TlNnTjBMdlV3VjQxYlM1ZnlyYlhmOVRlWjhBbG1jQVdDdno5SHNDZUc3SjB3QXduK2tYZ05mSkFCek05RC9sRlpBTVFBcW0veVVCZUkrbkFkaWQzWCtIQUJSUkF0aU82ZitRQU5SUkFnak83cGNUZ0VaS0FLSFkvUVlDY0pVU3dFSjIvd29CNkVrTVlEU0wzNUVBREtRSGNKM0ZIMGNBWmxNRmVJdXRuMHdBQUpMNmxQUnpBNlFuQUFCSkNRQkFVZ0lBa0pRQUFDUWxBQUJKQ1FCQVVnSUFrSlFBQUNRbEFBQkpDUUJBVWdJQWtKUUFBQ1FsQUFCSkNRQkFVZ0lBa0pRQUFDUWxBQUJKQ1FCQVVnSUFrSlFBQUNRbEFBQkpDUUJBVWdJQWtKUUFBQ1FsQUFCSkNRQkFVZ0lBa0pRQUFDVDFIOEQ3T0J3T0pSSTVBQUFBQUVsRlRrU3VRbUNDIiwgInNpemVzIjogIjUxMng1MTIiLCAidHlwZSI6ICJpbWFnZS9wbmcifV19">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="مُصلّح الأغنية">
+<title>مُصلّح الأغنية — استبدال الجزء الغلط بصوتك</title>
+<style>
+:root{--bg:#0f1115;--card:#181b22;--line:#2a2f3a;--txt:#e9ecf2;--mut:#9aa3b2;--acc:#ffb020;--blue:#5aa9ff;--green:#4fd88a;--red:#ff5d5d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.6 system-ui,"Segoe UI",Tahoma,sans-serif;padding:12px;padding-bottom:60px}
+h1{font-size:20px;margin:4px 0 2px}
+.sub{color:var(--mut);margin:0 0 12px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+.card h2{font-size:16px;margin:0 0 8px}
+.n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--acc);color:#000;font-weight:700;margin-left:6px;font-size:13px}
+label{display:block;margin:6px 0 2px;color:var(--mut);font-size:13px}
+input[type=file]{width:100%;color:var(--mut)}
+button{background:#262b36;color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px 12px;font:inherit;cursor:pointer;margin:3px 0}
+button:active{transform:scale(.97)}
+button.pri{background:var(--acc);color:#000;border:0;font-weight:700}
+button.rec{background:var(--red);color:#fff;border:0;font-weight:700}
+button.ok{background:var(--green);color:#000;border:0;font-weight:700}
+button:disabled{opacity:.4}
+.row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.wavebox{direction:ltr;position:relative}
+canvas{width:100%;height:150px;background:#0b0d11;border-radius:8px;border:1px solid var(--line);touch-action:none;display:block}
+.time{direction:ltr;display:flex;justify-content:space-between;color:var(--mut);font-size:12px;margin-top:2px}
+.num{width:92px;background:#0b0d11;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px;font:inherit;direction:ltr;text-align:center}
+.sl{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
+.sl input[type=range]{width:100%}
+.sl span{direction:ltr;min-width:70px;text-align:center;color:var(--acc);font-size:13px}
+.msg{padding:8px 10px;border-radius:8px;background:#11261a;color:#bff5d3;font-size:13px;margin-top:6px;display:none}
+.msg.err{background:#2a1414;color:#ffc9c9}
+.note{font-size:12.5px;color:var(--mut)}
+.warn{font-size:13px;background:#2b2210;color:#ffe2a6;border-radius:8px;padding:8px;margin-top:6px;display:none}
+.recbadge{color:var(--red);font-weight:700;display:none}
+</style>
+</head>
+<body>
+
+<h1>🎙️ مُصلّح الأغنية</h1>
+<p class="sub">بتقص الجزء اللي سونو غناه غلط، وتحط مكانه صوتك، وتدمجه بنعومة، وتصدّر الأغنية كاملة. كل الشغل جوه المتصفح على جهازك.</p>
+
+<div class="card">
+  <h2><span class="n">1</span>حمّل ملفات الأغنية</h2>
+  <label>ملف الموسيقى بس (Instrumental) — من الـ Stems</label>
+  <input type="file" id="fInst" accept="audio/*">
+  <label>ملف الغناء بس (Vocals) — أو الأغنية كاملة لو مفيش Stems</label>
+  <input type="file" id="fVoc" accept="audio/*">
+  <div class="warn" id="noInstWarn">⚠️ من غير ملف الموسيقى المنفصل، الجزء اللي هتستبدله هيشيل الموسيقى معاه. الأفضل تحمّل الـ Stems (موسيقى + غناء منفصلين).</div>
+  <div class="msg" id="m1"></div>
+</div>
+
+<div class="card">
+  <h2><span class="n">2</span>حدد الجزء الغلط</h2>
+  <p class="note">اسحب بصباعك على الموجة عشان تحدد. اسحب طرف التحديد عشان تعدّله. <b>لمسة سريعة</b> على الموجة بتحط مؤشر التشغيل (الخط الأخضر) في المكان ده. خلّي التحديد أوسع شوية من الغلط، ويبدأ وينتهي في نَفَس أو سكتة لو تقدر.</p>
+  <div class="wavebox">
+    <canvas id="wave"></canvas>
+    <div class="time"><span id="tA">0:00</span><span id="tPos"></span><span id="tB">0:00</span></div>
+  </div>
+  <div class="row" style="margin-top:6px">
+    <button class="pri" id="bPlayAll">▶ تشغيل / ⏸ إيقاف</button>
+    <button id="bHome">⏮ للبداية</button>
+    <button id="bPlaySel">▶ اسمع الجزء المحدد</button>
+    <button id="bStop">⏹ وقّف</button>
+    <button id="bZoom">🔍 كبّر على التحديد</button>
+    <button id="bZoomAll">↔ الأغنية كلها</button>
+  </div>
+  <div class="row" style="margin-top:6px">
+    <span class="note">البداية</span>
+    <button data-n="s" data-d="-0.1">−</button><input class="num" id="iS" type="number" step="0.01"><button data-n="s" data-d="0.1">+</button>
+    <span class="note">النهاية</span>
+    <button data-n="e" data-d="-0.1">−</button><input class="num" id="iE" type="number" step="0.01"><button data-n="e" data-d="0.1">+</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2><span class="n">3</span>سجّل الجزء بصوتك</h2>
+  <p class="note">🎧 <b>لازم سماعة</b> عشان الموسيقى ما تدخلش في المايك. التسجيل بيبدأ قبل الجزء بكام ثانية عشان تلحق تدخل في الإيقاع.</p>
+  <div class="sl"><label>ثواني قبل الجزء (عدّ تمهيدي)</label><span></span></div>
+  <div class="sl"><input type="range" id="rPre" min="1" max="8" step="0.5" value="3"><span id="vPre"></span></div>
+  <div class="sl"><label>صوت سونو كمرشد وانت بتغني</label><span></span></div>
+  <div class="sl"><input type="range" id="rGuide" min="0" max="100" value="35"><span id="vGuide"></span></div>
+  <div class="row" style="margin-top:6px">
+    <button class="rec" id="bRec">⏺ سجّل</button>
+    <button id="bRecStop" disabled>⏹ وقّف التسجيل</button>
+    <span class="recbadge" id="recBadge">● بيسجّل…</span>
+  </div>
+  <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
+  <label>أو ارفع تسجيل جاهز ليك (من أي برنامج تسجيل)</label>
+  <input type="file" id="fTake" accept="audio/*">
+  <div class="sl"><label>تسجيلك بيبدأ قبل بداية الجزء بكام ثانية تقريبًا؟</label><span></span></div>
+  <div class="sl"><input type="range" id="rLead" min="0" max="10" step="0.5" value="0"><span id="vLead"></span></div>
+  <div class="msg" id="m3"></div>
+</div>
+
+<div class="card">
+  <h2><span class="n">4</span>اظبط الدمج واسمع</h2>
+  <div class="row">
+    <button id="bAlign">🎯 ظبط التوقيت تلقائي</button>
+    <button id="bAutoGain">🔊 ظبط العلوّ تلقائي</button>
+  </div>
+  <div class="sl"><label>تقديم/تأخير صوتك (بالملّي ثانية)</label><span></span></div>
+  <div class="sl"><input type="range" id="rOff" min="-500" max="500" value="0"><span id="vOff"></span></div>
+  <div class="sl"><label>علوّ صوتك</label><span></span></div>
+  <div class="sl"><input type="range" id="rGain" min="-24" max="24" step="0.5" value="0"><span id="vGain"></span></div>
+  <div class="sl"><label>نعومة القطع (Crossfade)</label><span></span></div>
+  <div class="sl"><input type="range" id="rCf" min="10" max="600" value="120"><span id="vCf"></span></div>
+  <div class="sl"><label>صدى (Reverb) عشان صوتك يتلحم مع صوت سونو</label><span></span></div>
+  <div class="sl"><input type="range" id="rRev" min="0" max="100" value="20"><span id="vRev"></span></div>
+  <label style="display:flex;gap:6px;align-items:center;color:var(--txt)"><input type="checkbox" id="cHp" checked> شيل الزنّة والهمهمة الواطية (High-pass)</label>
+  <div class="row" style="margin-top:8px">
+    <button class="pri" id="bPreview">▶ اسمع النتيجة قبل التطبيق</button>
+    <button class="ok" id="bApply">✔ طبّق الإصلاح</button>
+    <button id="bUndo">↶ تراجع</button>
+  </div>
+  <p class="note">بعد ما تطبّق، تقدر تحدد جزء تاني غلط وتكرر نفس الخطوات.</p>
+  <div class="msg" id="m4"></div>
+</div>
+
+<div class="card">
+  <h2><span class="n">5</span>🎚️ مهندس الصوت: الماستر النهائي</h2>
+  <p class="note">بيعمل شغل مهندس الماستر: ينضّف، يوازن الترددات، يهدّي حرف السين، يضغط الديناميك، ويرفع العلوّ لمستوى المنصات من غير تشويه، ويعمل دخلة وخرجة ناعمة.</p>
+  <label>نوع الأغنية</label>
+  <select id="sPreset" class="num" style="width:100%;text-align:right;direction:rtl">
+    <option value="natural">طبيعي متوازن</option>
+    <option value="pop">بوب / حماسي (أعلى وأوضح)</option>
+    <option value="soft">هادي / رومانسي (دافي وناعم)</option>
+    <option value="shaabi">شعبي / مهرجان (باص قوي)</option>
+  </select>
+  <div class="sl"><label>دفء وباص</label><span></span></div>
+  <div class="sl"><input type="range" id="rLow" min="-6" max="6" step="0.5"><span id="vLow"></span></div>
+  <div class="sl"><label>وضوح الصوت والكلام</label><span></span></div>
+  <div class="sl"><input type="range" id="rMid" min="-6" max="6" step="0.5"><span id="vMid"></span></div>
+  <div class="sl"><label>لمعة (Air)</label><span></span></div>
+  <div class="sl"><input type="range" id="rAir" min="-6" max="6" step="0.5"><span id="vAir"></span></div>
+  <div class="sl"><label>تهدية حرف السين والحدّة</label><span></span></div>
+  <div class="sl"><input type="range" id="rSss" min="0" max="8" step="0.5"><span id="vSss"></span></div>
+  <div class="sl"><label>قوة الضغط (Compressor)</label><span></span></div>
+  <div class="sl"><input type="range" id="rComp" min="0" max="100"><span id="vComp"></span></div>
+  <div class="sl"><label>العلوّ النهائي (يوتيوب/سبوتيفاي = ‎-14)</label><span></span></div>
+  <div class="sl"><input type="range" id="rLufs" min="-18" max="-8" step="0.5"><span id="vLufs"></span></div>
+  <div class="sl"><label>دخلة ناعمة (Fade in)</label><span></span></div>
+  <div class="sl"><input type="range" id="rFin" min="0" max="5" step="0.1" value="0.3"><span id="vFin"></span></div>
+  <div class="sl"><label>خرجة ناعمة (Fade out)</label><span></span></div>
+  <div class="sl"><input type="range" id="rFout" min="0" max="12" step="0.5" value="4"><span id="vFout"></span></div>
+  <label style="display:flex;gap:6px;align-items:center;color:var(--txt)"><input type="checkbox" id="cTrim" checked> قص السكوت الزيادة في الأول والآخر</label>
+  <label style="display:flex;gap:6px;align-items:center;color:var(--txt)"><input type="checkbox" id="cHum" checked> شيل الهمهمة والزنّة الواطية</label>
+  <div class="row" style="margin-top:8px">
+    <button class="pri" id="bMaster">✨ اعمل الماستر</button>
+    <button id="bAB">🔁 بتسمع دلوقتي: قبل</button>
+  </div>
+  <p class="note">«قبل / بعد» بيبدّل وانت بتسمع من نفس المكان، عشان تقارن بودنك.</p>
+  <div class="msg" id="m6"></div>
+  <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
+  <h2 style="font-size:15px">🤖 فريق الاستوديو بالذكاء الاصطناعي (جيميناي): ملحن + موزع + مهندس صوت + مخرج — بيكتبلك تعديلات سونو بالظبط</h2>
+  <p class="note">جيميناي بيسمع الأغنية ويطلّعلك الكلمات اللي اتنطقت غلط بتوقيتها، والنشاز، ومشاكل الميكس، ويقترح دخلة وخرجة أقوى، ويكتبلك الكلمة بإملاء وتشكيل يخلّي سونو ينطقها صح.</p>
+  <label>كلمات الأغنية (مهمة عشان يكتشف الكلمات الغلط)</label>
+  <textarea id="tLyr" rows="5" style="width:100%;background:#0b0d11;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit"></textarea>
+  <label>الستايل اللي كتبته في سونو (Style of Music) — اختياري</label>
+  <textarea id="tSty" rows="2" style="width:100%;background:#0b0d11;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;direction:ltr;text-align:left"></textarea>
+  <label>إيه اللي مش عاجبك أو عايزه (اختياري)</label>
+  <textarea id="tWish" rows="2" style="width:100%;background:#0b0d11;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit"></textarea>
+  <div class="row" style="margin-top:6px">
+    <button class="pri" id="bGem">📤 ابعت الأغنية + البرومبت لجيميناي</button>
+    <button id="bGemCopy">📋 انسخ البرومبت بس</button>
+  </div>
+  <div class="msg" id="m7"></div>
+</div>
+
+<div class="card">
+  <h2><span class="n">6</span>صدّر</h2>
+  <div class="row">
+    <button class="pri" id="bExpMast">⬇ بعد الماستر (WAV) — النسخة النهائية</button>
+    <button id="bExpMix">⬇ الأغنية كاملة قبل الماستر (WAV)</button>
+    <button id="bExpVoc">⬇ الغناء بس (WAV)</button>
+  </div>
+  <p class="note">لو هتعمل Cover في سونو كخدعة لتصحيح جزء: صدّر «قبل الماستر». ولو دي النسخة اللي هتنشرها: صدّر «بعد الماستر».</p>
+  <div class="msg" id="m5"></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let ctx=null,SR=48000;
+function AC(){if(!ctx){ctx=new(window.AudioContext||window.webkitAudioContext)();SR=ctx.sampleRate;}if(ctx.state==='suspended')ctx.resume();return ctx;}
+let inst=null,voc=null,hist=[],take=null,takeProc=null,takeBase=0,ver=0;
+let sel={s:0,e:0},view={a:0,b:1},dur=0,playing=null,rec=null,cursor=0,abMode='before',mast=null,mastVer=-1,mastOff=0,mastInfo=null;
+
+function msg(id,t,err){const m=$(id);m.textContent=t;m.className='msg'+(err?' err':'');m.style.display=t?'block':'none';}
+function fmt(t){if(!isFinite(t))t=0;const m=Math.floor(t/60),s=t-m*60;return m+':'+(s<10?'0':'')+s.toFixed(2);}
+function decode(buf){return new Promise((res,rej)=>{const p=AC().decodeAudioData(buf,res,rej);if(p&&p.catch)p.catch(rej);});}
+function toStereo(ab){const L=ab.getChannelData(0).slice();const R=ab.numberOfChannels>1?ab.getChannelData(1).slice():L.slice();return[L,R];}
+function vlen(){return voc?voc[0].length:0}
+function calcDur(){dur=Math.max(inst?inst[0].length:0,vlen())/SR;}
+const dbl=d=>Math.pow(10,d/20);
+const offSec=()=>(+$('rOff').value)/1000;
+const cfSec=()=>(+$('rCf').value)/1000;
+
+// ---------- Loading ----------
+$('fInst').onchange=async e=>{const f=e.target.files[0];if(!f)return;msg('m1','بفتح ملف الموسيقى…');
+  try{inst=toStereo(await decode(await f.arrayBuffer()));ver++;mast=null;calcDur();msg('m1','✔ الموسيقى جاهزة ('+fmt(inst[0].length/SR)+')');$('noInstWarn').style.display='none';draw();}
+  catch(err){msg('m1','مقدرتش أفتح الملف ده. جرّب MP3 أو WAV.',true);}};
+$('fVoc').onchange=async e=>{const f=e.target.files[0];if(!f)return;msg('m1','بفتح ملف الغناء…');
+  try{voc=toStereo(await decode(await f.arrayBuffer()));hist=[];ver++;cursor=0;mast=null;calcDur();
+    sel={s:Math.min(10,dur*0.25),e:Math.min(dur,Math.min(10,dur*0.25)+5)};view={a:0,b:dur};syncInputs();
+    msg('m1','✔ الغناء جاهز ('+fmt(vlen()/SR)+'). حدد الجزء الغلط في الخطوة 2.');
+    $('noInstWarn').style.display=inst?'none':'block';draw();}
+  catch(err){msg('m1','مقدرتش أفتح الملف ده. جرّب MP3 أو WAV.',true);}};
+
+// ---------- Waveform ----------
+let pkCache={key:'',pk:null};
+function getPeaks(W){const key=view.a+'|'+view.b+'|'+W+'|'+ver;if(pkCache.key===key)return pkCache.pk;
+  const pk=new Float32Array(W*2),L=voc[0],R=voc[1],n=L.length;
+  for(let i=0;i<W;i++){const a=Math.floor((view.a+(view.b-view.a)*i/W)*SR),b=Math.floor((view.a+(view.b-view.a)*(i+1)/W)*SR);
+    let mn=0,mx=0;const step=Math.max(1,Math.floor((b-a)/400));
+    for(let j=Math.max(0,a);j<Math.min(n,Math.max(b,a+1));j+=step){const v=(L[j]+R[j])*0.5;if(v<mn)mn=v;if(v>mx)mx=v;}
+    pk[2*i]=mn;pk[2*i+1]=mx;}
+  pkCache={key,pk};return pk;}
+function draw(){const c=$('wave'),dpr=window.devicePixelRatio||1,W=Math.max(1,Math.floor(c.clientWidth*dpr)),H=Math.floor(c.clientHeight*dpr);
+  if(c.width!==W)c.width=W;if(c.height!==H)c.height=H;const g=c.getContext('2d');g.clearRect(0,0,W,H);
+  if(!voc){g.fillStyle='#9aa3b2';g.font=(14*dpr)+'px sans-serif';g.textAlign='center';g.fillText('حمّل ملف الغناء الأول',W/2,H/2);return;}
+  const span=view.b-view.a,x=t=>(t-view.a)/span*W;
+  g.fillStyle='rgba(255,176,32,.18)';g.fillRect(x(sel.s),0,x(sel.e)-x(sel.s),H);
+  const pk=getPeaks(W);g.fillStyle='#5aa9ff';
+  for(let i=0;i<W;i++){const y1=(1-pk[2*i+1])*H/2,y2=(1-pk[2*i])*H/2;g.fillRect(i,y1,1,Math.max(1,y2-y1));}
+  if(takeProc){const ts=takeBase+offSec(),T=takeProc[0],gn=dbl(+$('rGain').value);g.fillStyle='rgba(79,216,138,.75)';
+    const x0=Math.max(0,Math.floor(x(Math.max(ts,sel.s)))),x1=Math.min(W,Math.ceil(x(Math.min(ts+T.length/SR,sel.e))));
+    for(let i=x0;i<x1;i++){const a=Math.floor((view.a+span*i/W-ts)*SR),b=Math.floor((view.a+span*(i+1)/W-ts)*SR);let mx=0;const st=Math.max(1,Math.floor((b-a)/200));
+      for(let j=Math.max(0,a);j<Math.min(T.length,Math.max(b,a+1));j+=st){const v=Math.abs(T[j]);if(v>mx)mx=v;}
+      const h=Math.min(1,mx*gn)*H/2;g.fillRect(i,H/2-h,1,Math.max(1,2*h));}}
+  g.fillStyle='#ffb020';g.fillRect(x(sel.s)-1,0,3*dpr,H);g.fillRect(x(sel.e)-1,0,3*dpr,H);
+  if(playing){const p=curPos();g.fillStyle='#fff';g.fillRect(x(p),0,2*dpr,H);$('tPos').textContent=fmt(p);}else{g.fillStyle='#4fd88a';g.fillRect(x(cursor)-dpr,0,2*dpr,H);$('tPos').textContent='⏸ '+fmt(cursor);}
+  $('tA').textContent=fmt(view.a);$('tB').textContent=fmt(view.b);}
+window.addEventListener('resize',draw);
+
+let drag=null;
+const cv=$('wave');
+function tAt(ev){const r=cv.getBoundingClientRect();return Math.max(0,Math.min(dur,view.a+(ev.clientX-r.left)/r.width*(view.b-view.a)));}
+cv.addEventListener('pointerdown',ev=>{if(!voc)return;cv.setPointerCapture(ev.pointerId);const t=tAt(ev),r=cv.getBoundingClientRect(),px=(view.b-view.a)/r.width*14;
+  if(Math.abs(t-sel.s)<px)drag={m:'s'};else if(Math.abs(t-sel.e)<px)drag={m:'e'};else{drag={m:'new',a:t,old:{...sel}};sel={s:t,e:t};}draw();});
+cv.addEventListener('pointermove',ev=>{if(!drag)return;const t=tAt(ev);
+  if(drag.m==='s')sel.s=Math.min(t,sel.e-0.05);else if(drag.m==='e')sel.e=Math.max(t,sel.s+0.05);else{sel.s=Math.min(drag.a,t);sel.e=Math.max(drag.a,t);}syncInputs();draw();});
+cv.addEventListener('pointerup',()=>{if(drag&&drag.m==='new'&&sel.e-sel.s<0.1){sel=drag.old;cursor=drag.a;if(playing&&playing.main)startMain(cursor);}drag=null;syncInputs();draw();});
+function syncInputs(){$('iS').value=sel.s.toFixed(2);$('iE').value=sel.e.toFixed(2);}
+$('iS').onchange=()=>{sel.s=Math.max(0,Math.min(+$('iS').value,sel.e-0.05));syncInputs();draw();};
+$('iE').onchange=()=>{sel.e=Math.min(dur,Math.max(+$('iE').value,sel.s+0.05));syncInputs();draw();};
+document.querySelectorAll('button[data-n]').forEach(b=>b.onclick=()=>{const d=+b.dataset.d;
+  if(b.dataset.n==='s')sel.s=Math.max(0,Math.min(sel.s+d,sel.e-0.05));else sel.e=Math.min(dur,Math.max(sel.e+d,sel.s+0.05));syncInputs();draw();});
+$('bZoom').onclick=()=>{if(!voc)return;const p=Math.max(1.5,(sel.e-sel.s)*0.3);view={a:Math.max(0,sel.s-p),b:Math.min(dur,sel.e+p)};draw();};
+$('bZoomAll').onclick=()=>{view={a:0,b:dur||1};draw();};
+
+// ---------- Playback ----------
+function makeBuf(chs,from,to,base){const a=Math.floor(from*SR)-base,b=Math.min(chs[0].length,Math.floor(to*SR)-base),a0=Math.max(0,a);if(b<=a0)return null;
+  const ab=ctx.createBuffer(2,b-a0,SR);ab.getChannelData(0).set(chs[0].subarray(a0,b));ab.getChannelData(1).set(chs[1].subarray(a0,b));return{ab,delay:(a0-a)/SR};}
+function curPos(){return playing?Math.min(playing.to,Math.max(playing.from,playing.from+(ctx.currentTime-playing.t0))):cursor;}
+function stop(){if(playing){const p=curPos();playing.srcs.forEach(s=>{try{s.stop()}catch(e){}});if(playing.main)cursor=p>=playing.to-0.05?0:p;playing=null;}draw();}
+function mastOk(){return mast&&mastVer===ver;}
+function startMain(at){if(at==null)at=cursor;if(at>=dur-0.05)at=0;play(at,dur,{main:true,master:abMode==='after'&&mastOk()});}
+function play(from,to,opt={}){stop();AC();from=Math.max(0,from);to=Math.min(dur,to);const t0=ctx.currentTime+0.1,srcs=[];
+  const add=(chs,base,gain)=>{if(!chs)return;const r=makeBuf(chs,from,to,base);if(!r)return;const s=ctx.createBufferSource();s.buffer=r.ab;const g=ctx.createGain();g.gain.value=gain;s.connect(g);g.connect(ctx.destination);s.start(t0+r.delay);srcs.push(s);};
+  if(opt.master){add(mast,Math.round(mastOff*SR),1);}
+  else{add(inst,0,1);const vw=opt.vocWin||{chs:voc,a:0};add(vw.chs,vw.a,opt.vocGain==null?1:opt.vocGain);}
+  playing={srcs,t0,from,to,main:!!opt.main};const tick=()=>{if(!playing)return;if(ctx.currentTime-playing.t0>playing.to-playing.from+0.05){if(!rec)stop();return;}draw();requestAnimationFrame(tick);};tick();return{t0,from};}
+$('bPlayAll').onclick=()=>{if(!voc)return;if(playing&&playing.main){stop();return;}startMain();};
+$('bHome').onclick=()=>{const was=playing&&playing.main;stop();cursor=0;if(was)startMain(0);draw();};
+$('bPlaySel').onclick=()=>{if(voc)play(sel.s-1,sel.e+1);};
+$('bStop').onclick=()=>{if(rec)finishRec();else stop();};
+
+// ---------- Take processing ----------
+function makeIR(c,sec){const n=Math.floor(SR*sec),b=c.createBuffer(2,n,SR);for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,4);}return b;}
+async function processTake(){if(!take){takeProc=null;draw();return;}
+  const rev=+$('rRev').value/100,hp=$('cHp').checked,len=take.length+Math.floor(SR*(rev>0?2:0));
+  const oc=new(window.OfflineAudioContext||window.webkitOfflineAudioContext)(2,len,SR);
+  const b=oc.createBuffer(1,take.length,SR);b.getChannelData(0).set(take);const src=oc.createBufferSource();src.buffer=b;let node=src;
+  if(hp){const f=oc.createBiquadFilter();f.type='highpass';f.frequency.value=90;f.Q.value=0.7;node.connect(f);node=f;}
+  node.connect(oc.destination);
+  if(rev>0){const c=oc.createConvolver();c.buffer=makeIR(oc,1.8);const w=oc.createGain();w.gain.value=rev*0.7;node.connect(c);c.connect(w);w.connect(oc.destination);}
+  src.start();const r=await oc.startRendering();takeProc=[r.getChannelData(0),r.getChannelData(1)];draw();}
+let ptm=null;const reproc=()=>{clearTimeout(ptm);ptm=setTimeout(processTake,250);};
+$('rRev').oninput=()=>{lbl();reproc();};$('cHp').onchange=reproc;
+
+function rmsRange(arr,a,b){let s=0,n=0;for(let i=Math.max(0,a);i<Math.min(arr.length,b);i++){s+=arr[i]*arr[i];n++;}return n?Math.sqrt(s/n):0;}
+function autoAlign(maxLag){if(!take||!voc)return 0;const h=Math.round(SR*0.01),sA=Math.floor(sel.s*SR),N=Math.floor((sel.e-sel.s)*SR/h),L=Math.round(maxLag*SR/h);if(N<10)return 0;
+  const mono=i=>(voc[0][i]+voc[1][i])*0.5;const O=new Float32Array(N);
+  for(let i=0;i<N;i++){let s=0;const a=sA+i*h;for(let j=a;j<a+h&&j<vlen();j++){const v=mono(j);s+=v*v;}O[i]=Math.log10(Math.sqrt(s/h)+1e-4);}
+  const ts=Math.round((takeBase+offSec())*SR),M=N+2*L,T=new Float32Array(M);
+  for(let j=0;j<M;j++){const a=sA-L*h+j*h-ts;let s=0;for(let k=a;k<a+h;k++){if(k>=0&&k<take.length)s+=take[k]*take[k];}T[j]=Math.log10(Math.sqrt(s/h)+1e-4);}
+  let mo=0;for(const v of O)mo+=v;mo/=N;for(let i=0;i<N;i++)O[i]-=mo;
+  let best=-Infinity,bk=0;
+  for(let k=-L;k<=L;k++){let sum=0,ss=0,mt=0;const off=L-k;for(let i=0;i<N;i++)mt+=T[i+off];mt/=N;
+    for(let i=0;i<N;i++){const t=T[i+off]-mt;sum+=O[i]*t;ss+=t*t;}const c=ss>0?sum/Math.sqrt(ss):-Infinity;if(c>best){best=c;bk=k;}}
+  const d=bk*h/SR;takeBase+=d;return d;}
+function autoGain(){if(!takeProc||!voc)return;const a=Math.floor(sel.s*SR),b=Math.floor(sel.e*SR),ts=Math.round((takeBase+offSec())*SR);
+  const ro=(rmsRange(voc[0],a,b)+rmsRange(voc[1],a,b))/2,rt=rmsRange(takeProc[0],a-ts,b-ts);if(rt<1e-6)return;
+  let db=20*Math.log10(ro/rt);db=Math.max(-24,Math.min(24,Math.round(db*2)/2));$('rGain').value=db;lbl();draw();}
+
+async function afterTake(maxLag,txt){$('rOff').value=0;await processTake();const d=autoAlign(maxLag);autoGain();lbl();draw();
+  msg('m3',txt+' (اتظبط التوقيت '+(d>=0?'+':'')+Math.round(d*1000)+' ملّي ثانية). روح للخطوة 4 واسمع النتيجة.');}
+
+// ---------- Recording ----------
+$('bRec').onclick=async()=>{if(!voc){msg('m3','حمّل ملف الغناء الأول.',true);return;}AC();
+  let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});}
+  catch(e){msg('m3','مقدرتش أفتح المايك. اسمح للصفحة باستخدام الميكروفون، أو ارفع تسجيل جاهز تحت.',true);return;}
+  const src=ctx.createMediaStreamSource(stream),sp=ctx.createScriptProcessor(4096,1,1),mute=ctx.createGain();mute.gain.value=0;
+  src.connect(sp);sp.connect(mute);mute.connect(ctx.destination);
+  const P=Math.max(0,sel.s-(+$('rPre').value)),end=Math.min(dur,sel.e+0.8);const chunks=[];
+  rec={stream,src,sp,mute,chunks,P,end,t0:0};
+  const pl=play(P,end,{vocGain:+$('rGuide').value/100});rec.t0=pl.t0;
+  sp.onaudioprocess=e=>{if(!rec)return;const d=e.inputBuffer.getChannelData(0);chunks.push({t:ctx.currentTime,d:new Float32Array(d)});
+    if(ctx.currentTime>rec.t0+(rec.end-rec.P)+0.2)finishRec();};
+  $('bRec').disabled=true;$('bRecStop').disabled=false;$('recBadge').style.display='inline';msg('m3','');};
+$('bRecStop').onclick=()=>finishRec();
+async function finishRec(){if(!rec)return;const r=rec;rec=null;
+  try{r.sp.disconnect();r.src.disconnect();r.mute.disconnect();}catch(e){}r.stream.getTracks().forEach(t=>t.stop());stop();
+  $('bRec').disabled=false;$('bRecStop').disabled=true;$('recBadge').style.display='none';
+  if(!r.chunks.length){msg('m3','ما اتسجلش حاجة. جرّب تاني.',true);return;}
+  let n=0;r.chunks.forEach(c=>n+=c.d.length);const t=new Float32Array(n);let o=0;r.chunks.forEach(c=>{t.set(c.d,o);o+=c.d.length;});
+  const firstT=r.chunks[0].t-r.chunks[0].d.length/SR;const lat=(ctx.outputLatency||0)+(ctx.baseLatency||0);
+  take=t;takeBase=r.P+(firstT-r.t0)-lat;
+  await afterTake(0.4,'✔ اتسجّل صوتك');}
+$('fTake').onchange=async e=>{const f=e.target.files[0];if(!f)return;if(!voc){msg('m3','حمّل ملف الغناء الأول.',true);return;}msg('m3','بفتح التسجيل…');
+  try{const ab=await decode(await f.arrayBuffer());const L=ab.getChannelData(0),R=ab.numberOfChannels>1?ab.getChannelData(1):L;
+    take=new Float32Array(L.length);for(let i=0;i<L.length;i++)take[i]=(L[i]+R[i])*0.5;takeBase=sel.s-(+$('rLead').value);
+    await afterTake(2.5,'✔ التسجيل اتحمّل');}catch(err){msg('m3','مقدرتش أفتح التسجيل. جرّب MP3 أو WAV أو M4A.',true);}};
+
+// ---------- Compose / apply ----------
+function renderRegion(){const a=Math.max(0,Math.floor(sel.s*SR)),b=Math.min(vlen(),Math.ceil(sel.e*SR)),n=b-a;
+  const out=[new Float32Array(n),new Float32Array(n)],g=dbl(+$('rGain').value),ts=Math.round((takeBase+offSec())*SR),cfN=Math.max(1,Math.min(Math.floor(cfSec()*SR),Math.floor(n/2)));
+  for(let ch=0;ch<2;ch++){const O=voc[ch],T=takeProc[ch],R=out[ch];
+    for(let i=0;i<n;i++){const ti=a+i-ts,tv=(ti>=0&&ti<T.length)?T[ti]*g:0;
+      const w=i<cfN?i/cfN:(i>=n-cfN?(n-1-i)/cfN:1);R[i]=tv*Math.sin(w*Math.PI/2)+O[a+i]*Math.cos(w*Math.PI/2);}}
+  return{a,chs:out};}
+$('bPreview').onclick=()=>{if(!takeProc){msg('m4','سجّل أو ارفع صوتك الأول (خطوة 3).',true);return;}msg('m4','');
+  const from=Math.max(0,sel.s-2.5),to=Math.min(dur,sel.e+2.5),A=Math.floor(from*SR),B=Math.min(vlen(),Math.floor(to*SR));
+  const chs=[voc[0].slice(A,B),voc[1].slice(A,B)],r=renderRegion();chs[0].set(r.chs[0],r.a-A);chs[1].set(r.chs[1],r.a-A);
+  play(from,to,{vocWin:{chs,a:A}});};
+$('bApply').onclick=()=>{if(!takeProc){msg('m4','سجّل أو ارفع صوتك الأول (خطوة 3).',true);return;}stop();
+  const r=renderRegion();hist.push({a:r.a,chs:[voc[0].slice(r.a,r.a+r.chs[0].length),voc[1].slice(r.a,r.a+r.chs[0].length)]});if(hist.length>15)hist.shift();
+  voc[0].set(r.chs[0],r.a);voc[1].set(r.chs[1],r.a);ver++;take=null;takeProc=null;$('fTake').value='';draw();
+  msg('m4','✔ اتطبّق الإصلاح ('+fmt(sel.s)+' → '+fmt(sel.e)+'). حدد جزء تاني أو صدّر من خطوة 5.');};
+$('bUndo').onclick=()=>{const h=hist.pop();if(!h){msg('m4','مفيش حاجة أتراجع عنها.',true);return;}stop();voc[0].set(h.chs[0],h.a);voc[1].set(h.chs[1],h.a);ver++;draw();msg('m4','↶ اتراجعت عن آخر إصلاح.');};
+
+// ---------- Export ----------
+function wavBlob(chs){const n=chs[0].length;let pk=0;for(let c=0;c<2;c++)for(let i=0;i<n;i++){const v=Math.abs(chs[c][i]);if(v>pk)pk=v;}
+  const k=pk>0.98?0.98/pk:1,buf=new ArrayBuffer(44+n*4),v=new DataView(buf),ws=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');v.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,2,true);
+  v.setUint32(24,SR,true);v.setUint32(28,SR*4,true);v.setUint16(32,4,true);v.setUint16(34,16,true);ws(36,'data');v.setUint32(40,n*4,true);
+  let o=44;for(let i=0;i<n;i++)for(let c=0;c<2;c++){const s=Math.max(-1,Math.min(1,chs[c][i]*k));v.setInt16(o,s<0?s*32768:s*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},8000);}
+$('bExpMix').onclick=()=>{if(!voc)return;msg('m5','بجهّز الملف…');setTimeout(()=>{const n=Math.max(inst?inst[0].length:0,vlen()),L=new Float32Array(n),R=new Float32Array(n);
+  [inst,voc].forEach(s=>{if(!s)return;for(let i=0;i<s[0].length;i++){L[i]+=s[0][i];R[i]+=s[1][i];}});dl(wavBlob([L,R]),'song-fixed.wav');msg('m5','✔ اتحمّل song-fixed.wav');},50);};
+$('bExpVoc').onclick=()=>{if(!voc)return;dl(wavBlob(voc),'vocals-fixed.wav');msg('m5','✔ اتحمّل vocals-fixed.wav');};
+
+// ---------- Labels ----------
+function lbl(){$('vPre').textContent=$('rPre').value+' ث';$('vGuide').textContent=$('rGuide').value+'%';$('vLead').textContent=$('rLead').value+' ث';
+  const o=+$('rOff').value;$('vOff').textContent=(o>0?'+':'')+o+' ms';const g=+$('rGain').value;$('vGain').textContent=(g>0?'+':'')+g+' dB';
+  $('vCf').textContent=$('rCf').value+' ms';$('vRev').textContent=$('rRev').value+'%';}
+['rPre','rGuide','rLead','rCf'].forEach(id=>$(id).oninput=lbl);
+$('rOff').oninput=()=>{lbl();draw();};$('rGain').oninput=()=>{lbl();draw();};
+$('bAlign').onclick=()=>{if(!take){msg('m4','سجّل أو ارفع صوتك الأول.',true);return;}const d=autoAlign(0.4);draw();msg('m4','🎯 اتحرك صوتك '+(d>=0?'+':'')+Math.round(d*1000)+' ملّي ثانية.');};
+$('bAutoGain').onclick=()=>{autoGain();msg('m4','🔊 اتظبط العلوّ على '+$('rGain').value+' dB.');};
+
+// ================= Mastering engineer =================
+const PRESETS={natural:{low:0,mid:1,air:1.5,sss:2,comp:35,lufs:-14},pop:{low:1.5,mid:2,air:3,sss:3,comp:55,lufs:-11},
+  soft:{low:1.5,mid:0.5,air:1,sss:2,comp:25,lufs:-15},shaabi:{low:3,mid:1.5,air:2,sss:3,comp:65,lufs:-10}};
+function applyPreset(){const p=PRESETS[$('sPreset').value];$('rLow').value=p.low;$('rMid').value=p.mid;$('rAir').value=p.air;$('rSss').value=p.sss;$('rComp').value=p.comp;$('rLufs').value=p.lufs;mlbl();}
+function mlbl(){const db=id=>{const v=+$(id).value;return(v>0?'+':'')+v+' dB';};$('vLow').textContent=db('rLow');$('vMid').textContent=db('rMid');$('vAir').textContent=db('rAir');
+  $('vSss').textContent='−'+$('rSss').value+' dB';$('vComp').textContent=$('rComp').value+'%';$('vLufs').textContent=$('rLufs').value+' LUFS';
+  $('vFin').textContent=$('rFin').value+' ث';$('vFout').textContent=$('rFout').value+' ث';}
+$('sPreset').onchange=applyPreset;['rLow','rMid','rAir','rSss','rComp','rLufs','rFin','rFout'].forEach(id=>$(id).oninput=mlbl);
+function mixdown(){const n=Math.max(inst?inst[0].length:0,vlen()),L=new Float32Array(n),R=new Float32Array(n);
+  [inst,voc].forEach(s=>{if(!s)return;for(let i=0;i<s[0].length;i++){L[i]+=s[0][i];R[i]+=s[1][i];}});return[L,R];}
+async function lufs(L,R){const n=L.length,oc=new(window.OfflineAudioContext||window.webkitOfflineAudioContext)(2,n,SR),b=oc.createBuffer(2,n,SR);
+  b.getChannelData(0).set(L);b.getChannelData(1).set(R);const s=oc.createBufferSource();s.buffer=b;
+  const f1=oc.createBiquadFilter();f1.type='highshelf';f1.frequency.value=1500;f1.gain.value=4;const f2=oc.createBiquadFilter();f2.type='highpass';f2.frequency.value=38;f2.Q.value=0.5;
+  s.connect(f1);f1.connect(f2);f2.connect(oc.destination);s.start();const r=await oc.startRendering(),a=r.getChannelData(0),c=r.getChannelData(1);
+  const hop=Math.floor(SR*0.1),hs=[];for(let i=0;i+hop<=n;i+=hop){let e=0;for(let j=i;j<i+hop;j++)e+=a[j]*a[j]+c[j]*c[j];hs.push(e/hop);}
+  const pw=[];for(let i=0;i+4<=hs.length;i++)pw.push((hs[i]+hs[i+1]+hs[i+2]+hs[i+3])/4);
+  const toL=p=>-0.691+10*Math.log10(p+1e-12);let g1=pw.filter(p=>toL(p)>-70);if(!g1.length)return -70;
+  const m1=g1.reduce((x,y)=>x+y,0)/g1.length,rel=toL(m1)-10,g2=g1.filter(p=>toL(p)>rel);return toL(g2.reduce((x,y)=>x+y,0)/g2.length);}
+function slideMin(a,h){const n=a.length,o=new Float32Array(n),q=new Int32Array(n);let hd=0,tl=0;
+  for(let j=0;j<n+h;j++){if(j<n){while(tl>hd&&a[q[tl-1]]>=a[j])tl--;q[tl++]=j;}const i=j-h;if(i>=0){while(q[hd]<i-h)hd++;o[i]=a[q[hd]];}}return o;}
+function limiter(L,R,ceil){const n=L.length,la=Math.max(2,Math.floor(SR*0.004)),need=new Float32Array(n);
+  for(let i=0;i<n;i++){const p=Math.max(Math.abs(L[i]),Math.abs(R[i]));need[i]=p>ceil?ceil/p:1;}
+  const m=slideMin(need,la),cs=new Float64Array(n+1);for(let i=0;i<n;i++)cs[i+1]=cs[i]+m[i];
+  const h=la>>1,rel=1-Math.exp(-1/(SR*0.12));let g=1,red=0;
+  for(let i=0;i<n;i++){const a=Math.max(0,i-h),b=Math.min(n,i+h+1),s=(cs[b]-cs[a])/(b-a);g=s<g?s:g+(s-g)*rel;if(1-g>red)red=1-g;
+    L[i]=Math.max(-ceil,Math.min(ceil,L[i]*g));R[i]=Math.max(-ceil,Math.min(ceil,R[i]*g));}return red;}
+function peakDb(L,R){let p=0;for(let i=0;i<L.length;i++){const v=Math.max(Math.abs(L[i]),Math.abs(R[i]));if(v>p)p=v;}return 20*Math.log10(p+1e-9);}
+async function runMaster(){if(!voc){msg('m6','حمّل الأغنية الأول.',true);return;}stop();msg('m6','⏳ مهندس الصوت شغال… (ممكن ياخد نص دقيقة على الموبايل)');
+  await new Promise(r=>setTimeout(r,60));
+  try{let[L,R]=mixdown();const before=await lufs(L,R),pkB=peakDb(L,R);
+    let a=0,b=L.length;if($('cTrim').checked){const th=0.003,mx=i=>Math.max(Math.abs(L[i]),Math.abs(R[i]));
+      while(a<b&&mx(a)<th)a++;while(b>a&&mx(b-1)<th)b--;a=Math.max(0,a-Math.floor(SR*0.05));b=Math.min(L.length,b+Math.floor(SR*0.4));}
+    mastOff=a/SR;const n=b-a,oc=new(window.OfflineAudioContext||window.webkitOfflineAudioContext)(2,n,SR),buf=oc.createBuffer(2,n,SR);
+    buf.getChannelData(0).set(L.subarray(a,b));buf.getChannelData(1).set(R.subarray(a,b));L=R=null;
+    const src=oc.createBufferSource();src.buffer=buf;let node=src;const F=(type,f,q,gn)=>{const x=oc.createBiquadFilter();x.type=type;x.frequency.value=f;if(q!=null)x.Q.value=q;if(gn!=null)x.gain.value=gn;node.connect(x);node=x;};
+    F('highpass',28,0.7);if($('cHum').checked){F('notch',50,30);F('notch',100,30);}
+    F('peaking',250,1.0,-1.5);F('lowshelf',110,null,+$('rLow').value);F('peaking',2800,0.9,+$('rMid').value);
+    F('peaking',6800,2.2,-(+$('rSss').value));F('highshelf',11000,null,+$('rAir').value);
+    const k=+$('rComp').value/100,cp=oc.createDynamicsCompressor();cp.threshold.value=-8-22*k;cp.ratio.value=1.4+3*k;cp.knee.value=8;cp.attack.value=0.025;cp.release.value=0.22;
+    node.connect(cp);cp.connect(oc.destination);src.start();const r=await oc.startRendering();
+    let M=[r.getChannelData(0).slice(),r.getChannelData(1).slice()];
+    const target=+$('rLufs').value,ceil=Math.pow(10,-1/20);let red=0;
+    for(let pass=0;pass<2;pass++){const cur=await lufs(M[0],M[1]),gdb=target-cur;if(pass===1&&Math.abs(gdb)<0.4)break;const gg=dbl(gdb);
+      for(let i=0;i<n;i++){M[0][i]*=gg;M[1][i]*=gg;}red=Math.max(red,limiter(M[0],M[1],ceil));}
+    const fi=Math.floor(+$('rFin').value*SR),fo=Math.floor(+$('rFout').value*SR);
+    for(let i=0;i<Math.min(fi,n);i++){const w=Math.pow(Math.sin(i/fi*Math.PI/2),2);M[0][i]*=w;M[1][i]*=w;}
+    for(let i=0;i<Math.min(fo,n);i++){const j=n-1-i,w=Math.pow(Math.sin(i/fo*Math.PI/2),2);M[0][j]*=w;M[1][j]*=w;}
+    const after=await lufs(M[0],M[1]),pkA=peakDb(M[0],M[1]);mast=M;mastVer=ver;
+    mastInfo={before,after,pkB,pkA,red:20*Math.log10(1-red+1e-9),trimA:mastOff,len:n/SR};abMode='after';abLbl();
+    msg('m6','✔ الماستر جاهز وبتسمع دلوقتي «بعد». العلوّ: '+before.toFixed(1)+' ← '+after.toFixed(1)+' LUFS · أعلى قمة: '+pkA.toFixed(1)+' dB'+(mastInfo.red<-6?' · ⚠️ الليميتر ضاغط كتير، نزّل العلوّ النهائي شوية':'')+'. دوس «تشغيل» وقارن بـ «قبل / بعد».');
+    if(mastInfo.before>-10)msg('m6',$('m6').textContent+' (الأغنية الأصلية كانت عالية جدًا أصلًا.)');
+  }catch(e){msg('m6','حصلت مشكلة أثناء الماستر (غالبًا الذاكرة). جرّب تقفل التطبيقات التانية وتعيد.',true);}}
+function abLbl(){$('bAB').textContent='🔁 بتسمع دلوقتي: '+(abMode==='after'?'بعد ✨':'قبل');}
+$('bMaster').onclick=runMaster;
+$('bAB').onclick=()=>{if(!mastOk()){msg('m6',mast?'عدّلت في الأغنية بعد الماستر. دوس «اعمل الماستر» تاني.':'دوس «اعمل الماستر» الأول.',true);return;}
+  abMode=abMode==='after'?'before':'after';abLbl();if(playing&&playing.main){const p=curPos();stop();startMain(p);}};
+$('bExpMast').onclick=()=>{if(!mastOk()){msg('m5','اعمل الماستر الأول من خطوة 5.',true);return;}dl(wavBlob(mast),'song-master.wav');msg('m5','✔ اتحمّل song-master.wav');};
+
+// ---- Gemini ----
+function gemPrompt(){const i=mastInfo,ly=$('tLyr').value.trim(),st=$('tSty').value.trim(),w=$('tWish').value.trim();
+  return `أنت فريقي الكامل في الاستوديو: ملحن محترف، وموزع موسيقي محترف، ومهندس ميكس وماستر، ومخرج ومنتج أغاني، كلكم على مستوى عالمي: متخصصين في الأغنية المصرية والعربية (المقامات، والإيقاعات الشرقية، والآلات الشرقية)، وفي نفس الوقت محترفين في الموسيقى العالمية (البوب، والآر آند بي، والهيب هوب، والإلكترونيك، والسينمائي، واللاتيني، والأفروبيت، وتقنيات الإنتاج الحديثة في أشهر الأغاني العالمية)، وبتعرفوا تدمجوا بين الاتنين في توليفة مصرية بصوت عالمي. وكمان خبراء في Suno. اشتغلوا كفريق واحد.
+
+⛔ القواعد الذهبية (أهم من أي حاجة تانية في الرد):
+1. ممنوع أي اقتراح ممكن يبوّظ الأغنية أو يفسدها. القاعدة: "لو مش متأكد إنه هيحسّن، سيبه زي ما هو".
+2. حافظ على: اللحن الأصلي بتاعي، ومعنى الكلمات وإحساسها، وروح الأغنية وهويتها، وطابع صوت المغني، والستايل اللي اخترته. ممنوع تغيّر هوية الأغنية أو تحوّلها لنوع تاني.
+3. الأولوية لإصلاح الأخطاء (نطق، نشاز، إيقاع، عيوب صوت). التحسينات الإبداعية (لحن، توزيع، دخلة، خرجة) تقترحها بس لو متأكد إنها هتخلّي الأغنية أحلى بشكل واضح، وتكون أصغر تعديل ممكن يحقق الفرق.
+4. أي جزء حلو وشغال: اكتب صراحة "ده ممتاز، ما تلمسوش". ولو الأغنية كلها كويسة، قول كده وما تخترعش تعديلات.
+5. جنب كل تعديل اكتب: ليه هيحسّن، ودرجة ثقتك (عالية / متوسطة). أي تعديل ثقتك فيه أقل من عالية ما تكتبوش أصلًا.
+6. ما تقترحش أي تعديل يأثر على أجزاء سليمة. Replace Section بيكون على أضيق جزء ممكن.
+7. ابدأ أمر التنفيذ بخطوة: "احفظ النسخة الأصلية في سونو وما تمسحهاش"، وبعد كل تعديل: "قارن بالأصل بودنك، ولو مش أحلى ارجع للأصل".
+8. لو التعديل عملته وأحسن قليلًا بس فيه مخاطرة، ما تقترحوش. الأغنية المرفقة معمولة بـ Suno.
+اسمعها كاملة بتركيز أكتر من مرة، وبعدين اكتب "خطة إصلاح لسونو" جاهزة للنسخ واللصق. احكم بنفسك وخد قرار واحد في كل نقطة، من غير ما تديني اختيارات، وطبّق القواعد الذهبية في كل سطر.
+
+اكتب الرد بالترتيب ده بالظبط:
+
+## 1) التشخيص السريع
+3 أسطر: أقوى حاجة في الأغنية، وأخطر 3 مشاكل.
+
+## 2) أخطاء النطق والتشكيل
+جدول: التوقيت (د:ث) | اللي اتقال | الصح | الإملاء اللي يتكتب لسونو.
+الإملاء لسونو: الكلمة بالتشكيل الكامل، وتقسيم المقاطع بشرطة لو لازم، أو كتابتها زي ما بتتنطق بالعامية المصرية.
+
+## 3) تعديلات Replace Section (بالترتيب)
+لكل تعديل بلوك بالشكل ده بالظبط:
+- من: د:ث  إلى: د:ث (ابدأ وانتهِ عند سكتة أو نَفَس)
+- السبب: ...
+- Lyrics للصق: (السطور المعدّلة بس، بالإملاء الصوتي، ومعاها meta tags زي [Verse] أو [Chorus] لو لازم)
+- Style للصق (إنجليزي): ...
+- عدد النسخ اللي أولّدها، وإيه اللي أسمعه عشان أختار الصح.
+
+## 4) النشاز والإيقاع
+التوقيت + المشكلة + الإصلاح (Replace Section ولا أسجّله بصوتي وأعمل Cover).
+
+## 5) الدخلة والخرجة
+- هل الدخلة بتشد من أول 5 ثواني؟ لو لأ: Lyrics + Style إنجليزي جاهزين لدخلة جديدة (Intro) بنفس الروح، وطريقة عملها في سونو.
+- الخرجة: نفس الشيء (Extend من آخر الأغنية أو Replace)، ونهاية واضحة ([Outro] ثم [End]).
+
+## 6) الستايل المحسّن للأغنية كلها
+- Style of Music (إنجليزي، أقل من 200 حرف): ...
+- Exclude Styles: ...
+- القيم المقترحة لو موجودة في الإعدادات: Weirdness ـ Style Influence ـ Audio Influence.
+
+## 7) الكلمات كاملة بعد التصحيح
+(اكتبها في الآخر بعد ما تدمج فيها اقتراحات الملحن والموزع اللي تحت.) الأغنية كلها جاهزة للصق في سونو بالإملاء الصوتي والتشكيل، ومعاها tags الهيكل: [Intro] [Verse] [Pre-Chorus] [Chorus] [Bridge] [Outro] [End]، وأي توجيه أداء بين قوسين مربعين بالإنجليزي (زي [soft male vocal] أو [build up]).
+
+## 8) رأي الملحن
+- المقام والإيقاع اللي الأغنية ماشية عليهم، وهل مناسبين للكلام والإحساس.
+- قوة الهوك (الجملة اللي تعلق في الودن): هل الكورس بيتحفظ من أول مرة؟ لو لأ: اقترح تعديل لحني واحد محدد (فين بالتوقيت، وإيه اللي يتغيّر: يعلى، يقصر، يتكرر، سؤال وجواب، وقفة قبل الكورس).
+- لو فيه مكان يستاهل نقلة مقامية أو تصعيد في آخر كورس: فين وإزاي.
+- ترجم كل اقتراح لحني لتعليمات سونو جاهزة: Lyrics مع tags أداء زي [melodic hook] [rising melody] [key change] [call and response] [vocal run]، أو قولّي أسجّله بصوتي وأعمل Cover لو سونو مش هيفهمه بالكلام.
+
+## 9) رأي الموزع
+- التوزيع الحالي: الآلات الموجودة، وإيه الناقص أو الزيادة أو اللي بيزاحم الصوت.
+- خطة توزيع لكل جزء: [Intro] / [Verse] / [Pre-Chorus] / [Chorus] / [Bridge] / [Outro]: الآلات الأساسية، والطبقات، والإيقاع، والبناء (build up / drop / break / stop).
+- لمسات شرقية وعالمية تخلّي الأغنية مميزة (عود، قانون، ناي، كمنجات، رق، طبلة + سنثات، 808، جيتار، بيانو، أوركسترا سينمائي...) من غير زحمة، وقولّي لو فيه أسلوب إنتاج عالمي معروف يناسب الأغنية (زي توليفة شرقي على بوب أو أفروبيت).
+- الانتقالات بين الأجزاء: fill أو riser أو وقفة، وفين بالظبط.
+- ترجم الخطة دي لـ: Style of Music إنجليزي جاهز، وtags توزيع جوه الكلمات زي [instrumental break: oud solo] [drums drop out] [strings swell] [darbuka fill] [beat drop].
+
+## 10) الميكس والماستر
+لو فيه حدّة أو عكارة أو صوت واطي أو زنّة معدنية: قولّي أحرّك أنهي إعداد في أداتي وبكام بالظبط (دفء وباص، وضوح الصوت، لمعة، تهدية السين، الضغط، العلوّ النهائي بالـ LUFS).
+
+## 11) أمر التنفيذ
+قائمة مرقّمة بالخطوات بالترتيب، من أول خطوة لحد النسخة النهائية.
+${i?`\nقياسات أداتي: العلوّ قبل الماستر ${i.before.toFixed(1)} LUFS وبعده ${i.after.toFixed(1)} LUFS، أعلى قمة ${i.pkA.toFixed(1)} dB، الطول ${fmt(i.len)}.`:''}
+${st?'\nالستايل الحالي في سونو: '+st:''}
+${w?'\nملاحظاتي: '+w:''}
+${ly?'\nالكلمات الصحيحة زي ما كتبتها:\n'+ly:'\n(الكلمات مش مرفقة، استنتجها من الغنا وعلّم الأماكن اللي مش متأكد منها.)'}`;}
+async function copyTxt(t){try{await navigator.clipboard.writeText(t);return true;}catch(e){return false;}}
+$('bGemCopy').onclick=async()=>{const ok=await copyTxt(gemPrompt());msg('m7',ok?'✔ البرومبت اتنسخ. افتح جيميناي، ارفع الأغنية، والصق.':'مقدرتش أنسخ، جرّب تاني.',!ok);};
+$('bGem').onclick=async()=>{if(!voc){msg('m7','حمّل الأغنية الأول.',true);return;}const txt=gemPrompt();await copyTxt(txt);
+  const blob=mastOk()?wavBlob(mast):wavBlob(mixdown()),file=new File([blob],'song.wav',{type:'audio/wav'});
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],text:txt});msg('m7','✔ اختار Gemini من القائمة. البرومبت كمان متنسخ لو احتجت تلصقه.');return;}}
+  catch(e){if(e&&e.name==='AbortError'){msg('m7','');return;}}
+  try{await navigator.share({text:txt});msg('m7','✔ البرومبت اتبعت. ارفع ملف الأغنية في جيميناي بإيدك.');}
+  catch(e){msg('m7','✔ البرومبت متنسخ. افتح جيميناي وارفع الأغنية والصق البرومبت.');}};
+applyPreset();abLbl();
+lbl();draw();
+</script>
+</body>
+</html>
