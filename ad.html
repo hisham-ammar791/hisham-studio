@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090d16">
+<link rel="manifest" href="manifest.webmanifest">
+<title>استوديو الإعلانات</title>
+<style>
+@font-face{font-family:Cairo;src:url(fonts/cairo-arabic.woff2) format("woff2");font-display:swap}
+:root{--bg:#090d16;--card:#131c2e;--panel:#1e293b;--accent:#10b981;--blue:#3b82f6;--warn:#f59e0b;--text:#f8fafc;--muted:#94a3b8;--border:#334155}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Cairo,system-ui,sans-serif;padding-bottom:90px}
+header{display:flex;align-items:center;gap:8px;padding:10px 12px;position:sticky;top:0;background:#090d16ee;z-index:5;border-bottom:1px solid var(--border)}
+header h1{font-size:17px;margin:0;flex:1}
+nav{display:flex;gap:6px;padding:8px 12px;overflow-x:auto}
+nav button{flex:1;white-space:nowrap}
+main{padding:0 12px}
+.c{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0}
+.c h3{margin:0 0 6px;font-size:16px}
+.m{color:var(--muted);font-size:13px;line-height:1.7}
+label.l{display:block;font-size:13px;color:#cbd5e1;margin:10px 0 4px}
+input,textarea,select{width:100%;background:#0b1220;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px;font-family:inherit;font-size:15px}
+textarea{resize:vertical}
+.row{display:flex;gap:8px}.row>div{flex:1;min-width:0}
+.b{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:14px;cursor:pointer;margin:6px 4px 0 0}
+.b.g{background:var(--accent);border-color:var(--accent);color:#04130d;font-weight:700}
+.b.bl{background:#1d4ed8;border-color:#1d4ed8}
+.b.on{outline:2px solid #38bdf8}
+.b.r{color:#fca5a5}
+.pair{display:flex;gap:6px;margin-top:6px}.pair .b{margin:0}.pair .b:first-child{flex:1}
+.shot{border:1px solid var(--border);border-radius:12px;padding:10px;margin:10px 0;background:#0f172a}
+.shot.done{opacity:.6;border-color:#166534}
+.shot img{max-width:100%;border-radius:10px;margin-top:6px}
+.hd{display:flex;align-items:center;gap:8px}.hd b{flex:1}
+.tag{font-size:11px;background:#1e293b;border-radius:99px;padding:1px 8px;color:#cbd5e1}
+</style>
+</head>
+<body>
+<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>📣 استوديو الإعلانات</h1><button class="b" data-a="hist" style="margin:0">🕘</button></header>
+<nav id="nav"></nav>
+<main id="app"></main>
+<script src="core.js"></script>
+<script>
+const {esc,toast}=CORE;
+const DEF={step:0,kind:'video',bName:'',bCat:'',bAudience:'',bOffer:'',bIdentity:'',brands:[],brandSel:'',health:false,
+ idea:'',platform:'all',genre:'comedy',lang:'eg',satire:'light',voice:'sales',customVoice:'',script:'',
+ visual:'cine',customVisual:'',aspect:'9:16',sec:30,parts:'auto',singer:'',singerId:'',paste:'',shots:[],sendIdx:0};
+const st=CORE.store('ad',DEF);const p=()=>st.get();
+let OLD={chars:[],places:[],props:[]};CORE.oldStudio().then(o=>{OLD=o;if(p().step===1)render()}).catch(()=>{});
+const KINDS=[['video','🎬 فيديو'],['audio','🔊 صوتي (راديو/فويس)'],['post','📝 بوست مكتوب + صورة'],['poster','🖼️ بوستر']];
+const STEPS_V=['① الإعلان','② التنفيذ','③ اللقطات'],STEPS_O=['① الإعلان','② التنفيذ'];
+const PLATS=[['all','كل المنصات'],['fb','فيسبوك'],['ig','إنستجرام'],['tt','تيك توك'],['yt','يوتيوب'],['wa','واتساب'],['radio','راديو/صوت'],['print','مطبوع']];
+const ASPECTS=[['9:16','9:16 عمودي'],['16:9','16:9 أفقي'],['1:1','1:1 مربع'],['4:5','4:5 بوست']];
+const VISL=CORE.VISUALS.map(v=>[v[0],v[1]]);
+const G=()=>CORE.pick(CORE.GENRES,p().genre),L=()=>CORE.pick(CORE.LANGS,p().lang),S=()=>CORE.pick(CORE.SATIRE,p().satire),VO=()=>CORE.pick(CORE.VOICES,p().voice),V=()=>CORE.pick(CORE.VISUALS,p().visual);
+const visName=()=>(p().customVisual||'').trim()||V()[1];
+const visRules=()=>(p().customVisual||'').trim()?'التزم بالوصف المخصص حرفيًا':V()[3];
+const voiceTxt=()=>p().voice==='custom'?('يتقلد بصمة العينة دي:\n"""'+(p().customVoice||'')+'"""'):VO()[1]+': '+VO()[2];
+const singerLine=()=>{const s=(p().singer||'').trim();return s?'الشخصية/المقدم: '+s+'\n':''};
+const kindName=()=>CORE.pick(KINDS,p().kind)[1].replace(/^\S+\s/,'');
+const brandTxt=()=>{const P=p();return [P.bName&&'البراند/المنتج: '+P.bName,P.bCat&&'الفئة: '+P.bCat,P.bAudience&&'الجمهور: '+P.bAudience,P.bOffer&&'العرض/السعر: '+P.bOffer,P.bIdentity&&'الهوية (ألوان، نبرة، شعار): '+P.bIdentity].filter(Boolean).join('\n')};
+const RULES=()=>p().health?'\nقواعد إعلان المنتجات الصحية (إلزامي): ممنوع ادعاء علاج أو شفاء أو نتائج مضمونة، وممنوع أرقام أو دراسات غير موجودة فعلًا، وممنوع قبل/بعد مضلل، وممنوع التخويف المبالغ. اكتب «استشر الصيدلي أو الطبيب» لو المنتج دواء أو مكمل. الصدق أولًا.':'';
+const STRUCT='الهيكل الإلزامي: (1) هوك في أول ثانيتين/أول سطر: لفظي + بصري + سمعي. (2) تضخيم ألم غياب المنتج بموقف حقيقي من حياة الجمهور. (3) الحل والتحول: المنتج وإزاي الحياة بتتغير. (4) بناء الثقة: دليل، تجربة، تفصيلة صادقة. (5) دعوة واضحة لإجراء واحد.';
+const base=()=>{const P=p();return `${brandTxt()}\nفكرة/زاوية الإعلان: ${P.idea.trim()||'اقترح أقوى زاوية'}\nالمنصة: ${CORE.pick(PLATS,P.platform)[1]}\nالنوع: ${G()[1]} (${G()[2]}).\nاللغة: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة: ${voiceTxt()}\n${STRUCT}${RULES()}\n${CORE.WRITING}`};
+
+const PR={
+write(){const P=p();if(!P.bName.trim()&&!P.idea.trim()){alert('اكتب اسم المنتج أو فكرة الإعلان الأول');return ''}
+ const out={video:`اكتب سكريبت إعلان فيديو مدته ${P.sec} ثانية، مقاس ${P.aspect}، شكل بصري: ${visName()} (${visRules()}).\n${singerLine()}الناتج: جدول مشاهد بالترتيب، لكل مشهد: الزمن | الصورة | الكلام | الصوت والموسيقى | نص على الشاشة. وبعده سطر «الكابشن:» و5 هاشتاجات.`,
+  audio:`اكتب إعلان صوتي مدته ${P.sec} ثانية.\nالناتج: سكريبت سطر بسطر: [الصوت/الشخص + توجيه الأداء بين قوسين] الجملة، مع [مؤثر] و[موسيقى] في أماكنها، وعدد الكلمات مناسب للمدة (حوالي 2.5 كلمة في الثانية). وبعده «توجيه المعلق:» نوع الصوت والنبرة والسرعة باللهجة المختارة.`,
+  post:`اكتب بوست إعلاني.\nالناتج: (1) 3 هوكات مختلفة لأول سطر، وعلّم الأقوى. (2) البوست كامل بالأقوى، فقرات قصيرة جدًا مناسبة للموبايل. (3) دعوة للإجراء. (4) 7 هاشتاجات. (5) فكرة الصورة المرافقة في سطرين.`,
+  poster:`صمم بوستر إعلاني (أنت مصمم عالمي ومعلن).\nالناتج: العنوان الرئيسي (أقل من 7 كلمات)، والعنوان الفرعي، ونص الدعوة للإجراء، وتوزيع العناصر على البوستر (التسلسل البصري)، والألوان بالكود، ونوع الخط، ومقاس ${P.aspect}.`}[P.kind];
+ return `أنت فريق إعلان محترف: ${CORE.TEAM.ad}.\n${out}\n\n${base()}`},
+ab(){const P=p();return `أنت كاتب إعلانات عالمي. اكتب 3 نسخ مختلفة من إعلان ${kindName()} للاختبار A/B، كل نسخة بزاوية هوك مختلفة (مثلًا: سؤال صادم، موقف مضحك، رقم أو حقيقة، تحدي). لكل نسخة: الهوك، والنسخة كاملة، وجمهورها الأنسب. وفي الآخر: أيهم تختبر الأول ولماذا في سطر.\n${P.script.trim()?'الإعلان الحالي للبناء عليه:\n"""'+P.script.trim()+'"""\n':''}\n${base()}`},
+plats(){const P=p();if(!P.script.trim()){alert('الصق الإعلان الجاهز الأول');return ''}return `حوّل الإعلان ده لنسخ مخصصة لكل منصة: فيسبوك، إنستجرام (ريلز وبوست)، تيك توك، يوتيوب شورتس، حالة واتساب. لكل منصة: المدة أو الطول المناسب، والهوك المعدّل، والكابشن، والهاشتاجات، وملاحظة إخراج واحدة. حافظ على نفس الرسالة واللغة.${RULES()}\n\nالإعلان:\n"""\n${P.script.trim()}\n"""`},
+team(){const P=p();if(!P.script.trim()){alert('الصق الإعلان الجاهز الأول');return ''}return CORE.teamReview('إعلان '+kindName()+(P.health?' لمنتج صحي (افحص الالتزام بقواعده)':''),CORE.TEAM.ad,P.script.trim()+'\n\n'+brandTxt()+RULES())},
+design(){const P=p();return `أنت مصمم جرافيك ومخرج فني عالمي. اكتب أمر توليد صورة ${P.kind==='poster'?'البوستر':'الإعلان'} بالإنجليزي، مقاس ${P.aspect}، شكل: ${visName()} (${visRules()}).\n${brandTxt()}\nاستخدم ألوان وهوية البراند، ومساحة نظيفة للعنوان. لو المولّد بيغلط في الكتابة العربية: الصورة بدون نص، والنص يتضاف في تطبيق تصميم (اذكر أماكنه). ارجع بأمر واحد نهائي + سطر مكان كل نص.\n${P.script.trim()?'الإعلان:\n"""'+P.script.trim()+'"""':''}`},
+voiceDir(){const P=p();if(!P.script.trim()){alert('الصق الإعلان الجاهز الأول');return ''}return `أنت مخرج صوت ومعلّق عالمي. جهّز الإعلان ده للتسجيل باللهجة: ${L()[1]}.\nارجع بـ: (1) وصف صوت المعلق (السن، الطبقة، النبرة، السرعة) بالعربي وبالإنجليزي لتطبيقات توليد الصوت. (2) النص مقسم لجمل مع توجيه أداء لكل جملة [ضحكة] [وقفة] [همس] [حماس]، وتشكيل الكلمات اللي ممكن تتنطق غلط. (3) الموسيقى والمؤثرات وتوقيتها.\n\nالإعلان:\n"""\n${P.script.trim()}\n"""`},
+ctx(){const P=p();return `الشكل البصري: ${visName()} (${visRules()}).\n${singerLine()}المقاس: ${P.aspect}. مدة الإعلان: ${P.sec} ثانية.\n`},
+shots(k){const P=p(),n=CORE.partsN(P.sec,P.parts),[a,b]=CORE.partRange(P.sec,n,k);
+ const fmt=`اكتب الناتج بالشكل ده بالظبط ومن غير أي كلام تاني:\nلقطة 1 | المدة بالثواني | الكلام المنطوق في اللقطة (أو بدون)\nالمشهد: وصف بصري محدد\nالكاميرا: واسعة أو متوسطة أو قريبة وحركتها\nالحركة: الحركة الوحيدة ومقدارها\nالإضاءة: المصدر والاتجاه والألوان\n\nلقطة 2 | ...`;
+ if(k===0){if(!P.script.trim()){alert('الصق السكريبت الجاهز الأول (خطوة 1)');return ''}
+  return `أنت فريق محترف: ${CORE.TEAM.ad}. حوّل سكريبت الإعلان ده للقطات فيديو.\n${PR.ctx()}${brandTxt()}\nالسكريبت:\n"""\n${P.script.trim()}\n"""\n\nقواعد: اللقطة الأولى هي الهوك (أقوى صورة). كل لقطة 2 إلى 6 ثواني. المنتج يظهر واضح في لقطة الحل ولقطة الدعوة. ثبات الشخصية والمكان والمنتج بين اللقطات. ممنوع نصوص في الصورة (النص يتضاف في المونتاج). مجموع المدد = ${P.sec} ثانية.${RULES()}\n\n${fmt}`+(n>1?`\n\n⚠️ هنشتغل على ${n} أجزاء. اكتب الجزء 1 فقط: من 0 إلى ${b} ثانية، واكتب «تم الجزء 1 من ${n}» وانتظر «كمّل».`:'')}
+ return `كمّل: اكتب الجزء ${k+1} من ${n} بنفس الصيغة والقواعد. من ${a} إلى ${b} ثانية. ابدأ من «لقطة ${P.shots.length+1}». ما تعيدش اللي فات. ${k===n-1?'ده آخر جزء: اختم بالدعوة للإجراء. ':''}اكتب «تم الجزء ${k+1} من ${n}».`},
+teamBoard(){const P=p();if(!P.shots.length){alert('مفيش لقطات');return ''}return CORE.teamReview('ستوري بورد إعلان',CORE.TEAM.ad,PR.ctx()+P.shots.map((s,i)=>`لقطة ${i+1} | ${s.dur}ث | ${s.lyric||'بدون'}\nالمشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}`).join('\n\n')+RULES())},
+shotP(i){const P=p(),s=P.shots[i];return `لقطة ${i+1} من ${P.shots.length} — المدة ${s.dur} ثانية — المقاس ${P.aspect}\nالشكل البصري: ${visName()} — ${visRules()}\n${singerLine()}${P.bName?'المنتج: '+P.bName+(P.bIdentity?' ('+P.bIdentity+')':'')+'\n':''}المشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}\n${s.lyric?'الكلام المنطوق: '+s.lyric+'\n':''}${i>0?'استمر من نفس الشخصية والمكان والمنتج والإضاءة اللي في اللقطة السابقة.\n':''}ممنوع: أي نصوص أو علامات مائية أو تغيير شكل المنتج أو الشخصية.`},
+shotEn(i){return `ترجم أمر توليد الفيديو ده للإنجليزي بصيغة أمر احترافي لـ Google Flow، مع الحفاظ على كل التفاصيل والأرقام، واترك الكلام المنطوق بلغته الأصلية بين علامتي تنصيص. ارجع بالأمر فقط:\n"""\n${PR.shotP(i)}\n"""`}
+};
+
+/* ---------- تحليل اللقطات ---------- */
+const HDR=/^[ \t]*[^\n؀-ۿA-Za-z0-9]{0,8}(?:ال)?(?:لقطة|لقطه|shot)\s*(?:رقم\s*)?[\d٠-٩]+/im;
+const num=x=>+String(x).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d.]/g,'')||0;
+function parseShots(t){const re=new RegExp(HDR.source,'gim'),idx=[];let m;while((m=re.exec(t)))idx.push(m.index);
+ return idx.map((s0,k)=>{const blk=t.slice(s0,idx[k+1]||t.length),lines=blk.split('\n').map(l=>l.replace(/\*\*/g,'').trim());
+  const head=lines[0].replace(HDR,'').replace(/^[\s:|\-–]+/,''),h=head.split('|').map(x=>x.trim());
+  const g=(...ks)=>{for(const k of ks){const l=lines.find(x=>new RegExp('^[\\-•\\s]*'+k+'\\s*[:：]').test(x));if(l)return l.replace(/^[^:：]*[:：]\s*/,'').trim()}return ''};
+  const none=v=>/^\s*(بدون|لا يوجد|لا شيء|لا|none|-|—)\s*[.)(]*\s*$/i.test(v||'')?'':(v||'');
+  let dur=num(h[0]||'');if(!dur)dur=4;
+  return {dur:Math.max(1,Math.min(15,dur)),lyric:none(h[1]||g('الكلمات','الأغنية')),desc:g('المشهد','ماذا يحدث','الوصف'),cam:g('الكاميرا'),move:g('الحركة'),light:g('الإضاءة','الاضاءة'),img:'',done:false}})}
+
+/* ---------- العرض ---------- */
+function sel(f,list,v){return `<select data-f="${f}">${CORE.opts(list,v)}</select>`}
+function pair(a,label){return `<div class="pair"><button class="b bl" data-a="${a}">📋 ${label}</button><button class="b" data-a="${a}!" title="أرسل لتطبيق">📤</button></div>`}
+function s0(){const P=p();return `<div class="c"><h3>📣 نوع الإعلان</h3><div class="row" style="flex-wrap:wrap">${KINDS.map(k=>`<button class="b${k[0]===P.kind?' g':''}" data-a="kind" data-k="${k[0]}">${k[1]}</button>`).join('')}</div>
+ ${['video','audio'].includes(P.kind)?`<label class="l">المدة (ثانية) — اختيارية، أنت اللي تحددها</label><input type="number" data-f="sec" value="${esc(P.sec)}">`:''}</div>
+ <div class="c"><h3>🏷️ المنتج أو البراند</h3>
+ ${P.brands.length?`<label class="l">براند محفوظ</label><select data-f="brandSel"><option value="">— جديد —</option>${P.brands.map((b,i)=>`<option value="${i}"${String(i)===P.brandSel?' selected':''}>${esc(b.bName)}</option>`).join('')}</select>`:''}
+ <label class="l">الاسم</label><input data-f="bName" value="${esc(P.bName)}" placeholder="مثال: صيدلية دكتور اتش">
+ <div class="row"><div><label class="l">الفئة</label><input data-f="bCat" value="${esc(P.bCat)}" placeholder="صيدلية، كريم شعر، عطر"></div><div><label class="l">العرض/السعر</label><input data-f="bOffer" value="${esc(P.bOffer)}"></div></div>
+ <label class="l">الجمهور</label><input data-f="bAudience" value="${esc(P.bAudience)}">
+ <label class="l">الهوية (ألوان، نبرة، شعار)</label><textarea data-f="bIdentity" rows="2">${esc(P.bIdentity)}</textarea>
+ <label class="l" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-chk="health" ${P.health?'checked':''} style="width:auto"> منتج صحي أو دواء أو مكمل (يطبّق قواعد الإعلان الصحي)</label>
+ <button class="b" data-a="saveBrand">💾 احفظ البراند</button>${P.brandSel!==''?`<button class="b r" data-a="delBrand">🗑️</button>`:''}</div>
+ <div class="c"><h3>✍️ الفكرة والأسلوب</h3>
+ <label class="l">الفكرة أو الزاوية (اختياري، الذكاء يقترح لو فاضية)</label><textarea data-f="idea" rows="3">${esc(P.idea)}</textarea>
+ <div class="row"><div><label class="l">المنصة</label>${sel('platform',PLATS,P.platform)}</div><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div></div>
+ <div class="row"><div><label class="l">اللغة</label>${sel('lang',CORE.LANGS,P.lang)}</div><div><label class="l">السخرية</label>${sel('satire',CORE.SATIRE,P.satire)}</div></div>
+ <label class="l">البصمة الكتابية</label>${sel('voice',CORE.VOICES,P.voice)}
+ ${P.voice==='custom'?`<label class="l">عينة نص بتحبه</label><textarea data-f="customVoice" rows="3">${esc(P.customVoice)}</textarea>`:''}
+ ${P.kind==='video'?`<label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}<input data-f="customVisual" placeholder="أو شكل مخصص (اختياري)" value="${esc(P.customVisual)}" style="margin-top:6px">`:''}
+ ${pair('write','أمر كتابة الإعلان')}${pair('ab','3 نسخ للاختبار A/B')}</div>
+ <div class="c"><h3>📝 الإعلان الجاهز</h3><div class="m">الصق النسخة اللي اخترتها (أو اكتبها بنفسك).</div><textarea data-f="script" rows="8">${esc(P.script)}</textarea>
+ ${pair('team','راجع بالفريق'+(P.health?' + فحص القواعد الصحية':''))}${pair('plats','نسخ لكل منصة')}</div>`}
+function s1(){const P=p(),n=CORE.partsN(P.sec,P.parts);
+ if(P.kind==='video'){const sg=`<select data-f="singerId"><option value="">— اكتب بنفسك —</option>${OLD.chars.map(c=>`<option value="${esc(c.id)}"${c.id===P.singerId?' selected':''}>${esc(c.name)}</option>`).join('')}</select>`;
+  return `<div class="c"><h3>🎬 تنفيذ الفيديو</h3>
+  <div class="row"><div><label class="l">المقاس</label>${sel('aspect',ASPECTS,P.aspect)}</div><div><label class="l">المدة (ث)</label><input type="number" data-f="sec" value="${esc(P.sec)}"></div></div>
+  <label class="l">الشخصية أو المقدم (من شخصياتك)</label>${OLD.chars.length?sg:''}<textarea data-f="singer" rows="2" placeholder="الشكل الثابت">${esc(P.singer)}</textarea>
+  <label class="l">عدد الأجزاء</label>${sel('parts',[['auto','تلقائي ('+n+')'],['1','بدون تقسيم'],['2','2'],['3','3'],['4','4']],String(P.parts))}
+  ${Array.from({length:n},(_,k)=>{const [a,b]=CORE.partRange(P.sec,n,k);return pair('shots:'+k,n>1?`الجزء ${k+1}/${n} (${a}–${b} ث)`:'أمر تقسيم الإعلان لقطات')}).join('')}
+  <div class="m">انقل الرد لخطوة ③.</div>${pair('design','أمر صورة الغلاف/الثمبنيل')}${pair('voiceDir','تجهيز التعليق الصوتي')}</div>`}
+ if(P.kind==='audio')return `<div class="c"><h3>🔊 تنفيذ الصوتي</h3><div class="m">جهّز التسجيل، وولّد الصوت في التطبيق اللي تختاره.</div>${pair('voiceDir','توجيه المعلق + النص المشكول + المؤثرات')}${pair('plats','نسخ لكل منصة')}</div>`;
+ return `<div class="c"><h3>🖼️ تنفيذ ${P.kind==='poster'?'البوستر':'البوست'}</h3>
+ <label class="l">المقاس</label>${sel('aspect',ASPECTS,P.aspect)}
+ <label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}<input data-f="customVisual" placeholder="أو شكل مخصص" value="${esc(P.customVisual)}" style="margin-top:6px">
+ ${pair('design','أمر التصميم (المصمم العالمي)')}<div class="m">لو المولّد بيغلط في الكتابة العربية: ولّد الصورة بدون نص، وضيف النص في تطبيق تصميم.</div></div>`}
+function shotCard(s,i){const P=p();return `<div class="shot${s.done?' done':''}"><div class="hd"><b>لقطة ${i+1}</b><span class="tag">${s.dur}ث</span><button class="b" data-a="up" data-i="${i}" style="margin:0">⬆️</button><button class="b" data-a="dn" data-i="${i}" style="margin:0">⬇️</button><button class="b r" data-a="del" data-i="${i}" style="margin:0">🗑️</button></div>
+ <div class="row"><div><label class="l">المدة</label><input type="number" data-si="${i}" data-sf="dur" value="${esc(s.dur)}"></div><div style="flex:3"><label class="l">الكلام</label><input data-si="${i}" data-sf="lyric" value="${esc(s.lyric)}"></div></div>
+ <label class="l">المشهد</label><textarea rows="3" data-si="${i}" data-sf="desc">${esc(s.desc)}</textarea>
+ <div class="row"><div><label class="l">الكاميرا</label><input data-si="${i}" data-sf="cam" value="${esc(s.cam)}"></div><div><label class="l">الحركة</label><input data-si="${i}" data-sf="move" value="${esc(s.move)}"></div></div>
+ <label class="l">الإضاءة</label><input data-si="${i}" data-sf="light" value="${esc(s.light)}">
+ ${s.img?`<img src="${s.img}" alt="">`:''}
+ <div><label class="b" style="display:inline-block">🖼️ ${s.img?'غيّر':'ارفع'} صورة البداية<input type="file" accept="image/*" data-img="${i}" hidden></label>
+ <button class="b${s.done?' on':''}" data-a="done" data-i="${i}">✓ ${s.done?'اتنفذت':'تمت'}</button></div>
+ ${pair('shotP:'+i,'أمر اللقطة')}<button class="b" data-a="shotEn" data-i="${i}">🌐 أمر ترجمة للإنجليزي</button></div>`}
+function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
+ if(P.sendMode&&P.shots.length){const i=Math.min(P.sendIdx,P.shots.length-1),s=P.shots[i];
+  return `<div class="c"><div class="hd"><b>▶ وضع الإرسال لـ Flow: لقطة ${i+1} من ${P.shots.length}</b><button class="b" data-a="exitSend" style="margin:0">خروج</button></div>
+  <div class="m">1) شارك الصورة  2) انسخ الأمر  3) تمت ✓</div>
+  ${s.img?`<img src="${s.img}" style="max-width:100%;border-radius:10px;margin-top:8px">`:'<div class="m">مفيش صورة بداية للقطة دي (ارفعها من القايمة لو محتاجها).</div>'}
+  <button class="b bl" data-a="shareImg" data-i="${i}" style="width:100%">📤 شارك الصورة</button>
+  <button class="b bl" data-a="shotP:${i}" style="width:100%">📋 انسخ الأمر</button>
+  <button class="b g" data-a="nextSend" style="width:100%">✓ تمت والتالي</button>
+  <div class="m" style="margin-top:8px">${esc(PR.shotP(i)).replace(/\n/g,'<br>')}</div></div>`}
+ return `<div class="c"><h3>📥 رد الذكاء الاصطناعي</h3><textarea data-f="paste" rows="6" placeholder="الصق الرد هنا (لقطة 1 | ...). أي طول، وبيتحفظ لوحده">${esc(P.paste)}</textarea>
+ <button class="b g" data-a="parse">✂️ حوّل الرد إلى لقطات${P.shots.length?' (يستبدل)':''}</button>${P.shots.length?`<button class="b bl" data-a="append">➕ كمّل بعد لقطة ${P.shots.length}</button>`:''}</div>
+ ${P.shots.length?`<div class="c"><div class="hd"><b>${P.shots.length} لقطة • ${T} ثانية${P.sec&&Math.abs(T-P.sec)>Math.max(5,P.sec*.15)?` <span style="color:#fcd34d">(المدة المطلوبة ${P.sec})</span>`:''}</b></div>
+ <button class="b g" data-a="send">▶ ابدأ وضع الإرسال لـ Flow</button>${pair('teamBoard','راجع الستوري بورد بالفريق')}</div>`:'<div class="c m">لسه مفيش لقطات.</div>'}
+ ${P.shots.map(shotCard).join('')}`}
+function render(){const P=p();const STEPS=P.kind==='video'?STEPS_V:STEPS_O;if(P.step>=STEPS.length)P.step=0;document.getElementById('nav').innerHTML=STEPS.map((t,k)=>`<button class="b${k===P.step?' g':''}" data-a="go" data-i="${k}">${t}</button>`).join('');
+ document.getElementById('app').innerHTML=[s0,s1,s2][P.step]()}
+
+/* ---------- التفاعل ---------- */
+function shrink(file){return new Promise(r=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const k=Math.min(1,720/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);r(c.toDataURL('image/jpeg',.8))};im.onerror=()=>r('');im.src=u})}
+function applyParse(add){const P=p(),v=P.paste.trim();if(!v){alert('الصق الرد الأول');return}let sh=parseShots(v);
+ if(!sh.length){alert('مش لاقي لقطات. الرد لازم يكون «لقطة 1 | المدة | الكلمات» وتحتها المشهد والكاميرا والحركة والإضاءة.\nالنص محفوظ في الخانة.');return}
+ st.snap('قبل تحويل لقطات',true);P.shots=add?P.shots.concat(sh):sh;P.paste='';P.sendIdx=0;st.save();toast((add?'تمت إضافة '+sh.length:'تم إنشاء '+sh.length)+' لقطة ✓');render()}
+document.addEventListener('input',e=>{const t=e.target,P=p();
+ if(t.dataset.f){const f=t.dataset.f;P[f]=t.type==='number'?(+t.value||0):t.value;if(f==='singerId'){const c=OLD.chars.find(x=>x.id===t.value);if(c){P.singer=(c.name||'')+': '+(c.ar||'');st.save();render();return}}
+  st.save();return}
+ if(t.dataset.si!==undefined){const s=P.shots[+t.dataset.si];if(s){s[t.dataset.sf]=t.dataset.sf==='dur'?(+t.value||0):t.value;st.save()}}});
+document.addEventListener('change',async e=>{const t=e.target,P=p();
+ if(t.dataset.chk){P[t.dataset.chk]=t.checked;st.save();render();return}
+ if(t.dataset.f&&t.tagName==='SELECT'){P[t.dataset.f]=t.value;st.save();if(t.dataset.f==='brandSel'&&t.value!==''){Object.assign(P,P.brands[+t.value]);st.save()}if(['voice','genre','visual','parts','brandSel'].includes(t.dataset.f))render();return}
+ if(t.dataset.img!==undefined&&t.files[0]){const d=await shrink(t.files[0]);if(d){P.shots[+t.dataset.img].img=d;st.save();render()}else toast('الصورة ما اتقرتش')}});
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;let a=b.dataset.a;const P=p(),i=+b.dataset.i;
+ if(a==='home'){location.href='./';return}
+ if(a==='kind'){P.kind=b.dataset.k;st.save();render();return}
+ if(a==='saveBrand'){if(!P.bName.trim()){alert('اكتب اسم البراند');return}const o={bName:P.bName,bCat:P.bCat,bAudience:P.bAudience,bOffer:P.bOffer,bIdentity:P.bIdentity,health:P.health};const k=P.brands.findIndex(x=>x.bName===P.bName);if(k>=0)P.brands[k]=o;else P.brands.push(o);P.brandSel=String(k>=0?k:P.brands.length-1);st.save();toast('اتحفظ البراند ✓');render();return}
+ if(a==='delBrand'){if(confirm('تمسح البراند ده؟')){P.brands.splice(+P.brandSel,1);P.brandSel='';st.save();render()}return}
+ if(a==='hist'){CORE.histBox(st,render);return}
+ if(a==='go'){P.step=i;st.save();render();window.scrollTo(0,0);return}
+ if(a==='parse'){applyParse(false);return}if(a==='append'){applyParse(true);return}
+ if(a==='send'){P.sendMode=true;P.sendIdx=0;st.save();render();return}
+ if(a==='exitSend'){P.sendMode=false;st.save();render();return}
+ if(a==='nextSend'){if(P.shots[P.sendIdx])P.shots[P.sendIdx].done=true;if(P.sendIdx<P.shots.length-1)P.sendIdx++;else{P.sendMode=false;toast('خلصت كل اللقطات 🎉')}st.save();render();return}
+ if(a==='shareImg'){const s=P.shots[i];if(s&&s.img)CORE.shareImage(s.img,'shot'+(i+1)+'.jpg');else toast('مفيش صورة');return}
+ if(a==='done'){P.shots[i].done=!P.shots[i].done;st.save();render();return}
+ if(a==='del'){if(confirm('تمسح اللقطة '+(i+1)+'؟')){st.snap('قبل حذف لقطة',true);P.shots.splice(i,1);st.save();render()}return}
+ if(a==='up'||a==='dn'){const j=a==='up'?i-1:i+1;if(j<0||j>=P.shots.length)return;[P.shots[i],P.shots[j]]=[P.shots[j],P.shots[i]];st.save();render();return}
+ if(a==='shotEn'){CORE.copy(PR.shotEn(i),'اتنسخ أمر الترجمة ✓ الصقه في أي تطبيق ذكاء');return}
+ const send=a.endsWith('!');if(send)a=a.slice(0,-1);const [fn,arg]=a.split(':');if(!PR[fn])return;
+ const txt=PR[fn](arg===undefined?undefined:+arg);if(!txt)return;st.snap('قبل '+fn);if(send)CORE.send(txt);else CORE.copy(txt,'تم النسخ ✓')});
+st.snap('عند الفتح');render();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>
