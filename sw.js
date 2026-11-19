@@ -3,8 +3,8 @@
 // - The page itself (index.html) is fetched from the network first, so a new upload appears at once;
 //   if the network is missing or slower than 4 seconds, the stored copy opens instead.
 // - Icons, fonts and other files are served from the cache and refreshed in the background.
-const CACHE = 'hisham-studio-v11';
-const FILES = ['./', 'index.html', 'studio.html', 'song-fix.html', 'song.html', 'ad.html', 'film.html', 'core.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
+const CACHE = 'hisham-studio-v12';
+const FILES = ['./', 'index.html', 'studio.html', 'song-fix.html', 'song.html', 'ad.html', 'film.html', 'doc.html', 'core.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
   'apple-touch-icon.png', 'fonts/cairo-arabic.woff2', 'fonts/cairo-latin.woff2', 'fonts/cairo-latin-ext.woff2'];
 
 self.addEventListener('install', e => {
@@ -25,7 +25,7 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return; // AI, translation & Google go to the network
   const pn = new URL(req.url).pathname;
-  const isPage = req.mode === 'navigate' || /\/(index\.html|studio\.html|song-fix\.html|song\.html|ad\.html|film\.html|core\.js)?$/.test(pn);
+  const isPage = req.mode === 'navigate' || /\/(index\.html|studio\.html|song-fix\.html|song\.html|ad\.html|film\.html|doc\.html|core\.js)?$/.test(pn);
   const pageKey = /\/$/.test(pn) ? 'index.html' : pn.split('/').pop();
 
   if (isPage) {
