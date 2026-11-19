@@ -3,8 +3,8 @@
 // - The page itself (index.html) is fetched from the network first, so a new upload appears at once;
 //   if the network is missing or slower than 4 seconds, the stored copy opens instead.
 // - Icons, fonts and other files are served from the cache and refreshed in the background.
-const CACHE = 'hisham-studio-v7';
-const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
+const CACHE = 'hisham-studio-v8';
+const FILES = ['./', 'index.html', 'studio.html', 'song-fix.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
   'apple-touch-icon.png', 'fonts/cairo-arabic.woff2', 'fonts/cairo-latin.woff2', 'fonts/cairo-latin-ext.woff2'];
 
 self.addEventListener('install', e => {
@@ -24,18 +24,20 @@ const offline = () => new Response('غير متصل بالإنترنت', { statu
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return; // AI, translation & Google go to the network
-  const isPage = req.mode === 'navigate' || /\/(index\.html)?$/.test(new URL(req.url).pathname);
+  const pn = new URL(req.url).pathname;
+  const isPage = req.mode === 'navigate' || /\/(index\.html|studio\.html|song-fix\.html)?$/.test(pn);
+  const pageKey = /\/$/.test(pn) ? 'index.html' : pn.split('/').pop();
 
   if (isPage) {
     e.respondWith(caches.open(CACHE).then(async cache => {
       const net = fetch(req, { cache: 'no-store' }).then(res => {
-        if (res && res.ok) cache.put('index.html', res.clone());
+        if (res && res.ok) cache.put(pageKey, res.clone());
         return res;
       });
       const timeout = new Promise(r => setTimeout(r, 4000, null));
       const res = await Promise.race([net.catch(() => null), timeout]);
       if (res && res.ok) return res;
-      const hit = await cache.match('index.html');
+      const hit = await cache.match(pageKey);
       if (hit) { e.waitUntil(net.catch(() => {})); return hit; }
       return (await net.catch(() => null)) || offline();
     }));
