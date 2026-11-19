@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090d16">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="ad.webmanifest">
+<link rel="apple-touch-icon" href="icons/ad-180.png">
+<link rel="icon" href="icons/ad-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="الإعلانات">
 <title>استوديو الإعلانات</title>
 <style>
 @font-face{font-family:Cairo;src:url(fonts/cairo-arabic.woff2) format("woff2");font-display:swap}
@@ -37,7 +41,7 @@ textarea{resize:vertical}
 </style>
 </head>
 <body>
-<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>📣 استوديو الإعلانات</h1><button class="b" data-a="hist" style="margin:0">🕘</button></header>
+<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>📣 استوديو الإعلانات</h1><button class="b" id="instBtn" style="margin:0;display:none">📲</button><button class="b" data-a="hist" style="margin:0">🕘</button></header>
 <nav id="nav"></nav>
 <main id="app"></main>
 <script src="core.js"></script>
@@ -63,7 +67,7 @@ const kindName=()=>CORE.pick(KINDS,p().kind)[1].replace(/^\S+\s/,'');
 const brandTxt=()=>{const P=p();return [P.bName&&'البراند/المنتج: '+P.bName,P.bCat&&'الفئة: '+P.bCat,P.bAudience&&'الجمهور: '+P.bAudience,P.bOffer&&'العرض/السعر: '+P.bOffer,P.bIdentity&&'الهوية (ألوان، نبرة، شعار): '+P.bIdentity].filter(Boolean).join('\n')};
 const RULES=()=>p().health?'\nقواعد إعلان المنتجات الصحية (إلزامي): ممنوع ادعاء علاج أو شفاء أو نتائج مضمونة، وممنوع أرقام أو دراسات غير موجودة فعلًا، وممنوع قبل/بعد مضلل، وممنوع التخويف المبالغ. اكتب «استشر الصيدلي أو الطبيب» لو المنتج دواء أو مكمل. الصدق أولًا.':'';
 const STRUCT='الهيكل الإلزامي: (1) هوك في أول ثانيتين/أول سطر: لفظي + بصري + سمعي. (2) تضخيم ألم غياب المنتج بموقف حقيقي من حياة الجمهور. (3) الحل والتحول: المنتج وإزاي الحياة بتتغير. (4) بناء الثقة: دليل، تجربة، تفصيلة صادقة. (5) دعوة واضحة لإجراء واحد.';
-const base=()=>{const P=p();return `${brandTxt()}\n${CORE.castTxt(P)}فكرة/زاوية الإعلان: ${P.idea.trim()||'اقترح أقوى زاوية'}\nالمنصة: ${CORE.pick(PLATS,P.platform)[1]}\nالنوع: ${G()[1]} (${G()[2]}).\nاللغة: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة: ${voiceTxt()}\n${STRUCT}${RULES()}\n${CORE.WRITING}`};
+const base=()=>{const P=p();return `${brandTxt()}\n${CORE.castTxt(P)}فكرة/زاوية الإعلان: ${P.idea.trim()||'اقترح أقوى زاوية'}\nالمنصة: ${CORE.pick(PLATS,P.platform)[1]}\nالنوع: ${G()[1]} (${G()[2]}).\nاللغة: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة: ${voiceTxt()}\n${CORE.hookEmoTxt(P)}${STRUCT}${RULES()}\n${CORE.WRITING}`};
 
 const PR={
 write(){const P=p();if(!P.bName.trim()&&!P.idea.trim()){alert('اكتب اسم المنتج أو فكرة الإعلان الأول');return ''}
@@ -133,7 +137,7 @@ function s0(){const P=p();return `<div class="c"><h3>📣 نوع الإعلان<
  <button class="b" data-a="saveBrand">💾 احفظ البراند</button>${P.brandSel!==''?`<button class="b r" data-a="delBrand">🗑️</button>`:''}</div>
  `+CORE.castCard(P)+`<div class="c"><h3>✍️ الفكرة والأسلوب</h3>
  <label class="l">الفكرة أو الزاوية (اختياري، الذكاء يقترح لو فاضية)</label><textarea data-f="idea" rows="3">${esc(P.idea)}</textarea>
- <div class="row"><div><label class="l">المنصة</label>${sel('platform',PLATS,P.platform)}</div><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div></div>
+ ${CORE.hookEmoHTML(P)}<div class="row"><div><label class="l">المنصة</label>${sel('platform',PLATS,P.platform)}</div><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div></div>
  <div class="row"><div><label class="l">اللغة</label>${sel('lang',CORE.LANGS,P.lang)}</div><div><label class="l">السخرية</label>${sel('satire',CORE.SATIRE,P.satire)}</div></div>
  ${CORE.adv('<label class="l">البصمة الكتابية</label>'+sel('voice',CORE.VOICES,P.voice)+(P.voice==='custom'?'<label class="l">عينة نص بتحبه</label><textarea data-f="customVoice" rows="3">'+esc(P.customVoice)+'</textarea>':''),P.voice!==DEF.voice)}
  ${P.kind==='video'?`<label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}${CORE.adv('<label class="l">شكل بصري مخصص</label><input data-f="customVisual" value="'+esc(P.customVisual)+'">',(P.customVisual||'').trim())}`:''}

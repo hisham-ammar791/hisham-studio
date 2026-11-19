@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090d16">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="film.webmanifest">
+<link rel="apple-touch-icon" href="icons/film-180.png">
+<link rel="icon" href="icons/film-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="الأفلام">
 <title>استوديو الأفلام والمسلسلات</title>
 <style>
 @font-face{font-family:Cairo;src:url(fonts/cairo-arabic.woff2) format("woff2");font-display:swap}
@@ -37,7 +41,7 @@ textarea{resize:vertical}
 </style>
 </head>
 <body>
-<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>🎬 استوديو الأفلام والمسلسلات</h1><button class="b" data-a="hist" style="margin:0">🕘</button></header>
+<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>🎬 استوديو الأفلام والمسلسلات</h1><button class="b" id="instBtn" style="margin:0;display:none">📲</button><button class="b" data-a="hist" style="margin:0">🕘</button></header>
 <nav id="nav"></nav>
 <main id="app"></main>
 <script src="core.js"></script>
@@ -60,7 +64,7 @@ const _oldCast=()=>{const a=chars().map(c=>'- '+c.name+': '+(c.ar||'')+((c.voice
 const singerLine=()=>castTxt();
 const MCTX=()=>{const P=p();return `${CORE.pick(FORMS,P.form)[1]}${P.series?' من مسلسل «'+P.series+'»':''}، ${G()[1]}، مدته ${P.sec} ثانية.\n${(P.script||P.idea||'').slice(0,1500)}`};
 const memTxt=()=>{const P=p();if(P.form!=='episode')return '';return (P.series?'المسلسل: '+P.series+'\n':'')+(P.bible.trim()?'عالم المسلسل وقواعده:\n'+P.bible.trim()+'\n':'')+(P.eps.length?'ملخص الحلقات السابقة (التزم بالاستمرارية ولا تكرر نفس النكتة أو الحبكة):\n'+P.eps.map((e,i)=>'حلقة '+(i+1)+': '+e).join('\n')+'\n':'')};
-const base=()=>{const P=p();return `${memTxt()}${castTxt()}${P.place.trim()?'المكان: '+P.place.trim()+'\n':''}الشكل: ${CORE.pick(FORMS,P.form)[1]}، مدته ${P.sec} ثانية، مقاس ${P.aspect}.\nالنوع: ${G()[1]} (${G()[2]}).\nالشكل البصري: ${visName()} (${visRules()}).\nلغة الحوار والراوي: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة: ${voiceTxt()}\n${CORE.WRITING}`};
+const base=()=>{const P=p();return `${memTxt()}${castTxt()}${P.place.trim()?'المكان: '+P.place.trim()+'\n':''}الشكل: ${CORE.pick(FORMS,P.form)[1]}، مدته ${P.sec} ثانية، مقاس ${P.aspect}.\nالنوع: ${G()[1]} (${G()[2]}).\nالشكل البصري: ${visName()} (${visRules()}).\nلغة الحوار والراوي: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة: ${voiceTxt()}\n${CORE.hookEmoTxt(P)}${CORE.WRITING}`};
 const PR={
 ideas(){return `أنت فريق: ${CORE.TEAM.film}. اقترح 5 أفكار أصلية غير متوقعة${p().idea.trim()?' حوالين: '+p().idea.trim():''}. لكل فكرة: عنوان، وجملة الهوك (أول 3 ثواني)، والصراع، والتحول، والنهاية المفاجئة، في 4 أسطر. وفي الآخر رشّح الأقوى في سطر.\n\n${base()}`},
 write(){const P=p();if(!P.idea.trim()){alert('اكتب الفكرة الأول');return ''}
@@ -120,7 +124,7 @@ function s0(){const P=p(),ep=P.form==='episode';return `<div class="c"><h3>🎬 
  <div class="m">${P.eps.length?P.eps.map((e,i)=>`<div style="display:flex;gap:6px;align-items:center;margin-top:4px"><span style="flex:1">حلقة ${i+1}: ${esc(e.slice(0,90))}</span><button class="b r" data-a="delEp" data-i="${i}" style="margin:0">🗑️</button></div>`).join(''):'لسه مفيش حلقات محفوظة.'}</div></div>`:''}
  `+CORE.castCard(P)+`<div class="c"><label class="l">شخصيات إضافية مؤقتة (الاسم: الشكل)</label><textarea data-f="singer" rows="2">${esc(P.singer)}</textarea></div>
  <div class="c"><h3>💡 الفكرة والأسلوب</h3><textarea data-f="idea" rows="4" placeholder="الفكرة أو الموضوع">${esc(P.idea)}</textarea>
- <div class="row"><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div><div><label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}</div></div>
+ ${CORE.hookEmoHTML(P)}<div class="row"><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div><div><label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}</div></div>
  ${CORE.adv('<label class="l">شكل بصري مخصص (اختياري، يغلب الاختيار)</label><input data-f="customVisual" placeholder="مثال: نفس شكل كورفو ولوتا" value="'+esc(P.customVisual)+'">',(P.customVisual||'').trim())}
  <div class="row"><div><label class="l">اللغة</label>${sel('lang',CORE.LANGS,P.lang)}</div><div><label class="l">السخرية</label>${sel('satire',CORE.SATIRE,P.satire)}</div></div>
  ${CORE.adv('<label class="l">البصمة الكتابية</label>'+sel('voice',CORE.VOICES,P.voice)+(P.voice==='custom'?'<label class="l">عينة نص بتحبه</label><textarea data-f="customVoice" rows="3">'+esc(P.customVoice)+'</textarea>':''),P.voice!==DEF.voice)}

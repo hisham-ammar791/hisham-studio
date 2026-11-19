@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090d16">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="doc.webmanifest">
+<link rel="apple-touch-icon" href="icons/doc-180.png">
+<link rel="icon" href="icons/doc-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="الوثائقي">
 <title>استوديو البرامج والوثائقي</title>
 <style>
 @font-face{font-family:Cairo;src:url(fonts/cairo-arabic.woff2) format("woff2");font-display:swap}
@@ -37,7 +41,7 @@ textarea{resize:vertical}
 </style>
 </head>
 <body>
-<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>🎙️ البرامج والوثائقي والشرح</h1><button class="b" data-a="hist" style="margin:0">🕘</button></header>
+<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>🎙️ البرامج والوثائقي والشرح</h1><button class="b" id="instBtn" style="margin:0;display:none">📲</button><button class="b" data-a="hist" style="margin:0">🕘</button></header>
 <nav id="nav"></nav>
 <main id="app"></main>
 <script src="core.js"></script>
@@ -67,7 +71,7 @@ research(){const P=p();if(!P.topic.trim()){alert('اكتب الموضوع الأ
  return `أنت باحث وثائقي محترف. ابحث بعمق (استخدم البحث على الإنترنت) في الموضوع ده: ${P.topic.trim()}\nابحث في المصادر المعروفة (موسوعات، صحف كبرى، كتب، أوراق علمية، أرشيفات رسمية) والأقل شهرة (أرشيفات محلية، مقابلات، منتديات متخصصة، كتب قديمة).\nالناتج بالشكل ده:\n1) ملخص القصة في 5 أسطر.\n2) جدول المعلومات: رقم | المعلومة | المصدر (اسم + رابط) | التصنيف.\n   التصنيف: ✅ موثوقة (مصدران مستقلان أو أكثر) / ⚠️ فيها شك (مصدر واحد أو تضارب) / ❌ غير مؤكدة (شائعة أو بلا مصدر).\n3) التضاربات بين المصادر وإيه الأرجح.\n4) أغرب 5 تفاصيل محددة (أرقام، أسماء، أماكن، تواريخ) تنفع هوكات.\n5) مواد بصرية متاحة: صور أرشيف، خرائط، وثائق.\nممنوع تخترع مصادر أو روابط. لو مش لاقي مصدر قول «لم أجد».`},
 verify(){const P=p();if(!P.research.trim()){alert('الصق نتيجة البحث الأول');return ''}return `أنت مدقق معلومات صارم. راجع البحث ده: لكل معلومة ✅ تأكد إن مصادرها مستقلة فعلًا وموجودة، ونزّل أي معلومة مصدرها ضعيف لـ ⚠️. ارجع بالجدول بعد التصحيح، وقايمة «أهم 5 ادعاءات لازم أراجعها بنفسي قبل النشر» مع الرابط.\n\n"""\n${P.research.trim()}\n"""`},
 write(){const P=p();if(!P.research.trim()&&!P.topic.trim()){alert('اكتب الموضوع أو الصق البحث الأول');return ''}
- return `أنت فريق محترف: ${TEAM_DOC}. اكتب نص ${formName()} مدته ${P.sec} ثانية عن: ${P.topic.trim()}\nالعناصر المتفق عليها: ${elsTxt()}.\n${singerLine()}قواعد الصدق: استخدم ✅ كحقائق. ⚠️ تتقال بصيغة «يُروى أن» أو «بعض المصادر تقول». ❌ ما تدخلش إلا كإشاعة صريحة ومن غير تأكيد. ممنوع إضافة معلومات من خارج البحث.\nالهيكل: هوك صادم في أول 5 ثواني (أغرب تفصيلة)، ثم سؤال مفتوح يتقفل في الآخر، ثم فصول قصيرة كل فصل ينتهي بجملة تشد، ثم الذروة، ثم خاتمة تسيب أثر.\nالناتج: فقرات مرقمة، لكل فقرة: [الصورة: ...] ثم نص ${P.form==='podcast'?'المتكلم':'الراوي'}، و[نص الشاشة: ...] و[صوت: ...] لو موجودين. وعدد الكلمات مناسب للمدة (حوالي 2.3 كلمة في الثانية).\nالنوع: ${G()[1]}. اللغة: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة: ${voiceTxt()}\n${CORE.WRITING}\n\nالبحث:\n"""\n${P.research.trim()||'(لا يوجد بحث: استخدم المعلومات المؤكدة فقط واذكر مصادرها)'}\n"""`},
+ return `أنت فريق محترف: ${TEAM_DOC}. اكتب نص ${formName()} مدته ${P.sec} ثانية عن: ${P.topic.trim()}\nالعناصر المتفق عليها: ${elsTxt()}.\n${singerLine()}قواعد الصدق: استخدم ✅ كحقائق. ⚠️ تتقال بصيغة «يُروى أن» أو «بعض المصادر تقول». ❌ ما تدخلش إلا كإشاعة صريحة ومن غير تأكيد. ممنوع إضافة معلومات من خارج البحث.\nالهيكل: هوك صادم في أول 5 ثواني (أغرب تفصيلة)، ثم سؤال مفتوح يتقفل في الآخر، ثم فصول قصيرة كل فصل ينتهي بجملة تشد، ثم الذروة، ثم خاتمة تسيب أثر.\nالناتج: فقرات مرقمة، لكل فقرة: [الصورة: ...] ثم نص ${P.form==='podcast'?'المتكلم':'الراوي'}، و[نص الشاشة: ...] و[صوت: ...] لو موجودين. وعدد الكلمات مناسب للمدة (حوالي 2.3 كلمة في الثانية).\nالنوع: ${G()[1]}. اللغة: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة: ${voiceTxt()}\n${CORE.hookEmoTxt(P)}${CORE.WRITING}\n\nالبحث:\n"""\n${P.research.trim()||'(لا يوجد بحث: استخدم المعلومات المؤكدة فقط واذكر مصادرها)'}\n"""`},
 team(){const P=p();if(!P.script.trim()){alert('الصق النص الأول');return ''}return CORE.teamReview('نص '+formName()+' (افحص كمان الدقة: أي جملة فيها ادعاء بدون مصدر في البحث علّمها)',TEAM_DOC,P.script.trim())},
 human(){const P=p();if(!P.script.trim()){alert('الصق النص الأول');return ''}return `أنت محرر عربي محترف. علّم كل جملة في النص ده بتبان مكتوبة بالذكاء الاصطناعي (عبارات عامة، إيقاع متكرر، ثلاثيات، مقدمات وخاتمات محفوظة)، وأعد كتابتها بصوت إنسان حكّاء باللغة: ${L()[1]}. حافظ على المعلومات والطول. ارجع بالنسخة النهائية فقط.\n\n"""\n${P.script.trim()}\n"""`},
 voiceDir(){const P=p();if(!P.script.trim()){alert('الصق النص الأول');return ''}return `أنت مخرج صوت ومعلّق وثائقي عالمي. جهّز النص ده للتسجيل باللهجة/اللغة: ${L()[1]}.${CORE.castVoices(P)?'\nأصوات الشخصيات/الضيوف الثابتة:\n'+CORE.castVoices(P):''} ارجع بـ: (1) وصف صوت المعلق (السن، الطبقة، النبرة، السرعة) بالعربي وبالإنجليزي لتطبيقات توليد الصوت. (2) النص مقسم لجمل مع توجيه الأداء [وقفة] [همس] [تصاعد]، وتشكيل الكلمات الصعبة والأسماء الأجنبية. (3) الموسيقى والمؤثرات وتوقيتها.\n\n"""\n${P.script.trim()}\n"""`},
@@ -126,7 +130,7 @@ function s1(){const P=p(),n=CORE.partsN(P.sec,P.parts);return `<div class="c"><h
  <div class="row"><div><label class="l">المدة (ث)</label><input type="number" data-f="sec" value="${esc(P.sec)}"></div><div><label class="l">المقاس</label>${sel('aspect',ASPECTS,P.aspect)}</div></div>
  <label class="l">العناصر</label><div class="row" style="flex-wrap:wrap">${ELS.map(e=>`<button class="b${P.els.includes(e[0])?' g':''}" data-a="el" data-k="${e[0]}">${e[1]}</button>`).join('')}</div>
  ${P.els.includes('host')?`<label class="l">شكل المقدم الثابت</label><textarea data-f="host" rows="2">${esc(P.host)}</textarea>`:''}
- <div class="row"><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div><div><label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}</div></div>
+ ${CORE.hookEmoHTML(P)}<div class="row"><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div><div><label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}</div></div>
  ${CORE.adv('<label class="l">شكل بصري مخصص (اختياري، يغلب الاختيار)</label><input data-f="customVisual" placeholder="مثال: نفس شكل كورفو ولوتا" value="'+esc(P.customVisual)+'">',(P.customVisual||'').trim())}
  <div class="row"><div><label class="l">اللغة</label>${sel('lang',CORE.LANGS,P.lang)}</div><div><label class="l">السخرية</label>${sel('satire',CORE.SATIRE,P.satire)}</div></div>
  ${CORE.adv('<label class="l">البصمة الكتابية</label>'+sel('voice',CORE.VOICES,P.voice)+(P.voice==='custom'?'<label class="l">عينة نص بتحبه</label><textarea data-f="customVoice" rows="3">'+esc(P.customVoice)+'</textarea>':''),P.voice!==DEF.voice)}

@@ -328,7 +328,7 @@ C.toolsMenu=function(o,st,render,bar){const ctx=()=>(o.ctx?o.ctx():'')||'(لسه
  ov.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:88vh;overflow:auto;padding:12px;color:#fff"><b style="font-size:16px">🧰 أدوات</b>
  ${(o.presets||[]).length?`<div class="m" style="margin-top:8px">🎯 وصفات جاهزة (بتملا الاختيارات، وتعدّل اللي يعجبك):</div><div style="display:flex;flex-wrap:wrap;gap:6px">${o.presets.map((p,i)=>`<button class="b g" data-p="${i}" style="margin:0">${esc(p.name)}</button>`).join('')}</div>`:''}
  <div class="m" style="margin-top:10px">أوامر (بتتنسخ وتلصقها في التطبيق اللي تختاره):</div>
- ${it('hooks','🪝 اقترح 10 هوكات','من بنك الهوكات اللي نجحت معاك')}${it('test3','⏱️ اختبار الـ3 ثواني الأولى','حكم واحد: يشد ولا لأ')}${it('comp','🏆 وضع المسابقات','تقييم لجنة تحكيم + قايمة التسليم')}${it('multi','♻️ عمل واحد = 10 مخرجات','ريلز، كاروسيل، بوستات، تيزر…')}${it('plan','🗓️ خطة محتوى 30 يوم','لصفحة تختارها')}${it('en','🌍 نسخة إنجليزية للعالمية','بنفس النبرة مع تغيير الأمثلة المحلية')}${it('pub','📢 حزمة النشر','عنوان وكابشن وهاشتاجات لكل منصة')}
+ ${it('hooks','🪝 اقترح 10 هوكات','من بنك الهوكات اللي نجحت معاك')}${it('test3','⏱️ اختبار الـ3 ثواني الأولى','حكم واحد: يشد ولا لأ')}${it('comp','🏆 وضع المسابقات','تقييم لجنة تحكيم + قايمة التسليم')}${it('multi','♻️ عمل واحد = 10 مخرجات','ريلز، كاروسيل، بوستات، تيزر…')}${it('plan','🗓️ خطة محتوى 30 يوم','لصفحة تختارها')}${it('en','🌍 نسخة إنجليزية للعالمية','بنفس النبرة مع تغيير الأمثلة المحلية')}${it('refs','📋 المراجع المطلوبة','شخصيات وأماكن وكادرات وزوايا: الموجود والناقص')}${it('dur','⏱️ اقترح المدة','للعمل ولكل مشهد، والقرار ليك')}${it('pub','📢 حزمة النشر','عنوان وكابشن وهاشتاجات لكل منصة')}
  <div style="display:flex;gap:6px;margin-top:10px"><button class="b" data-x="hookbank" style="flex:1;margin:0">🪝 بنك الهوكات (${C.hooks().length})</button><button class="b" data-x="lessons" style="flex:1;margin:0">📚 الدروس (${C.lessons().length})</button></div>
  <button class="b" data-x="x" style="width:100%;margin-top:10px">إغلاق</button></div>`;
  document.body.appendChild(ov);
@@ -336,7 +336,7 @@ C.toolsMenu=function(o,st,render,bar){const ctx=()=>(o.ctx?o.ctx():'')||'(لسه
   if(b.dataset.x==='x'){ov.remove();return}if(b.dataset.x==='lessons'){ov.remove();C.lessonsBox();return}if(b.dataset.x==='hookbank'){ov.remove();C.hookBank();return}
   if(b.dataset.p!==undefined){const p=o.presets[+b.dataset.p];if(!confirm('تطبّق وصفة «'+p.name+'»؟ هتغيّر الاختيارات بس (النوع والشكل والمدة…)، والكتابة بتفضل.'))return;st.snap('قبل وصفة',true);Object.assign(st.get(),JSON.parse(JSON.stringify(p.set)));st.save();ov.remove();bar();render();C.toast('🎯 اتطبقت «'+p.name+'»');return}
   let k=b.dataset.t,send=k.endsWith('!');if(send)k=k.slice(0,-1);let t;
-  if(k==='pub')t=C.pubPrompt(ctx());else if(k==='plan'){const pg=(prompt('اسم الصفحة اللي هتعمل لها الخطة:',localStorage.getItem('hs_lastpage')||'')||'').trim();if(!pg)return;try{localStorage.setItem('hs_lastpage',pg)}catch(x){}t=P_.plan(ctx(),pg)}else t=P_[k](ctx());
+  if(k==='pub')t=C.pubPrompt(ctx());else if(k==='refs')t=C.refsPrompt(ctx());else if(k==='dur')t=C.durPrompt(ctx());else if(k==='plan'){const pg=(prompt('اسم الصفحة اللي هتعمل لها الخطة:',localStorage.getItem('hs_lastpage')||'')||'').trim();if(!pg)return;try{localStorage.setItem('hs_lastpage',pg)}catch(x){}t=P_.plan(ctx(),pg)}else t=P_[k](ctx());
   send?C.send(t):C.copy(t,'اتنسخ ✓ الصقه في التطبيق')}};
 C.hookBank=function(){const l=C.hooks();let o=document.getElementById('hkBox');if(o)o.remove();o=document.createElement('div');o.id='hkBox';o.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
  o.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:80vh;overflow:auto;padding:12px;color:#fff"><b>🪝 بنك الهوكات</b><div class="m" style="margin:4px 0">احفظ هنا أي هوك نجح معاك (مشاهدات أو تفاعل عالي). أمر «اقترح 10 هوكات» بيتعلم منهم.</div>
@@ -410,3 +410,33 @@ C.bindPub=function(getP,save,render,getCtx){
 C.pubStatus=P=>{const u=P&&P.pub;if(!u||!u.items||!u.items.length)return '';const n=Object.values(u.posted||{}).filter(Boolean).length;return n+'/'+u.items.length+' منصة اتنشر'};
 })();
 window.CORE.adv=(html,open)=>`<details ${open?'open':''} style="margin-top:8px;border:1px dashed var(--border);border-radius:10px;padding:4px 8px"><summary style="color:#94a3b8;font-size:13px;cursor:pointer">⚙️ متقدم</summary>${html}</details>`;
+
+/* ================= 📲 تثبيت كل استوديو كتطبيق لوحده ================= */
+(function(){const C=window.CORE;let ev=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();ev=e;const b=document.getElementById('instBtn');if(b){b.style.display='';b.title='ثبّت الاستوديو ده كتطبيق لوحده'}});
+document.addEventListener('click',async e=>{if(!e.target.closest('#instBtn'))return;
+ if(ev){ev.prompt();const r=await ev.userChoice;if(r&&r.outcome==='accepted')C.toast('📲 اتثبت ✓ هتلاقيه على الشاشة الرئيسية');ev=null;e.target.closest('#instBtn').style.display='none'}
+ else alert('من قايمة المتصفح (⋮) اختار «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».')});
+window.addEventListener('appinstalled',()=>{const b=document.getElementById('instBtn');if(b)b.style.display='none'})})();
+
+/* ================= 🪝 نوع الهوك والمشاعر ================= */
+(function(){const C=window.CORE;
+C.HOOKS=[['auto','الذكاء يختار الأقوى'],['shock','سؤال صادم'],['number','رقم أو حقيقة غريبة'],['funny','موقف مضحك من أول ثانية'],['secret','سر أو معلومة ممنوعة'],['reverse','عكس المتوقع'],['visual','صورة غريبة بدون كلام'],['sound','صوت مفاجئ'],['cut','جملة ناقصة تتكمل في الآخر'],['confront','مواجهة أو خناقة'],['pov','وجهة نظر (أنت مكان البطل)'],['challenge','تحدي للمشاهد'],['end','نبدأ من النهاية']];
+C.EMOS=[['auto','حسب القصة'],['laugh','ضحك'],['tension','توتر وترقب'],['fear','خوف'],['awe','دهشة'],['nostalgia','حنين'],['empathy','تعاطف'],['hope','أمل'],['anger','غضب من ظلم'],['warm','دفء عائلي'],['pride','فخر']];
+C.hookEmoHTML=P=>`<div class="row"><div><label class="l">🪝 نوع الهوك</label><select data-f="hook">${C.opts(C.HOOKS,P.hook||'auto')}</select></div><div><label class="l">💓 الإحساس الأساسي</label><select data-f="emo">${C.opts(C.EMOS,P.emo||'auto')}</select></div></div>`;
+C.hookEmoTxt=P=>{const h=C.pick(C.HOOKS,P.hook||'auto'),e=C.pick(C.EMOS,P.emo||'auto');return `نوع الهوك: ${h[0]==='auto'?'اختار أقوى نوع للعمل ده واذكره':h[1]} (في أول 3 ثواني: لفظي + بصري + سمعي).\nالإحساس الأساسي اللي المشاهد يخرج بيه: ${e[0]==='auto'?'حدده حسب القصة واذكره':e[1]}، مع تصاعد عاطفي ولحظة تأثير واضحة.\n`}})();
+
+/* ================= 📋 المراجع المطلوبة + ⏱️ اقتراح المدة (في 🧰) ================= */
+(function(){const C=window.CORE;
+C.refsPrompt=ctx=>{const L=C.lib;return `أنت مخرج ومدير فني ومشرف راكور. اقرا العمل ده من أوله لآخره وطلّع قايمة كل المراجع اللي محتاجها قبل التوليد:
+1) الشخصيات: كل شخصية، وكل تغيير في شكلها أو لبسها، والصور المطلوبة لها (شيت أمامي/جانبي/وش قريب).
+2) الأماكن: كل مكان، وصورة مرجع لكل واحد.
+3) الأدوات المهمة (Props) اللي لازم تفضل ثابتة.
+4) مراجع الكادر: كل تركيبة (مين مع مين، فين، الزاوية) بتتكرر في أكتر من لقطة، ومين واقف فين.
+5) زوايا الكاميرا المطلوبة لكل مكان.
+وقارن بالموجود عندي، وقول الناقص بس:
+الشخصيات الموجودة: ${L.chars.map(x=>x.name).join('، ')||'مفيش'}
+الأماكن الموجودة: ${L.places.map(x=>x.name).join('، ')||'مفيش'}
+مراجع الكادر الموجودة: ${L.frames.map(x=>x.name).join('، ')||'مفيش'}
+الناتج: جدول «المطلوب | موجود ✓ / ناقص ✗ | أمر الصورة بالإنجليزي للناقص».\n\nالعمل:\n${ctx}`};
+C.durPrompt=ctx=>`أنت مخرج ومونتير محترف. اقرا العمل ده واقترح المدة المناسبة ليه (للعمل كله ولكل مشهد)، بناءً على كمية الحوار (حوالي 2.5 كلمة في الثانية)، والأحداث، وإيقاع النوع، والمنصة. ارجع بـ: المدة المقترحة بالثواني، والحد الأدنى والأقصى، وجدول المشاهد بالمدد، وأي جزء ممكن يتقص لو عايز أقصر. القرار النهائي بتاعي.\n\nالعمل:\n${ctx}`;})();

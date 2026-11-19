@@ -4,7 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#090d16">
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="song.webmanifest">
+<link rel="apple-touch-icon" href="icons/song-180.png">
+<link rel="icon" href="icons/song-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="الأغاني">
 <title>استوديو الأغاني والكليب</title>
 <style>
 @font-face{font-family:Cairo;src:url(fonts/cairo-arabic.woff2) format("woff2");font-display:swap}
@@ -37,7 +41,7 @@ textarea{resize:vertical}
 </style>
 </head>
 <body>
-<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>🎼 استوديو الأغاني والكليب</h1><button class="b" data-a="hist" style="margin:0">🕘</button></header>
+<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>🎼 استوديو الأغاني والكليب</h1><button class="b" id="instBtn" style="margin:0;display:none">📲</button><button class="b" data-a="hist" style="margin:0">🕘</button></header>
 <nav id="nav"></nav>
 <main id="app"></main>
 <script src="core.js"></script>
@@ -61,7 +65,7 @@ const MCTX=()=>{const P=p();return `أغنية${P.title?' «'+P.title+'»':''}،
 /* ---------- الأوامر ---------- */
 const PR={
 cLyr(){const P=p();if(!P.idea.trim()){alert('اكتب فكرة الأغنية الأول');return ''}
- return `أنت فريق محترف: ${CORE.TEAM.song}. اكتب كلمات أغنية${P.title?' اسمها «'+P.title+'»':''}.\nالفكرة: ${P.idea.trim()}\nالنوع: ${G()[1]} (${G()[2]}).\nاللغة: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة الكتابية: ${voiceTxt()}\n${P.model.trim()?'البيت النموذجي (طابقه في عدد المقاطع الصوتية لكل سطر وفي نظام القافية والوزن بالظبط، لكن بصورة وكلمات جديدة تمامًا):\n"""'+P.model.trim()+'"""':'اختر وزنًا وقافية واحدة ثابتة والتزم بيها في الأغنية كلها.'}\nشروط ثابتة:\n- وزن منضبط: عدد مقاطع متقارب في كل سطر.\n- كلمات شائعة سهلة النطق والغناء.\n- صورة جديدة غير مستهلكة في المذهب.\n- صياغة جذابة تلزق في الراس، وهوك في أول سطرين.\n- مذهب (Chorus) سهل الترديد يتكرر بنفس الكلمات.\nالهيكل: [Verse 1] [Pre-Chorus] [Chorus] [Verse 2] [Chorus] [Bridge] [Chorus].\nالناتج: الكلمات بالوسوم دي فقط، وبعدها سطر «الإيقاع المقترح:» (BPM والإحساس)، وبعدها 3 عناوين. بدون شرح.\n${CORE.WRITING}`},
+ return `أنت فريق محترف: ${CORE.TEAM.song}. اكتب كلمات أغنية${P.title?' اسمها «'+P.title+'»':''}.\nالفكرة: ${P.idea.trim()}\nالنوع: ${G()[1]} (${G()[2]}).\nاللغة: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة الكتابية: ${voiceTxt()}\n${CORE.hookEmoTxt(P)}${P.model.trim()?'البيت النموذجي (طابقه في عدد المقاطع الصوتية لكل سطر وفي نظام القافية والوزن بالظبط، لكن بصورة وكلمات جديدة تمامًا):\n"""'+P.model.trim()+'"""':'اختر وزنًا وقافية واحدة ثابتة والتزم بيها في الأغنية كلها.'}\nشروط ثابتة:\n- وزن منضبط: عدد مقاطع متقارب في كل سطر.\n- كلمات شائعة سهلة النطق والغناء.\n- صورة جديدة غير مستهلكة في المذهب.\n- صياغة جذابة تلزق في الراس، وهوك في أول سطرين.\n- مذهب (Chorus) سهل الترديد يتكرر بنفس الكلمات.\nالهيكل: [Verse 1] [Pre-Chorus] [Chorus] [Verse 2] [Chorus] [Bridge] [Chorus].\nالناتج: الكلمات بالوسوم دي فقط، وبعدها سطر «الإيقاع المقترح:» (BPM والإحساس)، وبعدها 3 عناوين. بدون شرح.\n${CORE.WRITING}`},
 suno(){const P=p();if(!P.lyrics.trim()){alert('الصق الكلمات الأول');return ''}
  return `جهّز الأغنية دي لـ Suno. أنا بكتب كلمات بالعربي وSuno أحيانًا بيغلط في النطق.\nارجع بالآتي بالترتيب:\n1) Style of Music: وصف إنجليزي في 120 حرف كحد أقصى (النوع، الإيقاع، الآلات، نوع الصوت والنبرة، اللهجة ${L()[1]}).\n2) الكلمات كاملة بوسوم Suno ([Verse] [Chorus] [Bridge] [Outro])، مع تشكيل (الحركات) على أي كلمة ممكن تتنطق غلط، وتقسيم أي كلمة طويلة بشرطة لو لازم.\n3) أكتر 5 كلمات في النص ممكن Suno يغلط فيها، وبدايل منطوقة لكل واحدة.\n4) 3 أنماط مختلفة لوصف الأسلوب أجرب بيها.\nالنوع: ${G()[1]}. بدون شرح زيادة.\n\nالكلمات:\n"""\n${P.lyrics.trim()}\n"""`},
 teamLyr(){const P=p();if(!P.lyrics.trim()){alert('الصق الكلمات الأول');return ''}return CORE.teamReview('كلمات أغنية',CORE.TEAM.song,P.lyrics.trim())},
@@ -120,7 +124,7 @@ function pair(a,label){return `<div class="pair"><button class="b bl" data-a="${
 function s0(){const P=p();return CORE.castCard(P)+`<div class="c"><h3>🎼 الأغنية</h3>
  <label class="l">اسم الأغنية (اختياري)</label><input data-f="title" value="${esc(P.title)}">
  <label class="l">الفكرة أو الموضوع</label><textarea data-f="idea" rows="4">${esc(P.idea)}</textarea>
- <div class="row"><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div><div><label class="l">لغة الكلمات</label>${sel('lang',CORE.LANGS,P.lang)}</div></div>
+ ${CORE.hookEmoHTML(P)}<div class="row"><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div><div><label class="l">لغة الكلمات</label>${sel('lang',CORE.LANGS,P.lang)}</div></div>
  <div class="row"><div><label class="l">السخرية</label>${sel('satire',CORE.SATIRE,P.satire)}</div></div></div>
  ${CORE.adv('<label class="l">البصمة الكتابية</label>'+sel('voice',CORE.VOICES,P.voice)+(P.voice==='custom'?'<label class="l">عينة نص بتحبه</label><textarea data-f="customVoice" rows="3">'+esc(P.customVoice)+'</textarea>':''),P.voice!==DEF.voice)}
  <label class="l">بيت نموذجي (اختياري): نفس وزنه وقافيته</label><textarea data-f="model" rows="3">${esc(P.model)}</textarea>
