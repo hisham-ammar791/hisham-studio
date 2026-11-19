@@ -45,6 +45,7 @@ textarea{resize:vertical}
 <nav id="nav"></nav>
 <main id="app"></main>
 <script src="core.js"></script>
+<script src="fieldtools.js"></script>
 <script>
 const {esc,toast}=CORE;
 const DEF={step:0,form:'doc',topic:'',research:'',els:['narr','archive','text'],host:'',genre:'mystery',lang:'simple',satire:'light',voice:'detective',customVoice:'',
@@ -164,7 +165,7 @@ function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
  <button class="b g" data-a="send">▶ ابدأ وضع الإرسال لـ Flow</button><button class="b" data-a="grid">${P.grid?'📋 عرض التفاصيل':'🔲 عرض شبكة'}</button>${pair('teamBoard','راجع الستوري بورد بالفريق')}</div>`:'<div class="c m">لسه مفيش لقطات.</div>'}
  ${P.shots.length?(P.grid?gridHTML():insBtn(-1)+P.shots.map((s,i)=>`<div id="shot${i}">`+shotCard(s,i)+'</div>'+insBtn(i)).join('')):''}${P.shots.length?CORE.pubCard(P):''}`}
 function render(){const P=p();document.getElementById('nav').innerHTML=STEPS.map((t,k)=>`<button class="b${k===P.step?' g':''}" data-a="go" data-i="${k}">${t}</button>`).join('');
- document.getElementById('app').innerHTML=[s0,s1,s2][P.step]()}
+ document.getElementById('app').innerHTML=CORE.stage(P,STEPS,[s0,s1,s2][P.step]())}
 
 /* ---------- التفاعل ---------- */
 function shrink(file){return new Promise(r=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const k=Math.min(1,720/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);r(c.toDataURL('image/jpeg',.8))};im.onerror=()=>r('');im.src=u})}

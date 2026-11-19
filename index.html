@@ -67,5 +67,6 @@ document.getElementById('bkIn').onchange=async e=>{const f=e.target.files[0];if(
  if(!confirm('استرجاع النسخة؟ هتستبدل الأعمال الحالية في الاستوديوهات الجديدة ('+Object.keys(d.keys).length+' عنصر).'))return;Object.entries(d.keys).forEach(([k,v])=>{try{localStorage.setItem(k,v)}catch(x){}});alert('اترجعت ✓');location.reload()}catch(x){alert('الملف ده مش نسخة احتياطية للاستوديو')}};
 </script>
 <script>if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}</script>
+<script src="fieldtools.js"></script>
 </body>
 </html>

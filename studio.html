@@ -4251,5 +4251,21 @@ let _aiT=0;new MutationObserver(()=>{clearTimeout(_aiT);_aiT=setTimeout(aiDecora
 document.addEventListener('DOMContentLoaded',aiDecorate);
 </script>
 
+<script>
+/* زر رجوع / التالي في كل مرحلة بالاستوديو القديم */
+(function(){const ps=[...document.querySelectorAll('.panel')],tb=[...document.querySelectorAll('.tab-btn')];
+const nm=i=>(tb[i]?tb[i].textContent.trim():'');
+const vis=i=>tb[i]&&getComputedStyle(tb[i]).display!=='none';
+ps.forEach((p,i)=>{const mk=()=>{const d=document.createElement('div');d.style.cssText='display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin:6px 0';
+ const b=document.createElement('button');b.className='b gray';
+ b.textContent=i>0?'→ رجوع: '+nm(i-1):'→ رجوع للرئيسية';
+ b.onclick=()=>{if(i>0){tab(i-1);window.scrollTo(0,0)}else location.href='./'};d.appendChild(b);
+ if(i<ps.length-1){const n=document.createElement('button');n.className='b gray';n.textContent='التالي: '+nm(i+1)+' ←';
+  n.onclick=()=>{let j=i+1;while(j<ps.length&&!vis(j))j++;if(j<ps.length){tab(j);window.scrollTo(0,0)}};d.appendChild(n);
+  if(!vis(i+1))n.dataset.adv=1}
+ return d};p.insertBefore(mk(),p.firstChild);p.appendChild(mk())});
+})();
+</script>
+<script src="fieldtools.js"></script>
 </body>
 </html>

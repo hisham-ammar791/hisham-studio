@@ -280,6 +280,13 @@ const C=window.CORE,LK='hs_lessons';
 C.lessons=()=>{try{return JSON.parse(localStorage.getItem(LK)||'[]')}catch(e){return []}};
 const sv=l=>{try{localStorage.setItem(LK,JSON.stringify(l))}catch(e){}};
 C.addLesson=function(t){t=(t||'').trim();if(!t)return;const l=C.lessons();if(!l.includes(t)){l.unshift(t);sv(l.slice(0,40))}C.toast('📚 اتحفظ الدرس ✓ وهيدخل في الأوامر الجاية')};
+
+/* زر الرجوع والتالي في كل مرحلة */
+C.backBar=(P,S)=>{const last=S.length-1,snd=P.sendMode&&P.shots&&P.shots.length&&P.step===last;
+ const bk=snd?'<button class="b" data-a="exitSend">→ رجوع للقطات</button>':P.step>0?`<button class="b" data-a="go" data-i="${P.step-1}">→ رجوع: ${S[P.step-1]}</button>`:'<button class="b" data-a="home">→ رجوع للرئيسية</button>';
+ const nx=!snd&&P.step<last?`<button class="b" data-a="go" data-i="${P.step+1}">التالي: ${S[P.step+1]} ←</button>`:'';
+ return `<div class="bkbar" style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;margin:4px 0">${bk}${nx}</div>`};
+C.stage=(P,S,html)=>C.backBar(P,S)+html+C.backBar(P,S);
 C.lessonsTxt=()=>{const l=C.lessons().slice(0,15);return l.length?'تجنّب الأخطاء دي (حصلت قبل كده في التوليد):\n'+l.map(x=>'- '+x).join('\n')+'\n':''};
 C.lessonsBox=function(){const l=C.lessons();let o=document.getElementById('lsBox');if(o)o.remove();o=document.createElement('div');o.id='lsBox';o.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
  o.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:80vh;overflow:auto;padding:12px;color:#fff"><b>📚 سجل الدروس</b><div class="m" style="margin:4px 0">كل درس هنا بيدخل في أوامر الصور والفيديو في كل الاستوديوهات (آخر 15). اكتب الغلطة اللي حصلت بكلامك.</div>
