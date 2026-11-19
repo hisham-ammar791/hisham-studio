@@ -170,7 +170,14 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='shotEn'){CORE.copy(PR.shotEn(i),'اتنسخ أمر الترجمة ✓ الصقه في أي تطبيق ذكاء');return}
  const send=a.endsWith('!');if(send)a=a.slice(0,-1);const [fn,arg]=a.split(':');if(!PR[fn])return;
  const txt=PR[fn](arg===undefined?undefined:+arg);if(!txt)return;st.snap('قبل '+fn);if(send)CORE.send(txt);else CORE.copy(txt,'تم النسخ ✓')});
-CORE.bindCast(p,()=>st.save(),render);CORE.bindMusic(p,()=>st.save(),()=>MCTX());
+CORE.bindCast(p,()=>st.save(),render);
+const shotsTxt=()=>p().shots.map((s,i)=>`لقطة ${i+1} | ${s.dur} | ${s.lyric||'بدون'}\nالمشهد: ${s.desc||''}\nالكاميرا: ${s.cam||''}\nالحركة: ${s.move||''}\nالإضاءة: ${s.light||''}`).join('\n\n');
+CORE.work({ns:'film',st,def:DEF,render,check:{team:CORE.TEAM.film,
+ text:()=>{const P=p(),a=(P.script||'').trim(),b=shotsTxt();return (a?'[السيناريو]\n'+a+'\n\n':'')+(b?'[اللقطات]\n'+b:'')},
+ apply:v=>{const P=p(),i=v.search(new RegExp(HDR.source,'im')),head=(i>0?v.slice(0,i):(i<0?v:'')).replace(/\[(?:السيناريو|اللقطات)\]/g,'').trim(),sh=i>=0?parseShots(v.slice(i)):[];
+  if(!head&&!sh.length){alert('مش لاقي حاجة أطبقها');return false}
+  if(head)P.script=head;if(sh.length){sh.forEach((x,k)=>{const o=P.shots[k];if(o){x.img=o.img;x.frame=o.frame;x.done=o.done}});P.shots=sh}
+  st.save();return [head&&'السيناريو',sh.length&&sh.length+' لقطة'].filter(Boolean).join(' + ')}}});CORE.bindMusic(p,()=>st.save(),()=>MCTX());
 st.snap('عند الفتح');render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>

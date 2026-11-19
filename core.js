@@ -31,6 +31,8 @@ CORE.store=function(ns,def){const K='hs_'+ns,H='hs_hist_'+ns;let P;try{P=Object.
   save(){try{localStorage.setItem(K,JSON.stringify(P))}catch(e){CORE.toast('⚠️ الحفظ فشل (المساحة مليانة؟)',4000)}},
   snap(why,force){try{const raw=JSON.stringify(P);if(!force&&raw===last)return;last=raw;let h=JSON.parse(localStorage.getItem(H)||'[]');h.unshift({ts:Date.now(),why:why||'',raw});localStorage.setItem(H,JSON.stringify(h.slice(0,12)))}catch(e){}},
   hist(){try{return JSON.parse(localStorage.getItem(H)||'[]')}catch(e){return []}},
+  set(o){P=Object.assign({},def,o||{});api.save()},
+  reset(){P=JSON.parse(JSON.stringify(def));api.save()},
   restore(ts){const x=api.hist().find(h=>h.ts==ts);if(!x)return false;api.snap('قبل الاسترجاع',true);P=Object.assign({},def,JSON.parse(x.raw));api.save();return true}};
  setInterval(()=>api.snap('تلقائي'),300000);return api};
 
@@ -169,4 +171,64 @@ C.musicPrompt=function(P,kind,ctx){const m=M(P),mood=m.mood==='auto'?'مناسب
 C.bindMusic=function(getP,save,getCtx){
  document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.mf;if(!k)return;const m=M(getP());m[k]=e.target.type==='number'?(+e.target.value||0):e.target.value;save()});
  document.addEventListener('click',e=>{const b=e.target.closest('[data-mu]');if(!b)return;let k=b.dataset.mu,send=k.endsWith('!');if(send)k=k.slice(0,-1);const t=C.musicPrompt(getP(),k,getCtx());if(send)C.send(t);else C.copy(t,'اتنسخ أمر الموسيقى ✓ الصقه في Suno أو في ChatGPT/Claude');})};
+})();
+
+/* ================= 📁 العمل: جديد / حفظ وفتح من Google Drive / فحص بالذكاء ================= */
+(function(){
+const C=window.CORE,esc=C.esc,API='https://www.googleapis.com',GDK='studio_gdrive_v1',FOLDER='استوديو هشام - الأعمال';
+const cfg=()=>{try{return JSON.parse(localStorage.getItem(GDK)||'{}')}catch(e){return {}}};
+const put=o=>{const c=Object.assign(cfg(),o);try{localStorage.setItem(GDK,JSON.stringify(c))}catch(e){}return c};
+const GD={tok:'',exp:0};try{const t=JSON.parse(sessionStorage.getItem('hs_gd_tok')||'{}');GD.tok=t.tok||'';GD.exp=t.exp||0}catch(e){}
+const ok=()=>GD.tok&&Date.now()<GD.exp-60000;
+const gis=()=>new Promise((r,j)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return r();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.onload=()=>r();s.onerror=()=>j(new Error('تعذر تحميل تسجيل جوجل: اتأكد من النت'));document.head.appendChild(s)});
+C.gdConnect=async function(){if(ok())return true;let cid=(cfg().cid||'').trim();
+ if(!/\.apps\.googleusercontent\.com$/.test(cid)){cid=(prompt('الصق Client ID بتاع جوجل (نفس اللي في الاستوديو القديم، آخره apps.googleusercontent.com):')||'').trim();if(!/\.apps\.googleusercontent\.com$/.test(cid)){C.toast('مفيش Client ID صحيح');return false}put({cid})}
+ try{await gis()}catch(e){C.toast(e.message);return false}
+ return new Promise(res=>{const cl=google.accounts.oauth2.initTokenClient({client_id:cid,scope:'https://www.googleapis.com/auth/drive.file',
+  callback:t=>{if(t&&t.access_token){GD.tok=t.access_token;GD.exp=Date.now()+(+t.expires_in||3600)*1000;try{sessionStorage.setItem('hs_gd_tok',JSON.stringify(GD))}catch(e){}put({linked:1});res(true)}else res(false)},
+  error_callback:()=>{C.toast('ما اتربطش Drive');res(false)}});cl.requestAccessToken({prompt:cfg().linked?'':'consent'})})};
+async function f(url,opt){opt=opt||{};opt.headers=Object.assign({Authorization:'Bearer '+GD.tok},opt.headers||{});const r=await fetch(url,opt);if(r.status===401){GD.tok='';throw new Error('الجلسة انتهت، اربط تاني')}if(!r.ok)throw new Error('Drive '+r.status);return r}
+async function folder(){let id=cfg().hsFolder;if(id){try{const j=await (await f(API+'/drive/v3/files/'+id+'?fields=id,trashed')).json();if(!j.trashed)return id}catch(e){if(/اربط/.test(e.message))throw e}}
+ const q=encodeURIComponent(`name='${FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);const l=await (await f(API+'/drive/v3/files?q='+q+'&fields=files(id)')).json();
+ id=(l.files&&l.files[0]&&l.files[0].id)||(await (await f(API+'/drive/v3/files',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:FOLDER,mimeType:'application/vnd.google-apps.folder'})})).json()).id;put({hsFolder:id});return id}
+C.gdList=async function(ns){const q=encodeURIComponent(`appProperties has { key='hs' and value='${ns}' } and trashed=false`);return ((await (await f(API+'/drive/v3/files?q='+q+'&orderBy=modifiedTime desc&pageSize=200&fields=files(id,name,modifiedTime,appProperties)')).json()).files||[])};
+C.gdSave=async function(ns,name,data){if(!(await C.gdConnect()))return false;const fid=await folder(),fname=ns+' - '+name+'.json';
+ const ex=(await C.gdList(ns)).find(x=>x.appProperties&&x.appProperties.name===name);const meta=ex?{name:fname}:{name:fname,parents:[fid],appProperties:{hs:ns,name}};
+ const b='hsb'+Date.now(),body=`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(data)}\r\n--${b}--`;
+ await f(API+'/upload/drive/v3/files'+(ex?'/'+ex.id:'')+'?uploadType=multipart',{method:ex?'PATCH':'POST',headers:{'Content-Type':'multipart/related; boundary='+b},body});return true};
+C.gdLoad=async function(id){return await (await f(API+'/drive/v3/files/'+id+'?alt=media')).json()};
+
+/* شريط العمل */
+C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
+ const bar=()=>{let el=document.getElementById('wbar');if(!el){el=document.createElement('div');el.id='wbar';const h=document.querySelector('header');h.parentNode.insertBefore(el,h.nextSibling)}
+  el.innerHTML=`<div style="display:flex;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap"><span style="font-size:13px;color:var(--muted)">📁</span><input id="wName" value="${esc(P().wname||'')}" placeholder="اسم العمل" style="flex:1;min-width:120px;padding:6px 8px;font-size:14px">
+  <button class="b" data-w="save" style="margin:0">☁️ حفظ</button><button class="b" data-w="open" style="margin:0">📂 فتح</button><button class="b" data-w="new" style="margin:0">🆕 جديد</button><button class="b bl" data-w="check" style="margin:0">🔎 فحص</button></div>`};
+ C._wbar=bar;
+ async function save(silent){const n=(P().wname||'').trim();if(!n){alert('اكتب اسم العمل الأول');return false}try{C.toast('⏳ بحفظ على Drive…',8000);const r=await C.gdSave(ns,n,P());if(r)C.toast('☁️ اتحفظ «'+n+'» على Drive ✓');return r}catch(e){C.toast('⚠️ '+e.message,4000);return false}}
+ async function openBox(){if(!(await C.gdConnect()))return;let l=[];try{C.toast('⏳ بجيب أعمالك…');l=await C.gdList(ns)}catch(e){C.toast('⚠️ '+e.message);return}
+  let ov=document.getElementById('wOpen');if(ov)ov.remove();ov=document.createElement('div');ov.id='wOpen';ov.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
+  const items=q=>l.filter(x=>!q||(x.appProperties.name||'').includes(q)).map(x=>`<div style="display:flex;gap:8px;align-items:center;border-top:1px dashed #334155;padding:8px 0"><div style="flex:1"><b>${esc(x.appProperties.name)}</b><div class="m" style="font-size:12px">${new Date(x.modifiedTime).toLocaleString('ar-EG',{dateStyle:'short',timeStyle:'short'})}</div></div><button class="b g" data-o="${x.id}" style="margin:0">افتح</button></div>`).join('')||'<div class="m">مفيش أعمال بالاسم ده.</div>';
+  ov.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:80vh;overflow:auto;padding:12px;color:#fff"><b>📂 أعمالك على Drive (${l.length})</b><input id="wQ" placeholder="اكتب اسم العمل…" style="margin-top:8px" value="${esc((P().wname||'').trim())}"><div id="wL">${items((P().wname||'').trim())}</div><button class="b" data-o="x" style="width:100%;margin-top:10px">إغلاق</button></div>`;
+  document.body.appendChild(ov);ov.querySelector('#wQ').oninput=e=>{ov.querySelector('#wL').innerHTML=items(e.target.value.trim())};
+  ov.onclick=async e=>{const b=e.target.closest('[data-o]');if(e.target===ov||(b&&b.dataset.o==='x')){ov.remove();return}if(!b)return;
+   if(!confirm('تفتح العمل ده؟ الحالي هيتحفظ في سجل النسخ 🕘 الأول.'))return;try{const d=await C.gdLoad(b.dataset.o);st.snap('قبل فتح عمل من Drive',true);st.set(d);ov.remove();bar();render();C.toast('اتفتح ✓')}catch(x){C.toast('⚠️ '+x.message)}}}
+ async function nw(){const n=(P().wname||'').trim(),has=JSON.stringify(P())!==JSON.stringify(Object.assign({},o.def,{step:0}));
+  if(has){const c=confirm('عمل جديد:\nهيتحفظ العمل الحالي'+(n?' «'+n+'»':'')+' على Google Drive الأول، وبعدين الصفحة تتمسح.\n\nموافق؟');if(!c)return;
+   if(!n){const nn=(prompt('اكتب اسم للعمل الحالي عشان يتحفظ على Drive:')||'').trim();if(!nn){C.toast('اتلغى: لازم اسم');return}P().wname=nn;st.save()}
+   const r=await save();if(!r){if(!confirm('الحفظ على Drive ما نجحش. تمسح برضه؟ (فيه نسخة في سجل النسخ 🕘 على الموبايل)'))return}st.snap('قبل عمل جديد',true)}
+  st.reset();bar();render();window.scrollTo(0,0);C.toast('🆕 صفحة جديدة')}
+ function check(){const ov=document.createElement('div');ov.id='wChk';ov.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
+  ov.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:88vh;overflow:auto;padding:12px;color:#fff"><b>🔎 فحص العمل بالذكاء الاصطناعي</b><div class="m" style="margin:4px 0">1) انسخ أمر الفحص وابعته للتطبيق اللي تختاره. 2) الصق الرد هنا. 3) اضغط «طبّق»: النسخة المصححة بتحل محل الحالية (والقديمة في 🕘).</div>
+  <div class="pair"><button class="b bl" data-c="copy">📋 انسخ أمر الفحص</button><button class="b" data-c="send">📤</button></div>
+  <textarea id="wChkT" rows="8" placeholder="الصق رد الفحص هنا">${esc(P().chkPaste||'')}</textarea>
+  <div style="display:flex;gap:6px;margin-top:8px"><button class="b g" data-c="apply" style="flex:2">✅ طبّق التصحيح</button><button class="b" data-c="x" style="flex:1">إغلاق</button></div></div>`;
+  document.body.appendChild(ov);const ta=ov.querySelector('#wChkT');ta.oninput=()=>{P().chkPaste=ta.value;st.save()};
+  ov.onclick=e=>{const b=e.target.closest('[data-c]');if(e.target===ov||(b&&b.dataset.c==='x')){ov.remove();return}if(!b)return;const a=b.dataset.c;
+   const txt=()=>{const w=o.check.text();return w.trim()?`أنت فريق محترف: ${o.check.team}. افحص العمل ده فحص عميق وحاسم: القصة والمنطق والهوك والإيقاع، والحوار والأسلوب (يبان مكتوب بإيد إنسان؟)، وثبات الشخصيات وأصواتها ولهجاتها والأماكن، والدقة، وجاهزية كل لقطة للتوليد.\nارجع بالترتيب: (1) حكم واحد: جاهز / يحتاج تعديل. (2) أهم المشاكل في نقاط قصيرة. (3) النسخة المصححة كاملة بنفس الصيغة بالظبط (نفس العناوين ونفس شكل «لقطة N | ...» لو موجود) بين السطرين ===بداية=== و===نهاية===. بدون خيارات.\n${C.WRITING}\n\nالعمل:\n"""\n${w}\n"""`:''};
+   if(a==='copy'||a==='send'){const t=txt();if(!t){C.toast('مفيش شغل لسه للفحص');return}a==='send'?C.send(t):C.copy(t,'اتنسخ أمر الفحص ✓');return}
+   if(a==='apply'){let v=ta.value;if(!v.trim()){alert('الصق الرد الأول');return}const m=v.match(/===\s*بداية\s*===([\s\S]*?)===\s*نهاية\s*===/);if(m)v=m[1].trim();else if(!confirm('الرد مفيهوش علامات ===بداية=== و===نهاية===. أطبّق الرد كله؟'))return;
+    st.snap('قبل تطبيق الفحص',true);const r=o.check.apply(v);if(r===false)return;P().chkPaste='';st.save();ov.remove();render();C.toast('✅ اتطبق التصحيح ('+r+')')}}}
+ document.addEventListener('input',e=>{if(e.target.id==='wName'){P().wname=e.target.value;st.save()}});
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w;if(a==='save')save();if(a==='open')openBox();if(a==='new')nw();if(a==='check')check()});
+ bar()};
 })();
