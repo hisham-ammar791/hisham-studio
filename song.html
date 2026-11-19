@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090d16">
+<link rel="manifest" href="manifest.webmanifest">
+<title>استوديو الأغاني والكليب</title>
+<style>
+@font-face{font-family:Cairo;src:url(fonts/cairo-arabic.woff2) format("woff2");font-display:swap}
+:root{--bg:#090d16;--card:#131c2e;--panel:#1e293b;--accent:#10b981;--blue:#3b82f6;--warn:#f59e0b;--text:#f8fafc;--muted:#94a3b8;--border:#334155}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Cairo,system-ui,sans-serif;padding-bottom:90px}
+header{display:flex;align-items:center;gap:8px;padding:10px 12px;position:sticky;top:0;background:#090d16ee;z-index:5;border-bottom:1px solid var(--border)}
+header h1{font-size:17px;margin:0;flex:1}
+nav{display:flex;gap:6px;padding:8px 12px;overflow-x:auto}
+nav button{flex:1;white-space:nowrap}
+main{padding:0 12px}
+.c{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0}
+.c h3{margin:0 0 6px;font-size:16px}
+.m{color:var(--muted);font-size:13px;line-height:1.7}
+label.l{display:block;font-size:13px;color:#cbd5e1;margin:10px 0 4px}
+input,textarea,select{width:100%;background:#0b1220;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px;font-family:inherit;font-size:15px}
+textarea{resize:vertical}
+.row{display:flex;gap:8px}.row>div{flex:1;min-width:0}
+.b{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:14px;cursor:pointer;margin:6px 4px 0 0}
+.b.g{background:var(--accent);border-color:var(--accent);color:#04130d;font-weight:700}
+.b.bl{background:#1d4ed8;border-color:#1d4ed8}
+.b.on{outline:2px solid #38bdf8}
+.b.r{color:#fca5a5}
+.pair{display:flex;gap:6px;margin-top:6px}.pair .b{margin:0}.pair .b:first-child{flex:1}
+.shot{border:1px solid var(--border);border-radius:12px;padding:10px;margin:10px 0;background:#0f172a}
+.shot.done{opacity:.6;border-color:#166534}
+.shot img{max-width:100%;border-radius:10px;margin-top:6px}
+.hd{display:flex;align-items:center;gap:8px}.hd b{flex:1}
+.tag{font-size:11px;background:#1e293b;border-radius:99px;padding:1px 8px;color:#cbd5e1}
+</style>
+</head>
+<body>
+<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>🎼 استوديو الأغاني والكليب</h1><button class="b" data-a="hist" style="margin:0">🕘</button></header>
+<nav id="nav"></nav>
+<main id="app"></main>
+<script src="core.js"></script>
+<script>
+const {esc,toast}=CORE;
+const DEF={step:0,title:'',idea:'',genre:'drama',lang:'eg',satire:'light',voice:'mine',customVoice:'',model:'',lyrics:'',
+ clip:'story',visual:'cine',customVisual:'',aspect:'9:16',sec:180,parts:'auto',singer:'',singerId:'',realTiming:'',paste:'',shots:[],sendIdx:0};
+const st=CORE.store('song',DEF);const p=()=>st.get();
+let OLD={chars:[],places:[],props:[]};CORE.oldStudio().then(o=>{OLD=o;if(p().step===1)render()}).catch(()=>{});
+const STEPS=['① الأغنية','② الكليب','③ اللقطات'];
+const CLIPS=[['story','كليب قصة'],['perf','كليب أداء (المغني يغني)'],['abstract','كليب تجريدي'],['lyric','صورة واحدة متحركة + الكلمات']];
+const ASPECTS=[['9:16','9:16 عمودي'],['16:9','16:9 أفقي'],['1:1','1:1 مربع']];
+const VISL=CORE.VISUALS.map(v=>[v[0],v[1]]);
+const G=()=>CORE.pick(CORE.GENRES,p().genre),L=()=>CORE.pick(CORE.LANGS,p().lang),S=()=>CORE.pick(CORE.SATIRE,p().satire),VO=()=>CORE.pick(CORE.VOICES,p().voice),V=()=>CORE.pick(CORE.VISUALS,p().visual);
+const visName=()=>(p().customVisual||'').trim()||V()[1];
+const visRules=()=>(p().customVisual||'').trim()?'التزم بالوصف المخصص حرفيًا':V()[3];
+const voiceTxt=()=>p().voice==='custom'?('يتقلد بصمة العينة دي (إيقاعها ومفرداتها وطول جملها):\n"""'+(p().customVoice||'')+'"""'):VO()[1]+': '+VO()[2];
+const singerLine=()=>{const s=(p().singer||'').trim();return s?'المغني/البطل: '+s+'\n':''};
+
+/* ---------- الأوامر ---------- */
+const PR={
+cLyr(){const P=p();if(!P.idea.trim()){alert('اكتب فكرة الأغنية الأول');return ''}
+ return `أنت فريق محترف: ${CORE.TEAM.song}. اكتب كلمات أغنية${P.title?' اسمها «'+P.title+'»':''}.\nالفكرة: ${P.idea.trim()}\nالنوع: ${G()[1]} (${G()[2]}).\nاللغة: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة الكتابية: ${voiceTxt()}\n${P.model.trim()?'البيت النموذجي (طابقه في عدد المقاطع الصوتية لكل سطر وفي نظام القافية والوزن بالظبط، لكن بصورة وكلمات جديدة تمامًا):\n"""'+P.model.trim()+'"""':'اختر وزنًا وقافية واحدة ثابتة والتزم بيها في الأغنية كلها.'}\nشروط ثابتة:\n- وزن منضبط: عدد مقاطع متقارب في كل سطر.\n- كلمات شائعة سهلة النطق والغناء.\n- صورة جديدة غير مستهلكة في المذهب.\n- صياغة جذابة تلزق في الراس، وهوك في أول سطرين.\n- مذهب (Chorus) سهل الترديد يتكرر بنفس الكلمات.\nالهيكل: [Verse 1] [Pre-Chorus] [Chorus] [Verse 2] [Chorus] [Bridge] [Chorus].\nالناتج: الكلمات بالوسوم دي فقط، وبعدها سطر «الإيقاع المقترح:» (BPM والإحساس)، وبعدها 3 عناوين. بدون شرح.\n${CORE.WRITING}`},
+suno(){const P=p();if(!P.lyrics.trim()){alert('الصق الكلمات الأول');return ''}
+ return `جهّز الأغنية دي لـ Suno. أنا بكتب كلمات بالعربي وSuno أحيانًا بيغلط في النطق.\nارجع بالآتي بالترتيب:\n1) Style of Music: وصف إنجليزي في 120 حرف كحد أقصى (النوع، الإيقاع، الآلات، نوع الصوت والنبرة، اللهجة ${L()[1]}).\n2) الكلمات كاملة بوسوم Suno ([Verse] [Chorus] [Bridge] [Outro])، مع تشكيل (الحركات) على أي كلمة ممكن تتنطق غلط، وتقسيم أي كلمة طويلة بشرطة لو لازم.\n3) أكتر 5 كلمات في النص ممكن Suno يغلط فيها، وبدايل منطوقة لكل واحدة.\n4) 3 أنماط مختلفة لوصف الأسلوب أجرب بيها.\nالنوع: ${G()[1]}. بدون شرح زيادة.\n\nالكلمات:\n"""\n${P.lyrics.trim()}\n"""`},
+teamLyr(){const P=p();if(!P.lyrics.trim()){alert('الصق الكلمات الأول');return ''}return CORE.teamReview('كلمات أغنية',CORE.TEAM.song,P.lyrics.trim())},
+ctx(){const P=p();return `الشكل البصري: ${visName()} (${visRules()}).\nالنوع: ${G()[1]} (${G()[2]}).\n${singerLine()}المقاس: ${P.aspect}. مدة الأغنية: ${P.sec} ثانية.\n`},
+shots(k){const P=p(),n=CORE.partsN(P.sec,P.parts),[a,b]=CORE.partRange(P.sec,n,k);
+ const kinds={story:'كليب بقصة قصيرة بتتحكي بالصورة وتفسر كلمات الأغنية من غير ما تنقلها حرفيًا',perf:'كليب أداء: المغني بيغني للكاميرا في أماكن وزوايا متنوعة، ولقطات تغطية للإيقاع',abstract:'كليب تجريدي: صور وأشكال وحركة تعبر عن إحساس الأغنية بدون حكاية'};
+ const fmt=`اكتب الناتج بالشكل ده بالظبط ومن غير أي كلام تاني:\nلقطة 1 | المدة بالثواني | سطر الأغنية في اللقطة (أو بدون)\nالمشهد: وصف بصري محدد\nالكاميرا: واسعة أو متوسطة أو قريبة وحركتها\nالحركة: الحركة الوحيدة ومقدارها\nالإضاءة: المصدر والاتجاه والألوان\n\nلقطة 2 | ...`;
+ if(k===0){if(!P.lyrics.trim()){alert('الصق الكلمات الأول (خطوة 1)');return ''}
+  return `أنت فريق محترف: ${CORE.TEAM.song}. حوّل الأغنية دي لـ${kinds[P.clip]||kinds.story}.\n${PR.ctx()}الكلمات:\n"""\n${P.lyrics.trim()}\n"""\n\nقواعد: كل لقطة 3 إلى 6 ثواني وتتقطع على إيقاع الأغنية. اللقطة الأولى هوك بصري قوي. مجموع المدد قريب من مدة الأغنية. ثبات الشخصية والمكان بين اللقطات. ممنوع نصوص أو علامات مائية. ${CORE.WRITING}\n\n${fmt}`+(n>1?`\n\n⚠️ هنشتغل على ${n} أجزاء. اكتب الجزء 1 فقط: من الثانية 0 إلى ${b}. اقف بعد آخر لقطة واكتب «تم الجزء 1 من ${n}» وانتظر كلمة «كمّل».`:'')}
+ const st0=P.shots.length+1,last=k===n-1;
+ return `كمّل: اكتب الجزء ${k+1} من ${n} بنفس الصيغة والقواعد والشكل البصري. من الثانية ${a} إلى ${b}. ابدأ الترقيم من «لقطة ${st0}». ما تعيدش اللي فات. ${last?'ده آخر جزء: اختم بلقطة قوية. ':''}اقف في آخره واكتب «تم الجزء ${k+1} من ${n}».`+(P.shots.length?'\n\nملخص اللي اتكتب (للسياق فقط):\n'+P.shots.map((s,i)=>(i+1)+') '+(s.desc||'').slice(0,80)).join('\n'):'')},
+cover(){const P=p();return `أنت مصمم غلاف ومخرج فني عالمي. اكتب أمر توليد صورة واحدة قوية تكون صورة الأغنية كلها: ${visName()} (${visRules()}).\n${singerLine()}النوع: ${G()[1]}. المقاس ${P.aspect}. اترك مساحة نظيفة للكلمات. صورة بدون أي نص مكتوب.\nالأغنية:\n"""\n${P.lyrics.trim()||P.idea.trim()}\n"""\nارجع بأمر الصورة فقط بالإنجليزي (وفيه وصف الإضاءة والألوان والتكوين).`},
+anim(){return `أنت مخرج حركة محترف. معايا صورة ثابتة هي غلاف أغنية (${visName()}). اكتب أمر تحريك الصورة لمدة ${p().sec} ثانية بحركة خفيفة فقط: حركة كاميرا بطيئة، وعمق (Parallax)، وجسيمات أو ضباب، وإضاءة بتتنفس مع الإيقاع. الشخصية لا تتحرك ولا يتغير وجهها. ارجع بـ3 أوامر قصيرة بالإنجليزي، كل واحد بحركة مختلفة، وأوصي بأفضلها.`},
+timing(){const P=p();if(!P.lyrics.trim()){alert('الصق الكلمات الأول');return ''}
+ return `وزّع سطور الأغنية على زمن الأغنية (${P.sec} ثانية) في جدول: رقم | بداية | نهاية | السطر.\n${P.realTiming.trim()?'التوقيتات الحقيقية من الأغنية (التزم بيها):\n"""'+P.realTiming.trim()+'"""\n':'التوقيت تقديري حسب إيقاع الأغنية وطول كل سطر، وسيبه قابل للتعديل.\n'}كل سطر يظهر قبل غنائه بنص ثانية ويفضل لحد نهايته. حدّد المقاطع (Verse/Chorus).\n\nالكلمات:\n"""\n${P.lyrics.trim()}\n"""`},
+typo(){return `أنت مصمم موشن جرافيك عالمي. اقترح شكل الكلمات على صورة أغنية (${visName()}، ${G()[1]}): الخط (عربي مناسب)، الحجم، اللون والظل، مكانها على الصورة، وطريقة ظهورها وخروجها (تُكتب، تنبض مع الإيقاع، تدخل من جنب)، وتغيير الشكل في المذهب. ارجع بحل واحد قاطع وتعليمات تنفيذه في تطبيق مونتاج مثل CapCut.`},
+teamClip(){const P=p();return CORE.teamReview('فكرة كليب',CORE.TEAM.song,`${PR.ctx()}النوع: ${CLIPS.find(c=>c[0]===P.clip)[1]}\nالكلمات:\n${P.lyrics.trim()||P.idea.trim()}`)},
+teamBoard(){const P=p();if(!P.shots.length){alert('مفيش لقطات');return ''}return CORE.teamReview('ستوري بورد كليب',CORE.TEAM.song,PR.ctx()+P.shots.map((s,i)=>`لقطة ${i+1} | ${s.dur}ث | ${s.lyric||'بدون'}\nالمشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}`).join('\n\n'))},
+shotP(i){const P=p(),s=P.shots[i];return `لقطة ${i+1} من ${P.shots.length} — المدة ${s.dur} ثانية — المقاس ${P.aspect}\nالشكل البصري: ${visName()} — ${visRules()}\n${singerLine()}المشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}\n${s.lyric?'الكلمات المغناة في اللقطة: '+s.lyric+'\n':''}${i>0?'استمر من نفس الشخصية والمكان والإضاءة اللي في اللقطة السابقة بالظبط.\n':''}ممنوع: أي نصوص أو علامات مائية أو تغيير في شكل الشخصية.`},
+shotEn(i){return `ترجم أمر توليد الفيديو ده للإنجليزي بصيغة أمر احترافي لـ Google Flow، مع الحفاظ على كل التفاصيل والأرقام. ارجع بالأمر فقط:\n"""\n${PR.shotP(i)}\n"""`}
+};
+
+/* ---------- تحليل اللقطات ---------- */
+const HDR=/^[ \t]*[^\n؀-ۿA-Za-z0-9]{0,8}(?:ال)?(?:لقطة|لقطه|shot)\s*(?:رقم\s*)?[\d٠-٩]+/im;
+const num=x=>+String(x).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d.]/g,'')||0;
+function parseShots(t){const re=new RegExp(HDR.source,'gim'),idx=[];let m;while((m=re.exec(t)))idx.push(m.index);
+ return idx.map((s0,k)=>{const blk=t.slice(s0,idx[k+1]||t.length),lines=blk.split('\n').map(l=>l.replace(/\*\*/g,'').trim());
+  const head=lines[0].replace(HDR,'').replace(/^[\s:|\-–]+/,''),h=head.split('|').map(x=>x.trim());
+  const g=(...ks)=>{for(const k of ks){const l=lines.find(x=>new RegExp('^[\\-•\\s]*'+k+'\\s*[:：]').test(x));if(l)return l.replace(/^[^:：]*[:：]\s*/,'').trim()}return ''};
+  const none=v=>/^\s*(بدون|لا يوجد|لا شيء|لا|none|-|—)\s*[.)(]*\s*$/i.test(v||'')?'':(v||'');
+  let dur=num(h[0]||'');if(!dur)dur=4;
+  return {dur:Math.max(1,Math.min(15,dur)),lyric:none(h[1]||g('الكلمات','الأغنية')),desc:g('المشهد','ماذا يحدث','الوصف'),cam:g('الكاميرا'),move:g('الحركة'),light:g('الإضاءة','الاضاءة'),img:'',done:false}})}
+
+/* ---------- العرض ---------- */
+function sel(f,list,v){return `<select data-f="${f}">${CORE.opts(list,v)}</select>`}
+function pair(a,label){return `<div class="pair"><button class="b bl" data-a="${a}">📋 ${label}</button><button class="b" data-a="${a}!" title="أرسل لتطبيق">📤</button></div>`}
+function s0(){const P=p();return `<div class="c"><h3>🎼 الأغنية</h3>
+ <label class="l">اسم الأغنية (اختياري)</label><input data-f="title" value="${esc(P.title)}">
+ <label class="l">الفكرة أو الموضوع</label><textarea data-f="idea" rows="4">${esc(P.idea)}</textarea>
+ <div class="row"><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div><div><label class="l">لغة الكلمات</label>${sel('lang',CORE.LANGS,P.lang)}</div></div>
+ <div class="row"><div><label class="l">السخرية</label>${sel('satire',CORE.SATIRE,P.satire)}</div><div><label class="l">البصمة الكتابية</label>${sel('voice',CORE.VOICES,P.voice)}</div></div>
+ ${P.voice==='custom'?`<label class="l">عينة نص بتحبه (الصقها)</label><textarea data-f="customVoice" rows="4">${esc(P.customVoice)}</textarea>`:''}
+ <label class="l">بيت نموذجي (اختياري): نفس وزنه وقافيته</label><textarea data-f="model" rows="3">${esc(P.model)}</textarea>
+ ${pair('cLyr','أمر كتابة الكلمات')}</div>
+<div class="c"><h3>📝 الكلمات الجاهزة</h3><div class="m">الصق هنا رد الذكاء الاصطناعي (أو كلماتك أنت).</div>
+ <textarea data-f="lyrics" rows="9">${esc(P.lyrics)}</textarea>
+ ${pair('suno','أمر تجهيز Suno (أسلوب + تشكيل + كلمات صعبة)')}${pair('teamLyr','راجع بالفريق')}</div>`}
+function s1(){const P=p(),n=CORE.partsN(P.sec,P.parts),lyric=P.clip==='lyric';
+ const sg=`<select data-f="singerId"><option value="">— اكتب بنفسك —</option>${OLD.chars.map(c=>`<option value="${esc(c.id)}"${c.id===P.singerId?' selected':''}>${esc(c.name)}</option>`).join('')}</select>`;
+ return `<div class="c"><h3>🎬 الكليب</h3>
+ <label class="l">نوع الكليب</label>${sel('clip',CLIPS,P.clip)}
+ <label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}
+ <label class="l">أو شكل مخصص (اختياري، يغلب الاختيار فوق)</label><input data-f="customVisual" placeholder="مثال: نفس شكل كورفو ولوتا" value="${esc(P.customVisual)}">
+ <div class="row"><div><label class="l">المقاس</label>${sel('aspect',ASPECTS,P.aspect)}</div><div><label class="l">مدة الأغنية (ث)</label><input type="number" data-f="sec" value="${esc(P.sec)}"></div></div>
+ <label class="l">المغني أو البطل (من شخصياتك المحفوظة)</label>${OLD.chars.length?sg:''}
+ <textarea data-f="singer" rows="2" placeholder="الشكل الثابت: ملامحه وملابسه">${esc(P.singer)}</textarea></div>
+ <div class="c"><h3>${lyric?'🖼️ أوامر الصورة المتحركة':'✂️ تقسيم الكليب للقطات'}</h3>
+ ${lyric?`${pair('cover','أمر صورة الغلاف')}${pair('anim','أمر تحريك الصورة')}
+   <label class="l">توقيتات حقيقية من الأغنية (اختياري)</label><textarea data-f="realTiming" rows="3" placeholder="مثال: 0:12 سطر 1 ...">${esc(P.realTiming)}</textarea>
+   ${pair('timing','جدول توقيت الكلمات')}${pair('typo','شكل الكلمات (خط، لون، حركة)')}`
+ :`<label class="l">عدد الأجزاء (للأغاني الطويلة)</label>${sel('parts',[['auto','تلقائي ('+n+')'],['1','بدون تقسيم'],['2','2'],['3','3'],['4','4'],['5','5'],['6','6']],String(P.parts))}
+   ${Array.from({length:n},(_,k)=>{const [a,b]=CORE.partRange(P.sec,n,k);return pair('shots:'+k,n>1?`الجزء ${k+1}/${n} (${a}–${b} ث)`:'أمر تقسيم الكليب لقطات')}).join('')}
+   <div class="m">${n>1?'الصق الجزء 1 في الذكاء الاصطناعي، وانقل رده لخطوة ③، وبعدها الجزء اللي بعده في نفس الشات وكمّل بزر «➕ كمّل».':'الصق الأمر، وانقل الرد لخطوة ③.'}</div>`}
+ ${pair('teamClip','راجع فكرة الكليب بالفريق')}</div>`}
+function shotCard(s,i){const P=p();return `<div class="shot${s.done?' done':''}"><div class="hd"><b>لقطة ${i+1}</b><span class="tag">${s.dur}ث</span><button class="b" data-a="up" data-i="${i}" style="margin:0">⬆️</button><button class="b" data-a="dn" data-i="${i}" style="margin:0">⬇️</button><button class="b r" data-a="del" data-i="${i}" style="margin:0">🗑️</button></div>
+ <div class="row"><div><label class="l">المدة</label><input type="number" data-si="${i}" data-sf="dur" value="${esc(s.dur)}"></div><div style="flex:3"><label class="l">الكلمات</label><input data-si="${i}" data-sf="lyric" value="${esc(s.lyric)}"></div></div>
+ <label class="l">المشهد</label><textarea rows="3" data-si="${i}" data-sf="desc">${esc(s.desc)}</textarea>
+ <div class="row"><div><label class="l">الكاميرا</label><input data-si="${i}" data-sf="cam" value="${esc(s.cam)}"></div><div><label class="l">الحركة</label><input data-si="${i}" data-sf="move" value="${esc(s.move)}"></div></div>
+ <label class="l">الإضاءة</label><input data-si="${i}" data-sf="light" value="${esc(s.light)}">
+ ${s.img?`<img src="${s.img}" alt="">`:''}
+ <div><label class="b" style="display:inline-block">🖼️ ${s.img?'غيّر':'ارفع'} صورة البداية<input type="file" accept="image/*" data-img="${i}" hidden></label>
+ <button class="b${s.done?' on':''}" data-a="done" data-i="${i}">✓ ${s.done?'اتنفذت':'تمت'}</button></div>
+ ${pair('shotP:'+i,'أمر اللقطة')}<button class="b" data-a="shotEn" data-i="${i}">🌐 أمر ترجمة للإنجليزي</button></div>`}
+function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
+ if(P.sendMode&&P.shots.length){const i=Math.min(P.sendIdx,P.shots.length-1),s=P.shots[i];
+  return `<div class="c"><div class="hd"><b>▶ وضع الإرسال لـ Flow: لقطة ${i+1} من ${P.shots.length}</b><button class="b" data-a="exitSend" style="margin:0">خروج</button></div>
+  <div class="m">1) شارك الصورة  2) انسخ الأمر  3) تمت ✓</div>
+  ${s.img?`<img src="${s.img}" style="max-width:100%;border-radius:10px;margin-top:8px">`:'<div class="m">مفيش صورة بداية للقطة دي (ارفعها من القايمة لو محتاجها).</div>'}
+  <button class="b bl" data-a="shareImg" data-i="${i}" style="width:100%">📤 شارك الصورة</button>
+  <button class="b bl" data-a="shotP:${i}" style="width:100%">📋 انسخ الأمر</button>
+  <button class="b g" data-a="nextSend" style="width:100%">✓ تمت والتالي</button>
+  <div class="m" style="margin-top:8px">${esc(PR.shotP(i)).replace(/\n/g,'<br>')}</div></div>`}
+ return `<div class="c"><h3>📥 رد الذكاء الاصطناعي</h3><textarea data-f="paste" rows="6" placeholder="الصق الرد هنا (لقطة 1 | ...). أي طول، وبيتحفظ لوحده">${esc(P.paste)}</textarea>
+ <button class="b g" data-a="parse">✂️ حوّل الرد إلى لقطات${P.shots.length?' (يستبدل)':''}</button>${P.shots.length?`<button class="b bl" data-a="append">➕ كمّل بعد لقطة ${P.shots.length}</button>`:''}</div>
+ ${P.shots.length?`<div class="c"><div class="hd"><b>${P.shots.length} لقطة • ${T} ثانية${P.sec&&Math.abs(T-P.sec)>Math.max(5,P.sec*.15)?` <span style="color:#fcd34d">(مدة الأغنية ${P.sec})</span>`:''}</b></div>
+ <button class="b g" data-a="send">▶ ابدأ وضع الإرسال لـ Flow</button>${pair('teamBoard','راجع الستوري بورد بالفريق')}</div>`:'<div class="c m">لسه مفيش لقطات.</div>'}
+ ${P.shots.map(shotCard).join('')}`}
+function render(){const P=p();document.getElementById('nav').innerHTML=STEPS.map((t,k)=>`<button class="b${k===P.step?' g':''}" data-a="go" data-i="${k}">${t}</button>`).join('');
+ document.getElementById('app').innerHTML=[s0,s1,s2][P.step]()}
+
+/* ---------- التفاعل ---------- */
+function shrink(file){return new Promise(r=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const k=Math.min(1,720/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);r(c.toDataURL('image/jpeg',.8))};im.onerror=()=>r('');im.src=u})}
+function applyParse(add){const P=p(),v=P.paste.trim();if(!v){alert('الصق الرد الأول');return}let sh=parseShots(v);
+ if(!sh.length){alert('مش لاقي لقطات. الرد لازم يكون «لقطة 1 | المدة | الكلمات» وتحتها المشهد والكاميرا والحركة والإضاءة.\nالنص محفوظ في الخانة.');return}
+ st.snap('قبل تحويل لقطات',true);P.shots=add?P.shots.concat(sh):sh;P.paste='';P.sendIdx=0;st.save();toast((add?'تمت إضافة '+sh.length:'تم إنشاء '+sh.length)+' لقطة ✓');render()}
+document.addEventListener('input',e=>{const t=e.target,P=p();
+ if(t.dataset.f){const f=t.dataset.f;P[f]=t.type==='number'?(+t.value||0):t.value;if(f==='singerId'){const c=OLD.chars.find(x=>x.id===t.value);if(c){P.singer=(c.name||'')+': '+(c.ar||'');st.save();render();return}}
+  st.save();return}
+ if(t.dataset.si!==undefined){const s=P.shots[+t.dataset.si];if(s){s[t.dataset.sf]=t.dataset.sf==='dur'?(+t.value||0):t.value;st.save()}}});
+document.addEventListener('change',async e=>{const t=e.target,P=p();
+ if(t.dataset.f&&t.tagName==='SELECT'){P[t.dataset.f]=t.value;st.save();if(['voice','clip','genre','visual'].includes(t.dataset.f)||t.dataset.f==='parts')render();return}
+ if(t.dataset.img!==undefined&&t.files[0]){const d=await shrink(t.files[0]);if(d){P.shots[+t.dataset.img].img=d;st.save();render()}else toast('الصورة ما اتقرتش')}});
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;let a=b.dataset.a;const P=p(),i=+b.dataset.i;
+ if(a==='home'){location.href='./';return}
+ if(a==='hist'){CORE.histBox(st,render);return}
+ if(a==='go'){P.step=i;st.save();render();window.scrollTo(0,0);return}
+ if(a==='parse'){applyParse(false);return}if(a==='append'){applyParse(true);return}
+ if(a==='send'){P.sendMode=true;P.sendIdx=0;st.save();render();return}
+ if(a==='exitSend'){P.sendMode=false;st.save();render();return}
+ if(a==='nextSend'){if(P.shots[P.sendIdx])P.shots[P.sendIdx].done=true;if(P.sendIdx<P.shots.length-1)P.sendIdx++;else{P.sendMode=false;toast('خلصت كل اللقطات 🎉')}st.save();render();return}
+ if(a==='shareImg'){const s=P.shots[i];if(s&&s.img)CORE.shareImage(s.img,'shot'+(i+1)+'.jpg');else toast('مفيش صورة');return}
+ if(a==='done'){P.shots[i].done=!P.shots[i].done;st.save();render();return}
+ if(a==='del'){if(confirm('تمسح اللقطة '+(i+1)+'؟')){st.snap('قبل حذف لقطة',true);P.shots.splice(i,1);st.save();render()}return}
+ if(a==='up'||a==='dn'){const j=a==='up'?i-1:i+1;if(j<0||j>=P.shots.length)return;[P.shots[i],P.shots[j]]=[P.shots[j],P.shots[i]];st.save();render();return}
+ if(a==='shotEn'){CORE.copy(PR.shotEn(i),'اتنسخ أمر الترجمة ✓ الصقه في أي تطبيق ذكاء');return}
+ const send=a.endsWith('!');if(send)a=a.slice(0,-1);const [fn,arg]=a.split(':');if(!PR[fn])return;
+ const txt=PR[fn](arg===undefined?undefined:+arg);if(!txt)return;st.snap('قبل '+fn);if(send)CORE.send(txt);else CORE.copy(txt,'تم النسخ ✓')});
+st.snap('عند الفتح');render();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>
