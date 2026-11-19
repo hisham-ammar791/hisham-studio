@@ -93,22 +93,24 @@ const C=window.CORE,esc=C.esc,LK='hs_lib';
 const DIALECTS=[['','نفس لغة العمل'],['eg','مصري'],['fusha','فصحى'],['gulf','خليجي'],['shami','شامي'],['maghrebi','مغربي'],['iraqi','عراقي'],['sudani','سوداني'],['en','إنجليزي'],['custom','أخرى (اكتبها في الأداء)']];
 const ANGLES=[['front','من الأمام'],['q34','ثلاثة أرباع'],['side','جانبي'],['back','من الخلف'],['wide','عام واسع'],['ots','من فوق الكتف'],['top','من فوق']];
 C.DIALECTS=DIALECTS;C.ANGLES=ANGLES;
-function load(){try{return Object.assign({chars:[],places:[],frames:[]},JSON.parse(localStorage.getItem(LK)||'{}'))}catch(e){return {chars:[],places:[],frames:[]}}}
+function load(){try{return Object.assign({chars:[],places:[],props:[],frames:[]},JSON.parse(localStorage.getItem(LK)||'{}'))}catch(e){return {chars:[],places:[],props:[],frames:[]}}}
 C.lib=load();
 C.libSave=function(){try{localStorage.setItem(LK,JSON.stringify(C.lib));return true}catch(e){C.toast('⚠️ المساحة مليانة: صغّر الصور أو امسح القديم',4000);return false}};
 C.libImport=async function(force){const o=await C.oldStudio();let n=0;
  (o.chars||[]).forEach(c=>{if(c.vo||!c.name)return;if(C.lib.chars.some(x=>x.oid===c.id||x.name===c.name))return;C.lib.chars.push({id:'c'+Date.now()+n,oid:c.id,name:c.name,look:c.ar||'',voice:c.voiceAr||'',dialect:'',tone:c.toneAr||'',img:c.img||''});n++});
  (o.places||[]).forEach(p=>{if(!p.name||C.lib.places.some(x=>x.name===p.name))return;C.lib.places.push({id:'p'+Date.now()+n,name:p.name,desc:p.ar||'',img:p.img||''});n++});
+ (o.props||[]).forEach(p=>{if(!p.name||C.lib.props.some(x=>x.name===p.name))return;C.lib.props.push({id:'r'+Date.now()+n,name:p.name,desc:p.ar||'',img:p.img||''});n++});
  if(n)C.libSave();if(force)C.toast(n?'اتنقل '+n+' من الاستوديو القديم ✓':'مفيش جديد في الاستوديو القديم');return n};
 if(!C.lib.chars.length&&!C.lib.places.length&&!localStorage.getItem('hs_lib_imp')){try{localStorage.setItem('hs_lib_imp','1')}catch(e){}C.libImport(false).then(n=>{if(n&&C._castR)C._castR()})}
 C.shrinkImg=(file,max)=>new Promise(r=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const k=Math.min(1,(max||640)/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);r(c.toDataURL('image/jpeg',.78))};im.onerror=()=>r('');im.src=u});
-const T={chars:['👤 الشخصيات','شخصية'],places:['📍 الأماكن','مكان'],frames:['🖼️ مراجع الكادر','مرجع كادر']};
+const T={chars:['👤 الشخصيات','شخصية'],places:['📍 الأماكن','مكان'],props:['🧰 الأدوات والإكسسوارات','أداة'],frames:['🖼️ مراجع الكادر','مرجع كادر']};
 const get=(t,id)=>(C.lib[t]||[]).find(x=>x.id===id);
-C.selOf=P=>{P.cast=P.cast||{chars:[],places:[],frames:[]};['chars','places','frames'].forEach(k=>{P.cast[k]=(P.cast[k]||[]).filter(id=>get(k,id))});return P.cast};
+C.selOf=P=>{P.cast=P.cast||{};['chars','places','props','frames'].forEach(k=>{P.cast[k]=(P.cast[k]||[]).filter(id=>get(k,id))});return P.cast};
 const dn=k=>C.pick(DIALECTS,k)[1];
 /* نص الأوامر */
-C.castTxt=function(P){const s=C.selOf(P),ch=s.chars.map(id=>get('chars',id)),pl=s.places.map(id=>get('places',id)),fr=s.frames.map(id=>get('frames',id));let t='';
+C.castTxt=function(P){const s=C.selOf(P),ch=s.chars.map(id=>get('chars',id)),pl=s.places.map(id=>get('places',id)),fr=s.frames.map(id=>get('frames',id)),pr=s.props.map(id=>get('props',id));let t='';
  if(ch.length)t+='الشخصيات (الشكل والصوت ثابتين في كل لقطة ومشهد، بدون أي تغيير):\n'+ch.map(c=>'- '+c.name+': '+(c.look||'')+(c.voice?' | الصوت: '+c.voice:'')+(c.dialect?' | اللهجة: '+dn(c.dialect):'')+(c.tone?' | الأداء: '+c.tone:'')).join('\n')+'\n';
+ if(pr.length)t+='الأدوات والإكسسوارات (شكلها ثابت في كل لقطة تظهر فيها):\n'+pr.map(p=>'- '+p.name+': '+(p.desc||'')+(p.owner?' (مع '+p.owner+')':'')).join('\n')+'\n';
  if(pl.length)t+='الأماكن (ثابتة):\n'+pl.map(p=>'- '+p.name+': '+(p.desc||'')).join('\n')+'\n';
  if(fr.length)t+='مراجع الكادر (صور مرفقة، التزم بأماكن الشخصيات فيها):\n'+fr.map(f=>'- '+f.name+': '+(f.chars||[]).map(id=>(get('chars',id)||{}).name).filter(Boolean).join(' و')+((get('places',f.place)||{}).name?' في '+get('places',f.place).name:'')+(f.angle?'، زاوية '+C.pick(ANGLES,f.angle)[1]:'')+(f.note?'، '+f.note:'')).join('\n')+'\n';
  return t};
@@ -117,9 +119,9 @@ C.castFrames=P=>C.selOf(P).frames.map(id=>get('frames',id));
 C.frameImg=id=>(get('frames',id)||{}).img||'';
 /* الكارت */
 C.castCard=function(P){const s=C.selOf(P);
- const row=(t,x)=>`<div style="display:flex;gap:8px;align-items:center;border-top:1px dashed var(--border);padding:6px 0"><input type="checkbox" data-cc="${t}:${x.id}" ${s[t].includes(x.id)?'checked':''} style="width:22px;height:22px">${x.img?`<img src="${x.img}" style="width:44px;height:44px;object-fit:cover;border-radius:8px">`:'<div style="width:44px;height:44px;border-radius:8px;background:#0b1220;display:flex;align-items:center;justify-content:center">'+T[t][0].split(' ')[0]+'</div>'}<div style="flex:1;min-width:0;font-size:14px"><b>${esc(x.name||'بدون اسم')}</b><div class="m" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t==='chars'?[x.voice&&'🗣️ '+x.voice,x.dialect&&dn(x.dialect)].filter(Boolean).join(' • ')||x.look:t==='places'?x.desc:(x.chars||[]).map(id=>(get('chars',id)||{}).name).filter(Boolean).join('، '))}</div></div><button class="b" data-ca="edit:${t}:${x.id}" style="margin:0">✏️</button></div>`;
- return `<div class="c"><h3>👥 الشخصيات والأماكن والكادرات</h3><div class="m">علّم اللي في العمل ده. المكتبة مشتركة بين كل الاستوديوهات.</div>
- ${['chars','places','frames'].map(t=>`<details ${s[t].length||!C.lib[t].length?'open':''} style="margin-top:8px"><summary style="font-weight:700">${T[t][0]} (${s[t].length}/${C.lib[t].length})</summary>${C.lib[t].map(x=>row(t,x)).join('')}<button class="b" data-ca="add:${t}">➕ ${T[t][1]} جديد</button></details>`).join('')}
+ const row=(t,x)=>`<div style="display:flex;gap:8px;align-items:center;border-top:1px dashed var(--border);padding:6px 0"><input type="checkbox" data-cc="${t}:${x.id}" ${s[t].includes(x.id)?'checked':''} style="width:22px;height:22px">${x.img?`<img src="${x.img}" style="width:44px;height:44px;object-fit:cover;border-radius:8px">`:'<div style="width:44px;height:44px;border-radius:8px;background:#0b1220;display:flex;align-items:center;justify-content:center">'+T[t][0].split(' ')[0]+'</div>'}<div style="flex:1;min-width:0;font-size:14px"><b>${esc(x.name||'بدون اسم')}</b><div class="m" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t==='chars'?[x.voice&&'🗣️ '+x.voice,x.dialect&&dn(x.dialect)].filter(Boolean).join(' • ')||x.look:(t==='places'||t==='props')?x.desc:(x.chars||[]).map(id=>(get('chars',id)||{}).name).filter(Boolean).join('، '))}</div></div><button class="b" data-ca="edit:${t}:${x.id}" style="margin:0">✏️</button></div>`;
+ return `<div class="c"><h3 id="castCard">👥 الشخصيات والأماكن والأدوات والكادرات</h3><div class="m">علّم اللي في العمل ده. المكتبة مشتركة بين كل الاستوديوهات.</div>
+ ${['chars','places','props','frames'].map(t=>`<details ${s[t].length||!C.lib[t].length?'open':''} style="margin-top:8px"><summary style="font-weight:700">${T[t][0]} (${s[t].length}/${C.lib[t].length})</summary>${C.lib[t].map(x=>row(t,x)).join('')}<button class="b" data-ca="add:${t}">➕ ${T[t][1]} جديد</button></details>`).join('')}
  <button class="b" data-ca="import">⬇️ هات من الاستوديو القديم</button></div>`};
 /* المحرر */
 function editor(t,id){const x=id?Object.assign({},get(t,id)):{id:t[0]+Date.now(),name:'',chars:[]};let o=document.getElementById('castEd');if(o)o.remove();o=document.createElement('div');o.id='castEd';
@@ -129,17 +131,18 @@ function editor(t,id){const x=id?Object.assign({},get(t,id)):{id:t[0]+Date.now()
  let body=f('name','الاسم');
  if(t==='chars')body+=f('look','الشكل الثابت (الملامح، السن، الملابس، الألوان)',3)+f('voice','🗣️ الصوت (الطبقة، السن، النبرة، السرعة، لازمة)',2,'مثال: صوت رجل ستيني أجش وبطيء، بيمط آخر الكلمة')+`<label class="l">اللهجة</label><select data-e="dialect">${opts(DIALECTS,x.dialect)}</select>`+f('tone','🎭 أسلوب الأداء والشخصية',2,'مثال: ساخر وهادئ، بيرد بسؤال');
  if(t==='places')body+=f('desc','الوصف الثابت (أماكن الأشياء، الإضاءة، الألوان)',3);
+ if(t==='props')body+=f('desc','الوصف الثابت (الشكل، اللون، الحجم، الخامة، أي كتابة عليها)',3,'مثال: علبة دوا بيضا عليها شريط أزرق ولوجو صيدلية Dr/H')+f('owner','مع مين أو فين بتظهر (اختياري)',0,'مثال: في إيد فهيم / على الكاونتر');
  if(t==='frames')body+=`<label class="l">مين في الكادر</label>${C.lib.chars.map(c=>`<label style="display:inline-flex;gap:4px;margin:4px 8px 0 0;align-items:center"><input type="checkbox" data-fc="${c.id}" ${(x.chars||[]).includes(c.id)?'checked':''} style="width:auto">${esc(c.name)}</label>`).join('')||'<div class="m">ضيف شخصيات الأول</div>'}<label class="l">المكان</label><select data-e="place"><option value="">—</option>${C.lib.places.map(p=>`<option value="${p.id}"${p.id===x.place?' selected':''}>${esc(p.name)}</option>`).join('')}</select><label class="l">الزاوية</label><select data-e="angle">${opts([['','—']].concat(ANGLES),x.angle)}</select>`+f('note','مين واقف فين (اختياري)',2,'مثال: فهيم ورا الكاونتر يمين، والزبون قدامه شمال');
  o.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:88vh;overflow:auto;padding:12px;color:#fff"><b>${id?'تعديل':'إضافة'} ${T[t][1]}</b>${body}
  <label class="l">🖼️ الصورة ${t==='frames'?'(صورة المرجع)':'(شيت أو مرجع)'}</label>${x.img?`<img src="${x.img}" style="max-width:100%;border-radius:10px">`:''}<input type="file" accept="image/*" data-eimg>
- ${t==='chars'?`<button class="b bl" data-ex="sheet">📋 أمر صورة شيت للشخصية</button>`:''}${t==='places'?`<button class="b bl" data-ex="sheet">📋 أمر صورة للمكان</button>`:''}
+ ${t==='chars'?`<button class="b bl" data-ex="sheet">📋 أمر صورة شيت للشخصية</button>`:''}${t==='props'?`<button class="b bl" data-ex="sheet">📋 أمر صورة مرجع للأداة</button>`:''}${t==='places'?`<button class="b bl" data-ex="sheet">📋 أمر صورة للمكان</button>`:''}
  <div style="display:flex;gap:6px;margin-top:10px"><button class="b g" data-ex="save" style="flex:2">💾 حفظ</button>${id?'<button class="b r" data-ex="del">🗑️</button>':''}<button class="b" data-ex="x" style="flex:1">إلغاء</button></div></div>`;
  document.body.appendChild(o);
  o.addEventListener('change',async e=>{if(e.target.dataset.eimg!==undefined&&e.target.files[0]){x.img=await C.shrinkImg(e.target.files[0],t==='frames'?900:560);C.toast('اتحطت الصورة ✓ اضغط حفظ')}});
  o.onclick=e=>{const b=e.target.closest('[data-ex]');if(e.target===o){o.remove();return}if(!b)return;const a=b.dataset.ex;
   o.querySelectorAll('[data-e]').forEach(el=>x[el.dataset.e]=el.value);x.chars=[...o.querySelectorAll('[data-fc]')].filter(c=>c.checked).map(c=>c.dataset.fc);
   if(a==='x'){o.remove();return}
-  if(a==='sheet'){C.copy(t==='chars'?`Character reference sheet, full body front view + 3/4 view + side view + close-up face, neutral pose, plain light grey background, consistent design. Character: ${x.name}. Look (Arabic description, translate faithfully): ${x.look||''}. No text, no watermark.`:`Wide establishing reference image of a location, no people, clear layout. Location: ${x.name}. Description (Arabic, translate faithfully): ${x.desc||''}. No text, no watermark.`,'اتنسخ أمر الصورة ✓ الصقه في Gemini أو ChatGPT');return}
+  if(a==='sheet'){C.copy(t==='chars'?`Character reference sheet, full body front view + 3/4 view + side view + close-up face, neutral pose, plain light grey background, consistent design. Character: ${x.name}. Look (Arabic description, translate faithfully): ${x.look||''}. No text, no watermark.`:t==='props'?`Product/prop reference image on a plain light grey background, front and 3/4 view, true colors and scale details. Prop: ${x.name}. Description (Arabic, translate faithfully): ${x.desc||''}. No watermark.`:`Wide establishing reference image of a location, no people, clear layout. Location: ${x.name}. Description (Arabic, translate faithfully): ${x.desc||''}. No text, no watermark.`,'اتنسخ أمر الصورة ✓ الصقه في Gemini أو ChatGPT');return}
   if(a==='del'){if(!confirm('تمسح «'+(x.name||'')+'» من المكتبة؟ (هيتشال من كل الاستوديوهات)'))return;C.lib[t]=C.lib[t].filter(y=>y.id!==x.id);C.libSave();o.remove();C._castR&&C._castR();return}
   if(a==='save'){if(!(x.name||'').trim()){alert('اكتب الاسم');return}const k=C.lib[t].findIndex(y=>y.id===x.id);if(k>=0)C.lib[t][k]=x;else C.lib[t].push(x);if(!C.libSave())return;
    if(!id&&C._castP){const P=C._castP();C.selOf(P)[t].push(x.id);C._castS&&C._castS()}o.remove();C.toast('اتحفظ ✓');C._castR&&C._castR()}}}
@@ -437,6 +440,7 @@ C.refsPrompt=ctx=>{const L=C.lib;return `أنت مخرج ومدير فني وم�
 وقارن بالموجود عندي، وقول الناقص بس:
 الشخصيات الموجودة: ${L.chars.map(x=>x.name).join('، ')||'مفيش'}
 الأماكن الموجودة: ${L.places.map(x=>x.name).join('، ')||'مفيش'}
+الأدوات الموجودة: ${(L.props||[]).map(x=>x.name).join('، ')||'مفيش'}
 مراجع الكادر الموجودة: ${L.frames.map(x=>x.name).join('، ')||'مفيش'}
 الناتج: جدول «المطلوب | موجود ✓ / ناقص ✗ | أمر الصورة بالإنجليزي للناقص».\n\nالعمل:\n${ctx}`};
 C.durPrompt=ctx=>`أنت مخرج ومونتير محترف. اقرا العمل ده واقترح المدة المناسبة ليه (للعمل كله ولكل مشهد)، بناءً على كمية الحوار (حوالي 2.5 كلمة في الثانية)، والأحداث، وإيقاع النوع، والمنصة. ارجع بـ: المدة المقترحة بالثواني، والحد الأدنى والأقصى، وجدول المشاهد بالمدد، وأي جزء ممكن يتقص لو عايز أقصر. القرار النهائي بتاعي.\n\nالعمل:\n${ctx}`;})();
