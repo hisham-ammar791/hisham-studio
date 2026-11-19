@@ -25,21 +25,21 @@ a.c:active{background:#162036}
 .t1{background:#064e3b;color:#86efac}.t2{background:#1e293b;color:#cbd5e1}
 .ft{margin-top:18px;font-size:12px;color:#64748b;line-height:1.8}
 .wide{grid-column:1/-1}
+.st:empty{display:none}
 </style>
 </head>
 <body>
 <h1>🎬 استوديو الإخراج الذكي</h1>
 <div class="sub">اختار الأداة. كل أداة لها واجهة لوحدها، والشخصيات والأماكن والحفظ مشتركين بينهم.</div>
 <div class="g">
- <a class="c on" href="film.html"><div class="i">🎬</div><b>أفلام ومسلسلات</b><span>قصة، ذاكرة المسلسل، لقطات، فحص الكادر، ريلز.</span><br><span class="tag t1">جديدة</span></a>
- <a class="c on" href="studio.html"><div class="i">🧰</div><b>الاستوديو الكامل (القديم)</b><span>كل الأدوات المتقدمة وشغلك المحفوظ.</span><br><span class="tag t1">شغّالة</span></a>
- <a class="c on" href="song-fix.html"><div class="i">🎵</div><b>مُصلّح الأغنية</b><span>استبدال الجزء الغلط في أغنية Suno بصوتك.</span><br><span class="tag t1">شغّالة</span></a>
- <a class="c on" href="song.html"><div class="i">🎼</div><b>أغاني وفيديو كليب</b><span>كلمات، أوامر Suno، كليب بلقطات أو صورة متحركة بالكلمات.</span><br><span class="tag t1">جديدة</span></a>
- <a class="c on" href="ad.html"><div class="i">📣</div><b>إعلانات</b><span>فيديو وصوتي وبوست وبوستر، ببراندات محفوظة.</span><br><span class="tag t1">جديدة</span></a>
- <a class="c on" href="doc.html"><div class="i">🎙️</div><b>برامج ووثائقي</b><span>بحث عميق بتصنيف المصادر، نص، تعليق، لقطات.</span><br><span class="tag t1">جديدة</span></a>
- <a class="c on wide" href="doc.html"><div class="i">🎓</div><b>شرح وتعليم</b><span>داخل استوديو البرامج: اختار «شرح وتعليم» (وايت بورد، خرائط، موشن، شرائح).</span><br><span class="tag t1">جديدة</span></a>
+ <a class="c on" href="film.html"><div class="i">🎬</div><b>أفلام ومسلسلات</b><span>قصة، ذاكرة مسلسل، لقطات، ريلز.</span><div class="st" data-st="film"></div></a>
+ <a class="c on" href="ad.html"><div class="i">📣</div><b>إعلانات</b><span>فيديو، صوتي، بوست، بوستر.</span><div class="st" data-st="ad"></div></a>
+ <a class="c on" href="song.html"><div class="i">🎼</div><b>أغاني وكليب</b><span>كلمات، Suno، كليب أو صورة متحركة.</span><div class="st" data-st="song"></div></a>
+ <a class="c on" href="doc.html"><div class="i">🎙️</div><b>برامج ووثائقي وشرح</b><span>بحث بمصادر، بودكاست، وايت بورد وخرائط.</span><div class="st" data-st="doc"></div></a>
+ <a class="c on" href="song-fix.html"><div class="i">🎵</div><b>مُصلّح الأغنية</b><span>استبدال الجزء الغلط في أغنية Suno.</span></a>
+ <a class="c on" href="studio.html"><div class="i">🧰</div><b>الاستوديو الكامل (القديم)</b><span>الأدوات المتقدمة وشغلك القديم.</span></a>
 </div>
-<div class="c wide" style="margin-top:12px" id="dash"><b>📊 لوحة المشاريع</b><span>الشغل المفتوح دلوقتي في كل استوديو، وكل أعمالك المحفوظة على Drive.</span><div id="dashL"></div><button id="dashDrive" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1d4ed8;color:#fff;font-family:inherit">☁️ كل أعمالي على Drive</button><div id="dashD"></div></div>
+<div class="c wide" style="margin-top:12px" id="dash"><b>☁️ أعمالك على Drive</b><span>كل الأعمال المحفوظة من كل الاستوديوهات، دوّر بالاسم وافتح على طول.</span><button id="dashDrive" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1d4ed8;color:#fff;font-family:inherit">☁️ اعرض أعمالي</button><div id="dashD"></div></div>
 <div class="c wide" style="margin-top:12px"><b>💾 نسخة احتياطية</b><span>كل أعمال الاستوديوهات الجديدة والشخصيات والأماكن والكادرات والدروس في ملف واحد. (الاستوديو القديم له نسخته الخاصة جواه.)</span><br>
 <button id="bkOut" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1d4ed8;color:#fff;font-family:inherit">⬇️ تصدير</button>
 <label style="display:inline-block;margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#fff">⬆️ استرجاع<input type="file" id="bkIn" accept=".json,application/json" hidden></label></div>
@@ -48,10 +48,11 @@ a.c:active{background:#162036}
 <script>
 const ST=[['film','🎬','أفلام ومسلسلات'],['ad','📣','إعلانات'],['song','🎼','أغاني وكليب'],['doc','🎙️','برامج ووثائقي']];
 const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function dash(){document.getElementById('dashL').innerHTML=ST.map(([ns,ic,nm])=>{let P={};try{P=JSON.parse(localStorage.getItem('hs_'+ns)||'{}')}catch(e){}
+function dash(){ST.forEach(([ns])=>{const el=document.querySelector('[data-st="'+ns+'"]');if(!el)return;let P={};try{P=JSON.parse(localStorage.getItem('hs_'+ns)||'{}')}catch(e){}
  const sh=P.shots||[],dn=sh.filter(x=>x.done).length,has=(P.wname||P.idea||P.script||P.lyrics||P.topic||sh.length),dirty=localStorage.getItem('hs_dirty_'+ns),ps=CORE.pubStatus(P);
- const stage=!has?'فاضي':!sh.length?'كتابة':dn<sh.length?'تنفيذ اللقطات':ps&&!/^(\d+)\/\1/.test(ps)?'نشر':ps?'خلص ✓':'جاهز للنشر';
- return `<a href="${ns}.html" style="display:flex;gap:10px;align-items:center;border-top:1px dashed #1f2a44;padding:8px 0;color:inherit;text-decoration:none"><span style="font-size:22px">${ic}</span><div style="flex:1;min-width:0"><b style="font-size:14px">${E(P.wname||(has?'(بدون اسم)':nm))}</b><div style="font-size:12px;color:#94a3b8">${nm} • ${stage}${sh.length?' • '+dn+'/'+sh.length+' لقطة':''}${ps?' • '+ps:''}${dirty&&has?' • <span style="color:#fcd34d">● مش محفوظ على Drive</span>':''}</div></div><span style="color:#64748b">‹</span></a>`}).join('')}
+ if(!has){el.innerHTML='';return}
+ const stage=!sh.length?'كتابة':dn<sh.length?'تنفيذ '+dn+'/'+sh.length:ps?ps:'جاهز للنشر';
+ el.innerHTML='<div style="margin-top:8px;font-size:12px;background:#0b1220;border-radius:8px;padding:5px 7px;line-height:1.6">📁 '+E(P.wname||'بدون اسم')+'<br><span style="color:#94a3b8">'+stage+'</span>'+(dirty?' <span style="color:#fcd34d">●</span>':'')+'</div>'})}
 dash();
 document.getElementById('dashDrive').onclick=async()=>{const box=document.getElementById('dashD');if(!(await CORE.gdConnect()))return;box.innerHTML='<div style="font-size:13px;color:#94a3b8;margin-top:6px">⏳ بجيب أعمالك…</div>';
  try{const all=await Promise.all(ST.map(([ns])=>CORE.gdList(ns).then(l=>l.map(x=>Object.assign(x,{ns})))));const l=all.flat().sort((a,b)=>b.modifiedTime.localeCompare(a.modifiedTime));
