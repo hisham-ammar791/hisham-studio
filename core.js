@@ -212,10 +212,18 @@ C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
   document.body.appendChild(ov);ov.querySelector('#wQ').oninput=e=>{ov.querySelector('#wL').innerHTML=items(e.target.value.trim())};
   ov.onclick=async e=>{const b=e.target.closest('[data-o]');if(e.target===ov||(b&&b.dataset.o==='x')){ov.remove();return}if(!b)return;
    if(!confirm('تفتح العمل ده؟ الحالي هيتحفظ في سجل النسخ 🕘 الأول.'))return;try{const d=await C.gdLoad(b.dataset.o);st.snap('قبل فتح عمل من Drive',true);st.set(d);ov.remove();bar();render();C.toast('اتفتح ✓')}catch(x){C.toast('⚠️ '+x.message)}}}
+ function ask3(n){return new Promise(res=>{const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;z-index:99;background:#000c;display:flex;align-items:flex-end';
+  ov.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;padding:14px;color:#fff"><b style="font-size:16px">🆕 عمل جديد</b><div class="m" style="margin:6px 0 10px">تعمل إيه في العمل الحالي${n?' «'+esc(n)+'»':''} قبل ما تبدأ؟</div>
+  <button class="b g" data-k="save" style="width:100%;margin:0 0 8px">☁️ احفظه على Google Drive وابدأ جديد</button>
+  <button class="b r" data-k="del" style="width:100%;margin:0 0 8px">🗑️ امسحه من غير حفظ وابدأ جديد</button>
+  <button class="b" data-k="x" style="width:100%;margin:0">إلغاء</button></div>`;
+  document.body.appendChild(ov);ov.onclick=e=>{const b=e.target.closest('[data-k]');if(e.target!==ov&&!b)return;const k=b?b.dataset.k:'x';ov.remove();res(k)}})}
  async function nw(){const n=(P().wname||'').trim(),has=JSON.stringify(P())!==JSON.stringify(Object.assign({},o.def,{step:0}));
-  if(has){const c=confirm('عمل جديد:\nهيتحفظ العمل الحالي'+(n?' «'+n+'»':'')+' على Google Drive الأول، وبعدين الصفحة تتمسح.\n\nموافق؟');if(!c)return;
-   if(!n){const nn=(prompt('اكتب اسم للعمل الحالي عشان يتحفظ على Drive:')||'').trim();if(!nn){C.toast('اتلغى: لازم اسم');return}P().wname=nn;st.save()}
-   const r=await save();if(!r){if(!confirm('الحفظ على Drive ما نجحش. تمسح برضه؟ (فيه نسخة في سجل النسخ 🕘 على الموبايل)'))return}st.snap('قبل عمل جديد',true)}
+  if(has){const k=await ask3(n);if(k==='x')return;
+   if(k==='save'){if(!n){const nn=(prompt('اكتب اسم للعمل الحالي عشان يتحفظ على Drive:')||'').trim();if(!nn){C.toast('اتلغى: لازم اسم');return}P().wname=nn;st.save()}
+    const r=await save();if(!r){if(!confirm('الحفظ على Drive ما نجحش. تمسح برضه؟ (فيه نسخة في سجل النسخ 🕘 على الموبايل)'))return}}
+   else if(!confirm('متأكد؟ العمل هيتمسح من الصفحة (فيه نسخة احتياطية في سجل النسخ 🕘).'))return;
+   st.snap('قبل عمل جديد',true)}
   st.reset();bar();render();window.scrollTo(0,0);C.toast('🆕 صفحة جديدة')}
  function check(){const ov=document.createElement('div');ov.id='wChk';ov.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
   ov.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:88vh;overflow:auto;padding:12px;color:#fff"><b>🔎 فحص العمل بالذكاء الاصطناعي</b><div class="m" style="margin:4px 0">1) انسخ أمر الفحص وابعته للتطبيق اللي تختاره. 2) الصق الرد هنا. 3) اضغط «طبّق»: النسخة المصححة بتحل محل الحالية (والقديمة في 🕘).</div>
