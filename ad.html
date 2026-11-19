@@ -135,9 +135,8 @@ function s0(){const P=p();return `<div class="c"><h3>📣 نوع الإعلان<
  <label class="l">الفكرة أو الزاوية (اختياري، الذكاء يقترح لو فاضية)</label><textarea data-f="idea" rows="3">${esc(P.idea)}</textarea>
  <div class="row"><div><label class="l">المنصة</label>${sel('platform',PLATS,P.platform)}</div><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div></div>
  <div class="row"><div><label class="l">اللغة</label>${sel('lang',CORE.LANGS,P.lang)}</div><div><label class="l">السخرية</label>${sel('satire',CORE.SATIRE,P.satire)}</div></div>
- <label class="l">البصمة الكتابية</label>${sel('voice',CORE.VOICES,P.voice)}
- ${P.voice==='custom'?`<label class="l">عينة نص بتحبه</label><textarea data-f="customVoice" rows="3">${esc(P.customVoice)}</textarea>`:''}
- ${P.kind==='video'?`<label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}<input data-f="customVisual" placeholder="أو شكل مخصص (اختياري)" value="${esc(P.customVisual)}" style="margin-top:6px">`:''}
+ ${CORE.adv('<label class="l">البصمة الكتابية</label>'+sel('voice',CORE.VOICES,P.voice)+(P.voice==='custom'?'<label class="l">عينة نص بتحبه</label><textarea data-f="customVoice" rows="3">'+esc(P.customVoice)+'</textarea>':''),P.voice!==DEF.voice)}
+ ${P.kind==='video'?`<label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}${CORE.adv('<label class="l">شكل بصري مخصص</label><input data-f="customVisual" value="'+esc(P.customVisual)+'">',(P.customVisual||'').trim())}`:''}
  ${pair('write','أمر كتابة الإعلان')}${pair('ab','3 نسخ للاختبار A/B')}</div>
  <div class="c"><h3>📝 الإعلان الجاهز</h3><div class="m">الصق النسخة اللي اخترتها (أو اكتبها بنفسك).</div><textarea data-f="script" rows="8">${esc(P.script)}</textarea>
  ${pair('team','راجع بالفريق'+(P.health?' + فحص القواعد الصحية':''))}${pair('plats','نسخ لكل منصة')}</div>`}
@@ -149,11 +148,11 @@ function s1(){const P=p(),n=CORE.partsN(P.sec,P.parts);
   <label class="l">عدد الأجزاء</label>${sel('parts',[['auto','تلقائي ('+n+')'],['1','بدون تقسيم'],['2','2'],['3','3'],['4','4']],String(P.parts))}
   ${Array.from({length:n},(_,k)=>{const [a,b]=CORE.partRange(P.sec,n,k);return pair('shots:'+k,n>1?`الجزء ${k+1}/${n} (${a}–${b} ث)`:'أمر تقسيم الإعلان لقطات')}).join('')}
   <div class="m">انقل الرد لخطوة ③.</div>${pair('design','أمر صورة الغلاف/الثمبنيل')}${pair('voiceDir','تجهيز التعليق الصوتي')}</div>`+CORE.musicCard(P)}
- if(P.kind==='audio')return `<div class="c"><h3>🔊 تنفيذ الصوتي</h3><div class="m">جهّز التسجيل، وولّد الصوت في التطبيق اللي تختاره.</div>${pair('voiceDir','توجيه المعلق + النص المشكول + المؤثرات')}${pair('plats','نسخ لكل منصة')}</div>`+CORE.musicCard(P);
+ if(P.kind==='audio')return `<div class="c"><h3>🔊 تنفيذ الصوتي</h3><div class="m">جهّز التسجيل، وولّد الصوت في التطبيق اللي تختاره.</div>${pair('voiceDir','توجيه المعلق + النص المشكول + المؤثرات')}${pair('plats','نسخ لكل منصة')}</div>`+CORE.musicCard(P)+CORE.pubCard(P);
  return `<div class="c"><h3>🖼️ تنفيذ ${P.kind==='poster'?'البوستر':'البوست'}</h3>
  <label class="l">المقاس</label>${sel('aspect',ASPECTS,P.aspect)}
- <label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}<input data-f="customVisual" placeholder="أو شكل مخصص" value="${esc(P.customVisual)}" style="margin-top:6px">
- ${pair('design','أمر التصميم (المصمم العالمي)')}<div class="m">لو المولّد بيغلط في الكتابة العربية: ولّد الصورة بدون نص، وضيف النص في تطبيق تصميم.</div></div>`}
+ <label class="l">الشكل البصري</label>${CORE.adv('<label class="l">شكل بصري مخصص (اختياري، يغلب الاختيار)</label><input data-f="customVisual" placeholder="مثال: نفس شكل كورفو ولوتا" value="'+esc(P.customVisual)+'">',(P.customVisual||'').trim())}
+ ${pair('design','أمر التصميم (المصمم العالمي)')}<div class="m">لو المولّد بيغلط في الكتابة العربية: ولّد الصورة بدون نص، وضيف النص في تطبيق تصميم.</div></div>`+CORE.pubCard(P)}
 function shotCard(s,i){const P=p();return `<div class="shot${s.done?' done':''}"><div class="hd"><b>لقطة ${i+1}</b><span class="tag">${s.dur}ث</span><button class="b" data-a="up" data-i="${i}" style="margin:0">⬆️</button><button class="b" data-a="dn" data-i="${i}" style="margin:0">⬇️</button><button class="b r" data-a="del" data-i="${i}" style="margin:0">🗑️</button></div>
  <div class="row"><div><label class="l">المدة</label><input type="number" data-si="${i}" data-sf="dur" value="${esc(s.dur)}"></div><div style="flex:3"><label class="l">الكلام</label><input data-si="${i}" data-sf="lyric" value="${esc(s.lyric)}"></div></div>
  <label class="l">المشهد</label><textarea rows="3" data-si="${i}" data-sf="desc">${esc(s.desc)}</textarea>
@@ -177,7 +176,7 @@ function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
  <button class="b g" data-a="parse">✂️ حوّل الرد إلى لقطات${P.shots.length?' (يستبدل)':''}</button>${P.shots.length?`<button class="b bl" data-a="append">➕ كمّل بعد لقطة ${P.shots.length}</button>`:''}</div>
  ${P.shots.length?`<div class="c"><div class="hd"><b>${P.shots.length} لقطة • ${T} ثانية${P.sec&&Math.abs(T-P.sec)>Math.max(5,P.sec*.15)?` <span style="color:#fcd34d">(المدة المطلوبة ${P.sec})</span>`:''}</b></div>
  <button class="b g" data-a="send">▶ ابدأ وضع الإرسال لـ Flow</button><button class="b" data-a="grid">${P.grid?'📋 عرض التفاصيل':'🔲 عرض شبكة'}</button>${pair('teamBoard','راجع الستوري بورد بالفريق')}</div>`:'<div class="c m">لسه مفيش لقطات.</div>'}
- ${P.shots.length?(P.grid?gridHTML():insBtn(-1)+P.shots.map((s,i)=>`<div id="shot${i}">`+shotCard(s,i)+'</div>'+insBtn(i)).join('')):''}`}
+ ${P.shots.length?(P.grid?gridHTML():insBtn(-1)+P.shots.map((s,i)=>`<div id="shot${i}">`+shotCard(s,i)+'</div>'+insBtn(i)).join('')):''}${P.shots.length?CORE.pubCard(P):''}`}
 function render(){const P=p();const STEPS=P.kind==='video'?STEPS_V:STEPS_O;if(P.step>=STEPS.length)P.step=0;document.getElementById('nav').innerHTML=STEPS.map((t,k)=>`<button class="b${k===P.step?' g':''}" data-a="go" data-i="${k}">${t}</button>`).join('');
  document.getElementById('app').innerHTML=[s0,s1,s2][P.step]()}
 
@@ -229,7 +228,7 @@ CORE.work({presets:[{"name": "💊 إعلان صيدلية كوميدي — في
  apply:v=>{const P=p(),i=v.search(new RegExp(HDR.source,'im')),head=(i>0?v.slice(0,i):(i<0?v:'')).replace(/\[(?:الإعلان|اللقطات)\]/g,'').trim(),sh=i>=0?parseShots(v.slice(i)):[];
   if(!head&&!sh.length){alert('مش لاقي حاجة أطبقها');return false}
   if(head)P.script=head;if(sh.length){sh.forEach((x,k)=>{const o=P.shots[k];if(o){x.img=o.img;x.frame=o.frame;x.done=o.done}});P.shots=sh}
-  st.save();return [head&&'الإعلان',sh.length&&sh.length+' لقطة'].filter(Boolean).join(' + ')}}});CORE.bindMusic(p,()=>st.save(),()=>MCTX());
+  st.save();return [head&&'الإعلان',sh.length&&sh.length+' لقطة'].filter(Boolean).join(' + ')}}});CORE.bindMusic(p,()=>st.save(),()=>MCTX());CORE.bindPub(p,()=>st.save(),render,()=>MCTX()+'\n'+shotsTxt().slice(0,2500));
 st.snap('عند الفتح');render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>

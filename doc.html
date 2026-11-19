@@ -127,9 +127,9 @@ function s1(){const P=p(),n=CORE.partsN(P.sec,P.parts);return `<div class="c"><h
  <label class="l">العناصر</label><div class="row" style="flex-wrap:wrap">${ELS.map(e=>`<button class="b${P.els.includes(e[0])?' g':''}" data-a="el" data-k="${e[0]}">${e[1]}</button>`).join('')}</div>
  ${P.els.includes('host')?`<label class="l">شكل المقدم الثابت</label><textarea data-f="host" rows="2">${esc(P.host)}</textarea>`:''}
  <div class="row"><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div><div><label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}</div></div>
- <input data-f="customVisual" placeholder="أو شكل مخصص (اختياري)" value="${esc(P.customVisual)}" style="margin-top:6px">
+ ${CORE.adv('<label class="l">شكل بصري مخصص (اختياري، يغلب الاختيار)</label><input data-f="customVisual" placeholder="مثال: نفس شكل كورفو ولوتا" value="'+esc(P.customVisual)+'">',(P.customVisual||'').trim())}
  <div class="row"><div><label class="l">اللغة</label>${sel('lang',CORE.LANGS,P.lang)}</div><div><label class="l">السخرية</label>${sel('satire',CORE.SATIRE,P.satire)}</div></div>
- <label class="l">البصمة</label>${sel('voice',CORE.VOICES,P.voice)}${P.voice==='custom'?`<textarea data-f="customVoice" rows="3" placeholder="عينة نص">${esc(P.customVoice)}</textarea>`:''}
+ ${CORE.adv('<label class="l">البصمة الكتابية</label>'+sel('voice',CORE.VOICES,P.voice)+(P.voice==='custom'?'<label class="l">عينة نص بتحبه</label><textarea data-f="customVoice" rows="3">'+esc(P.customVoice)+'</textarea>':''),P.voice!==DEF.voice)}
  ${pair('write','أمر كتابة النص')}</div>
  `+CORE.castCard(P)+`<div class="c"><h3>📝 النص</h3><textarea data-f="script" rows="9">${esc(P.script)}</textarea>
  ${pair('team','راجع بالفريق + الدقة')}${pair('human','اكشف الأثر الآلي وأعد الصياغة')}${pair('voiceDir','تجهيز التعليق الصوتي')}${pair('slides','هيكل شرائح')}</div>
@@ -158,7 +158,7 @@ function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
  <button class="b g" data-a="parse">✂️ حوّل الرد إلى لقطات${P.shots.length?' (يستبدل)':''}</button>${P.shots.length?`<button class="b bl" data-a="append">➕ كمّل بعد لقطة ${P.shots.length}</button>`:''}</div>
  ${P.shots.length?`<div class="c"><div class="hd"><b>${P.shots.length} لقطة • ${T} ثانية${P.sec&&Math.abs(T-P.sec)>Math.max(5,P.sec*.15)?` <span style="color:#fcd34d">(المطلوب ${P.sec})</span>`:''}</b></div>
  <button class="b g" data-a="send">▶ ابدأ وضع الإرسال لـ Flow</button><button class="b" data-a="grid">${P.grid?'📋 عرض التفاصيل':'🔲 عرض شبكة'}</button>${pair('teamBoard','راجع الستوري بورد بالفريق')}</div>`:'<div class="c m">لسه مفيش لقطات.</div>'}
- ${P.shots.length?(P.grid?gridHTML():insBtn(-1)+P.shots.map((s,i)=>`<div id="shot${i}">`+shotCard(s,i)+'</div>'+insBtn(i)).join('')):''}`}
+ ${P.shots.length?(P.grid?gridHTML():insBtn(-1)+P.shots.map((s,i)=>`<div id="shot${i}">`+shotCard(s,i)+'</div>'+insBtn(i)).join('')):''}${P.shots.length?CORE.pubCard(P):''}`}
 function render(){const P=p();document.getElementById('nav').innerHTML=STEPS.map((t,k)=>`<button class="b${k===P.step?' g':''}" data-a="go" data-i="${k}">${t}</button>`).join('');
  document.getElementById('app').innerHTML=[s0,s1,s2][P.step]()}
 
@@ -208,7 +208,7 @@ CORE.work({presets:[{"name": "🕵️ حلقة غموض (خفايا)", "set": {"
  apply:v=>{const P=p(),i=v.search(new RegExp(HDR.source,'im')),head=(i>0?v.slice(0,i):(i<0?v:'')).replace(/\[(?:النص|اللقطات)\]/g,'').trim(),sh=i>=0?parseShots(v.slice(i)):[];
   if(!head&&!sh.length){alert('مش لاقي حاجة أطبقها');return false}
   if(head)P.script=head;if(sh.length){sh.forEach((x,k)=>{const o=P.shots[k];if(o){x.img=o.img;x.frame=o.frame;x.done=o.done}});P.shots=sh}
-  st.save();return [head&&'النص',sh.length&&sh.length+' لقطة'].filter(Boolean).join(' + ')}}});CORE.bindMusic(p,()=>st.save(),()=>MCTX());
+  st.save();return [head&&'النص',sh.length&&sh.length+' لقطة'].filter(Boolean).join(' + ')}}});CORE.bindMusic(p,()=>st.save(),()=>MCTX());CORE.bindPub(p,()=>st.save(),render,()=>MCTX()+'\n'+shotsTxt().slice(0,2500));
 st.snap('عند الفتح');render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>

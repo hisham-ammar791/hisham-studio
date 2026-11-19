@@ -39,11 +39,25 @@ a.c:active{background:#162036}
  <a class="c on" href="doc.html"><div class="i">🎙️</div><b>برامج ووثائقي</b><span>بحث عميق بتصنيف المصادر، نص، تعليق، لقطات.</span><br><span class="tag t1">جديدة</span></a>
  <a class="c on wide" href="doc.html"><div class="i">🎓</div><b>شرح وتعليم</b><span>داخل استوديو البرامج: اختار «شرح وتعليم» (وايت بورد، خرائط، موشن، شرائح).</span><br><span class="tag t1">جديدة</span></a>
 </div>
+<div class="c wide" style="margin-top:12px" id="dash"><b>📊 لوحة المشاريع</b><span>الشغل المفتوح دلوقتي في كل استوديو، وكل أعمالك المحفوظة على Drive.</span><div id="dashL"></div><button id="dashDrive" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1d4ed8;color:#fff;font-family:inherit">☁️ كل أعمالي على Drive</button><div id="dashD"></div></div>
 <div class="c wide" style="margin-top:12px"><b>💾 نسخة احتياطية</b><span>كل أعمال الاستوديوهات الجديدة والشخصيات والأماكن والكادرات والدروس في ملف واحد. (الاستوديو القديم له نسخته الخاصة جواه.)</span><br>
 <button id="bkOut" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1d4ed8;color:#fff;font-family:inherit">⬇️ تصدير</button>
 <label style="display:inline-block;margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#fff">⬆️ استرجاع<input type="file" id="bkIn" accept=".json,application/json" hidden></label></div>
 <div class="ft">داخل الاستوديو: زر 🏠 يرجعك هنا، وزر 🕘 يفتح سجل النسخ.</div>
+<script src="core.js"></script>
 <script>
+const ST=[['film','🎬','أفلام ومسلسلات'],['ad','📣','إعلانات'],['song','🎼','أغاني وكليب'],['doc','🎙️','برامج ووثائقي']];
+const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function dash(){document.getElementById('dashL').innerHTML=ST.map(([ns,ic,nm])=>{let P={};try{P=JSON.parse(localStorage.getItem('hs_'+ns)||'{}')}catch(e){}
+ const sh=P.shots||[],dn=sh.filter(x=>x.done).length,has=(P.wname||P.idea||P.script||P.lyrics||P.topic||sh.length),dirty=localStorage.getItem('hs_dirty_'+ns),ps=CORE.pubStatus(P);
+ const stage=!has?'فاضي':!sh.length?'كتابة':dn<sh.length?'تنفيذ اللقطات':ps&&!/^(\d+)\/\1/.test(ps)?'نشر':ps?'خلص ✓':'جاهز للنشر';
+ return `<a href="${ns}.html" style="display:flex;gap:10px;align-items:center;border-top:1px dashed #1f2a44;padding:8px 0;color:inherit;text-decoration:none"><span style="font-size:22px">${ic}</span><div style="flex:1;min-width:0"><b style="font-size:14px">${E(P.wname||(has?'(بدون اسم)':nm))}</b><div style="font-size:12px;color:#94a3b8">${nm} • ${stage}${sh.length?' • '+dn+'/'+sh.length+' لقطة':''}${ps?' • '+ps:''}${dirty&&has?' • <span style="color:#fcd34d">● مش محفوظ على Drive</span>':''}</div></div><span style="color:#64748b">‹</span></a>`}).join('')}
+dash();
+document.getElementById('dashDrive').onclick=async()=>{const box=document.getElementById('dashD');if(!(await CORE.gdConnect()))return;box.innerHTML='<div style="font-size:13px;color:#94a3b8;margin-top:6px">⏳ بجيب أعمالك…</div>';
+ try{const all=await Promise.all(ST.map(([ns])=>CORE.gdList(ns).then(l=>l.map(x=>Object.assign(x,{ns})))));const l=all.flat().sort((a,b)=>b.modifiedTime.localeCompare(a.modifiedTime));
+  box.innerHTML=`<input id="dashQ" placeholder="دوّر باسم العمل…" style="width:100%;margin-top:8px;padding:8px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#fff;font-family:inherit"><div id="dashR"></div>`;
+  const show=q=>{document.getElementById('dashR').innerHTML=l.filter(x=>!q||(x.appProperties.name||'').includes(q)).map(x=>{const s=ST.find(y=>y[0]===x.ns);return `<a href="${x.ns}.html?open=${x.id}" style="display:flex;gap:10px;align-items:center;border-top:1px dashed #1f2a44;padding:8px 0;color:inherit;text-decoration:none"><span>${s[1]}</span><div style="flex:1"><b style="font-size:14px">${E(x.appProperties.name)}</b><div style="font-size:12px;color:#94a3b8">${s[2]} • ${new Date(x.modifiedTime).toLocaleString('ar-EG',{dateStyle:'short',timeStyle:'short'})}</div></div><span style="color:#38bdf8;font-size:13px">افتح</span></a>`}).join('')||'<div style="font-size:13px;color:#94a3b8;margin-top:6px">مفيش أعمال.</div>'};
+  show('');document.getElementById('dashQ').oninput=e=>show(e.target.value.trim())}catch(e){box.innerHTML='<div style="color:#fca5a5;font-size:13px">⚠️ '+E(e.message)+'</div>'}};
 document.getElementById('bkOut').onclick=async()=>{const d={type:'hisham-studios-backup',v:1,at:new Date().toISOString(),keys:{}};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^hs_(?!trc|dirty)/.test(k))d.keys[k]=localStorage.getItem(k)}
  const name='استوديو-نسخة-'+new Date().toISOString().slice(0,10)+'.json',f=new File([JSON.stringify(d)],name,{type:'application/json'});
  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==='AbortError')return}

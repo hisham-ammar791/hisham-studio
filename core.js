@@ -248,7 +248,9 @@ C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
     st.snap('قبل تطبيق الفحص',true);const r=o.check.apply(v);if(r===false)return;P().chkPaste='';st.save();ov.remove();render();C.toast('✅ اتطبق التصحيح ('+r+')')}}}
  document.addEventListener('input',e=>{if(e.target.id==='wName'){P().wname=e.target.value;st.save()}});
  document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w;if(a==='save')save();if(a==='open')openBox();if(a==='new')nw();if(a==='check')check();if(a==='tools')C.toolsMenu(o,st,render,bar);if(a==='lessons')C.lessonsBox();if(a==='pub'){const t=C.pubPrompt(o.ctx?o.ctx():'');C.copy(t,'اتنسخ أمر حزمة النشر ✓')}});
- bar()};
+ bar();
+ const qo=new URLSearchParams(location.search).get('open');
+ if(qo)setTimeout(async()=>{history.replaceState(null,'',location.pathname);if(!(await C.leaveOk()))return;if(!(await C.gdConnect()))return;try{C.toast('⏳ بفتح العمل…',8000);const d=await C.gdLoad(qo);st.snap('قبل فتح عمل من Drive',true);st.set(d);clean();render();C.toast('اتفتح ✓')}catch(x){C.toast('⚠️ '+x.message,4000)}},300)};
 })();
 
 /* ================= 🌐 ترجمة تلقائية للإنجليزي ================= */
@@ -345,3 +347,66 @@ C.hookBank=function(){const l=C.hooks();let o=document.getElementById('hkBox');i
   if(h==='add'){const v=o.querySelector('#hkNew').value.trim();if(!v)return;L.unshift(v);hsv(L);C.toast('🪝 اتحفظ ✓');C.hookBank();return}
   if(h[0]==='c'){C.copy(L[+h.slice(1)]);return}if(h[0]==='d'){L.splice(+h.slice(1),1);hsv(L);C.hookBank()}}};
 })();
+
+/* ================= 📢 جاهز للنشر: خطة + كابشن + هاشتاجات لكل منصة، تتحفظ مع العمل ================= */
+(function(){
+const C=window.CORE,esc=C.esc;
+const PLATS=[['fb','فيسبوك'],['ig','إنستجرام ريلز'],['tt','تيك توك'],['yts','يوتيوب شورتس'],['yt','يوتيوب'],['wa','حالة واتساب']];
+const LABELS=['العنوان','الهوك','الكابشن','الهاشتاجات','أفضل وقت','أول تعليق','ملاحظة'];
+const pub=P=>{P.pub=Object.assign({plats:['fb','ig','tt','yts'],raw:'',plan:'',thumb:'',items:[],posted:{}},P.pub||{});return P.pub};
+C.pubPack=function(P,ctx){const u=pub(P),names=u.plats.map(k=>C.pick(PLATS,k)[1]);
+ return `أنت مدير محتوى ومسوّق سوشيال ميديا عالمي للجمهور المصري والعربي. جهّز حزمة نشر كاملة وجاهزة للعمل ده، على المنصات دي بس: ${names.join('، ')}.
+اكتب الناتج بالشكل ده بالظبط (العلامات زي ما هي) ومن غير أي كلام تاني:
+
+=== الخطة ===
+أفضل ترتيب للنشر على المنصات والفرق بين كل منصة والتانية (باليوم والساعة بتوقيت القاهرة)، وأول ساعة بعد النشر أعمل إيه (رد على التعليقات، ستوري، مشاركة في جروبات)، وإعادة النشر بعد كام يوم. 6 أسطر كحد أقصى.
+
+${names.map(n=>`=== منصة: ${n} ===
+العنوان: (لو المنصة بتدعم عنوان، وإلا اكتب بدون)
+الهوك: أول سطر يوقف التمرير
+الكابشن: الكابشن كامل بطول وطريقة المنصة دي (فقرات قصيرة جدًا، إيموجي بحساب، دعوة واحدة للتفاعل)
+الهاشتاجات: من 5 لـ12 هاشتاج مناسبة للمنصة (عربي وإنجليزي، مزيج كبير ومتوسط ومتخصص)، في سطر واحد
+أفضل وقت: اليوم والساعة بتوقيت القاهرة
+أول تعليق: تعليق تكتبه أنت أول ما تنشر عشان يفتح النقاش
+`).join('\n')}
+=== الصورة المصغرة ===
+أمر صورة مصغّرة بالإنجليزي + جملة عربي قصيرة تتكتب عليها (3 كلمات كحد أقصى).
+
+قواعد: اللغة نفس لغة العمل وبأسلوب بشري جذاب، بدون كليشيهات، بدون وعود مبالغ فيها، والهاشتاجات حقيقية ومستخدمة.
+${C.WRITING}
+
+العمل:
+${ctx}`};
+C.pubParse=function(t){const out={plan:'',thumb:'',items:[]};const parts=t.split(/^\s*={2,}\s*/m);
+ const blocks=t.split(/\n?\s*={2,}\s*(الخطة|الصورة المصغرة|منصة\s*[:：]\s*[^=\n]+?)\s*={2,}\s*\n?/);
+ for(let i=1;i<blocks.length;i+=2){const h=blocks[i].trim(),b=(blocks[i+1]||'').trim();
+  if(h==='الخطة')out.plan=b;else if(h==='الصورة المصغرة')out.thumb=b;
+  else{const name=h.replace(/^منصة\s*[:：]\s*/,'').trim(),it={name};let cur=null;
+   b.split('\n').forEach(l=>{const m=l.replace(/\*\*/g,'').match(new RegExp('^\\s*[-•]?\\s*('+LABELS.join('|')+')\\s*[:：]\\s*(.*)$'));if(m){cur=m[1];it[cur]=m[2].trim()}else if(cur)it[cur]=(it[cur]?it[cur]+'\n':'')+l});
+   LABELS.forEach(k=>{if(it[k])it[k]=it[k].trim();if(/^(بدون|لا يوجد|-)$/.test(it[k]||''))it[k]=''});out.items.push(it)}}
+ return out};
+C.pubCard=function(P){const u=pub(P);
+ return `<div class="c" style="border-color:#f59e0b"><h3>📢 جاهز للنشر</h3><div class="m">خطة النشر والكابشن والهاشتاجات لكل منصة، بتتحفظ مع العمل.</div>
+ <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${PLATS.map(([k,n])=>`<button class="b${u.plats.includes(k)?' g':''}" data-pp="${k}" style="margin:0">${n}</button>`).join('')}</div>
+ <div class="pair"><button class="b bl" data-pu="cmd">📋 أمر حزمة النشر</button><button class="b" data-pu="cmd!">📤</button></div>
+ <textarea data-pu-raw rows="${u.items.length?3:6}" placeholder="الصق رد الذكاء هنا">${esc(u.raw)}</textarea><button class="b g" data-pu="parse">✂️ حوّل لكروت نشر</button>
+ ${u.plan?`<div class="shot"><b>🗓️ خطة النشر</b><div class="m" style="white-space:pre-wrap;color:#e2e8f0">${esc(u.plan)}</div><button class="b" data-pc="plan">📋</button></div>`:''}
+ ${u.items.map((it,i)=>`<div class="shot${u.posted[i]?' done':''}"><div class="hd"><b>${esc(it.name)}</b>${it['أفضل وقت']?`<span class="tag">🕒 ${esc(it['أفضل وقت'])}</span>`:''}</div>
+  ${it['العنوان']?`<div class="m"><b>العنوان:</b> ${esc(it['العنوان'])}</div>`:''}
+  <div style="white-space:pre-wrap;font-size:14px;margin-top:6px">${esc([it['الهوك'],it['الكابشن']].filter(Boolean).join('\n\n'))}</div>
+  <div class="m" style="margin-top:6px;color:#7dd3fc;direction:rtl">${esc(it['الهاشتاجات']||'')}</div>
+  ${it['أول تعليق']?`<div class="m" style="margin-top:6px">💬 أول تعليق: ${esc(it['أول تعليق'])}</div>`:''}
+  <div><button class="b bl" data-pc="all:${i}">📋 الكابشن + الهاشتاجات</button><button class="b" data-pc="cap:${i}">الكابشن</button><button class="b" data-pc="tag:${i}">#</button>${it['العنوان']?`<button class="b" data-pc="ttl:${i}">العنوان</button>`:''}${it['أول تعليق']?`<button class="b" data-pc="fc:${i}">💬</button>`:''}<button class="b${u.posted[i]?' on':''}" data-pc="done:${i}">✓ ${u.posted[i]?'اتنشر':'نشرت'}</button></div></div>`).join('')}
+ ${u.thumb?`<div class="shot"><b>🖼️ الصورة المصغّرة</b><div class="m" style="white-space:pre-wrap;color:#e2e8f0">${esc(u.thumb)}</div><button class="b" data-pc="thumb">📋</button></div>`:''}</div>`};
+C.bindPub=function(getP,save,render,getCtx){
+ document.addEventListener('input',e=>{if(e.target.hasAttribute&&e.target.hasAttribute('data-pu-raw')){pub(getP()).raw=e.target.value;save()}});
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-pp],[data-pu],[data-pc]');if(!b)return;const P=getP(),u=pub(P);
+  if(b.dataset.pp){const k=b.dataset.pp;u.plats=u.plats.includes(k)?u.plats.filter(x=>x!==k):u.plats.concat(k);save();render();return}
+  if(b.dataset.pu){let k=b.dataset.pu;if(k==='parse'){if(!u.raw.trim()){alert('الصق الرد الأول');return}const r=C.pubParse(u.raw);if(!r.items.length&&!r.plan){alert('مش لاقي علامات «=== منصة: ... ===». استخدم أمر حزمة النشر من هنا.');return}Object.assign(u,r);u.posted={};save();render();C.toast('📢 '+r.items.length+' منصة جاهزة ✓');return}
+   const send=k.endsWith('!'),t=C.pubPack(P,getCtx());send?C.send(t):C.copy(t,'اتنسخ أمر حزمة النشر ✓');return}
+  const [k,i]=b.dataset.pc.split(':'),it=u.items[+i]||{};
+  if(k==='done'){u.posted[i]=!u.posted[i];save();render();return}
+  const t={plan:u.plan,thumb:u.thumb,all:[it['الهوك'],it['الكابشن'],it['الهاشتاجات']].filter(Boolean).join('\n\n'),cap:[it['الهوك'],it['الكابشن']].filter(Boolean).join('\n\n'),tag:it['الهاشتاجات'],ttl:it['العنوان'],fc:it['أول تعليق']}[k];if(t)C.copy(t,'اتنسخ ✓')})};
+C.pubStatus=P=>{const u=P&&P.pub;if(!u||!u.items||!u.items.length)return '';const n=Object.values(u.posted||{}).filter(Boolean).length;return n+'/'+u.items.length+' منصة اتنشر'};
+})();
+window.CORE.adv=(html,open)=>`<details ${open?'open':''} style="margin-top:8px;border:1px dashed var(--border);border-radius:10px;padding:4px 8px"><summary style="color:#94a3b8;font-size:13px;cursor:pointer">⚙️ متقدم</summary>${html}</details>`;
