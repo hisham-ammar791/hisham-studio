@@ -3,7 +3,7 @@
 // - The page itself (index.html) is fetched from the network first, so a new upload appears at once;
 //   if the network is missing or slower than 4 seconds, the stored copy opens instead.
 // - Icons, fonts and other files are served from the cache and refreshed in the background.
-const CACHE = 'hisham-studio-v6';
+const CACHE = 'hisham-studio-v7';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
   'apple-touch-icon.png', 'fonts/cairo-arabic.woff2', 'fonts/cairo-latin.woff2', 'fonts/cairo-latin-ext.woff2'];
 

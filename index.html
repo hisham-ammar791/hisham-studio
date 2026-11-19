@@ -1159,7 +1159,7 @@ document.addEventListener('visibilitychange',()=>{const c=gdCfg();if(document.vi
 
 /* ---- استرجاع آخر نسخة من المخزن الكبير ---- */
 svGetIdb().then(raw=>{let o=null;try{o=raw&&JSON.parse(raw)}catch(e){}
- if(o&&(o._ts||0)>(SV.loadTs||0)){S=fromSaved(o);SV.ready=true;save();try{if(document.body.classList.contains('ezon'))ezRender();else{renderChars();renderShots()}}catch(e){}toast('اترجعت آخر نسخة محفوظة ✓')}else{SV.ready=true;svFlush()}});
+ if(o&&(o._ts||0)>(SV.loadTs||0)&&(S._ts||0)<=(SV.loadTs||0)){S=fromSaved(o);SV.ready=true;save();try{if(document.body.classList.contains('ezon'))ezRender();else{renderChars();renderShots()}}catch(e){}toast('اترجعت آخر نسخة محفوظة ✓')}else{SV.ready=true;svFlush()}});
 document.addEventListener('click',e=>{try{const c=gdCfg();if(c.auto==='1'&&c.cid&&c.linked&&!gdOK()&&!GD.busy&&GD.dirty&&Date.now()-(GD.lastTry||0)>120000){GD.lastTry=Date.now();gdConnect().then(ok=>{if(ok)gdUpload()})}}catch(x){}},true);
 /* ---------- backup reminder ---------- */
 function bkHide(){const b=$('bkBar');if(b)b.remove()}
@@ -3114,7 +3114,8 @@ body.ezon #ez{display:block}body.ezon{overflow:hidden}body.ezon #simpleBtn,body.
 <div id="ezAn" onclick="ezAnStop()"><div class="bar" id="ezAnBar"></div><div id="ezAnBody"></div></div>
 <div id="ez"><div class="ezsteps" id="ezSteps"></div><div id="ezBody"></div></div>
 <script>
-const EZ={step:0,cur:0},EZST=['الشخصيات','الفكرة','الفكرة أو السيناريو','ستوري بورد','لقطة بلقطة','التجميع'];
+const EZ={step:0,cur:0,paste:(()=>{try{return localStorage.getItem('ez_paste')||''}catch(e){return ''}})()},EZST=['الشخصيات','الفكرة','الفكرة أو السيناريو','ستوري بورد','لقطة بلقطة','التجميع'];
+if(!EZ.paste)try{svDb().then(d=>new Promise(r=>{const q=d.transaction('s').objectStore('s').get('paste');q.onsuccess=()=>r(q.result);q.onerror=()=>r('')})).then(v=>{if(v&&!EZ.paste){EZ.paste=v;const t=document.getElementById('ezPaste');if(t&&!t.value)t.value=v}}).catch(()=>{})}catch(e){}
 try{EZ.step=Math.min(5,+(localStorage.getItem('ez_step')||0));EZ.cur=+(localStorage.getItem('ez_cur')||0)}catch(e){}
 function ezStore(){try{localStorage.setItem('ez_step',EZ.step);localStorage.setItem('ez_cur',EZ.cur)}catch(e){}}
 /* ---- صور البداية (IndexedDB) ---- */
@@ -3347,7 +3348,7 @@ function ez0(){
 }
 
 
-const APPV='html37';
+const APPV='html38';
 async function pjDup(){const n=(prompt('اسم النسخة الجديدة من «'+pjName()+'»',pjName()+' (نسخة ٢)')||'').trim();if(!n)return;if(pjList().includes(n)){alert('فيه مشروع بنفس الاسم');return}
  try{await pjSaveCur()}catch(e){alert('تعذر حفظ المشروع الحالي');return}ezBusy('⏳ بعمل نسخة من المشروع والصور…');
  const f=JSON.parse(JSON.stringify(S));f.projName=n;f.epTitle=n;f.epId='';
@@ -3639,18 +3640,18 @@ ${vo}${rules}
 ${fmt.replace(/(\nالتعليق:[^\n]*)/,'$1\nالحوار: الاسم: الجملة (لو في حوار من شخصية، وإلا بدون)')}`}
 function ezCopyReady(){const v=(($('ezReady')||{}).value||S.readyScript||'').trim();if(!v){alert('الصق السيناريو الجاهز الأول');return}S.readyScript=v;ezCopy(ezAIPromptReady(v),'تم نسخ أمر تحويل السيناريو ✓')}
 function ezEmoKey(t){t=(t||'').trim();if(!t)return 'auto';for(const k in EMO){const a=EMO[k].ar;if(k!=='auto'&&(a.includes(t)||t.includes(a.split(' ')[0])))return k}return 'auto'}
-const EZHDR=/^[ \t]*[#*>\- \t]*(?:ال)?(?:لقطة|لقطه|shot)\s*(?:رقم\s*)?[\d٠-٩]+/im;
+const EZHDR=/^[ \t]*[^\n؀-ۿA-Za-z0-9]{0,8}(?:ال)?(?:لقطة|لقطه|shot)\s*(?:رقم\s*)?[\d٠-٩]+/im;
 function ezNum(x){return +String(x).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d.]/g,'')||0}
 function ezParseTxt(txt){
  if(/\|\s*(ال)?راوي/.test(txt)&&!S.chars.some(c=>c.vo))ezNarr();
  const re=new RegExp(EZHDR.source,'gim');const idx=[];let m;while((m=re.exec(txt)))idx.push(m.index);
- return idx.map((st,k)=>{const p=txt.slice(st,idx[k+1]||txt.length);const lines=p.split('\n').map(l=>l.replace(/\*\*/g,'').trim());
+ return idx.map((st,k)=>{const p=txt.slice(st,idx[k+1]||txt.length);const _n=ezNum((p.match(/[\d٠-٩]+/)||['0'])[0]);const lines=p.split('\n').map(l=>l.replace(/\*\*/g,'').trim());
   const head=lines[0].replace(EZHDR,'').replace(/^[\s:|\-–]+/,'');const h=head.split('|').map(x=>x.trim());
   const g=(...ks)=>{for(const k of ks){const l=lines.find(x=>new RegExp('^[\\-•\\s]*'+k+'\\s*[:：]').test(x));if(l)return l.replace(/^[^:：]*[:：]\s*/,'').trim()}return ''};
   const nm=h[0]||head;const c=S.chars.find(c=>c.name&&(nm.toLowerCase().includes(c.name.toLowerCase())||(c.shortAr&&nm.includes(c.shortAr))))||S.chars[0];
   let dur=ezNum(h[1]||'');if(!dur){const dm=head.match(/([\d٠-٩]+(?:\.\d)?)\s*(?:ث|ثوان|ثانية|sec|s\b)/);dur=dm?ezNum(dm[1]):5}
   const emoTxt=h[2]||g('الشعور','العاطفة');const emo=ezEmoKey(emoTxt);const narr=ezNone(g('التعليق','الكلمات','التعليق الصوتي'));const dlg0=g('الحوار');const dlg=dlg0||narr;const osAr=ezNone(g('نص الشاشة','النص على الشاشة'));const plTxt=g('المكان');const prTxt=g('الأدوات');
-  return {osAr,cid:c?c.id:'',text:/^\s*(بدون|لا يوجد|لا شيء|لا|none|-|—)\s*[.)(]*\s*$/i.test(dlg)?'':dlg.replace(/^[^:：]{1,20}[:：]\s*(?=\S)/,m=>(!dlg0&&narr)?'':m),gesture:'auto',custom:'',camera:'auto',dur:Math.max(2,Math.min(10,dur)),emo,
+  return {_n,osAr,cid:c?c.id:'',text:/^\s*(بدون|لا يوجد|لا شيء|لا|none|-|—)\s*[.)(]*\s*$/i.test(dlg)?'':dlg.replace(/^[^:：]{1,20}[:：]\s*(?=\S)/,m=>(!dlg0&&narr)?'':m),gesture:'auto',custom:'',camera:'auto',dur:Math.max(2,Math.min(10,dur)),emo,
    descAr:g('ماذا يحدث','الوصف','المشهد'),sfx:g('الصوت','المؤثرات'),holdAr:g('الثبات','وضع البداية'),moveAr:g('الحركة','الحركة الوحيدة'),banAr:g('الممنوع'),
    place:((S.places||[]).find(pp=>pp.name&&plTxt.includes(pp.name))||{}).id||'',props:(S.props||[]).filter(pp=>pp.name&&prTxt.includes(pp.name)).map(pp=>pp.id),
    noteAr:(emo==='auto'&&emoTxt)?'الشعور: '+emoTxt:'',reel:'',presFix:g('الظاهرين','الظاهرون','في الكادر')?1:0,pres:(()=>{const v=g('الظاهرين','الظاهرون','في الكادر');if(!v)return c?c.name||'':'';const ns=S.chars.filter(x=>x.name&&normN(v).includes(normN(x.name))).map(x=>x.name);if(c&&c.name&&!ns.includes(c.name))ns.unshift(c.name);return ns.join('، ')||(c?c.name||'':'')})(),
@@ -3665,14 +3666,18 @@ function ezStageMap(t){const m=String(t||'').match(/خريطة المكان\s*[:
 function ezParseLines(txt){const L=String(txt).split('\n').map(l=>l.trim()).filter(l=>/^[^:：\[\]]{1,24}[:：]\s*\S/.test(l));if(!L.length)return [];
  const dm=S.durMode;S.durMode='flex';let out=[];try{out=parseDialogue(L.join('\n'))}finally{S.durMode=dm}
  return out.map(x=>Object.assign({gesture:'auto',custom:'',camera:'auto',emo:'auto',holdAr:'',moveAr:'',banAr:'',noteAr:'',place:'',props:[],pres:''},x,{dur:Math.max(2,Math.min(10,+x.dur||5)),descAr:x.descAr||(x.text?'':'')}))}
-function ezParse(){const v=($('ezPaste')||{}).value||'';if(!v.trim()){alert('الخانة فاضية — الصق رد الذكاء الاصطناعي الأول');return}
- let sh=ezParseTxt(v),alt=false;if(!sh.length){sh=ezParseLines(v);alt=true}
+function ezPasteSet(v){EZ.paste=v;try{localStorage.setItem('ez_paste',v)}catch(e){}try{svDb().then(d=>d.transaction('s','readwrite').objectStore('s').put(v,'paste')).catch(()=>{})}catch(e){}}
+function ezParse(add){const v=($('ezPaste')||{}).value||EZ.paste||'';if(!v.trim()){alert('الخانة فاضية — الصق رد الذكاء الاصطناعي الأول');return}
+ ezPasteSet(v);let sh=ezParseTxt(v),alt=false;if(!sh.length){sh=ezParseLines(v);alt=true}
+ if(!alt){const m=new Map();sh.forEach((x,i)=>{const k=(x._n||('i'+i))+'|'+(x.descAr||'')+'|'+(x.text||'');if(m.has(k))m.delete(k);m.set(k,x)});const dd=sh.length-m.size;sh=[...m.values()];if(dd)toast('🔁 شلت '+dd+' لقطة متكررة (اتلصقت مرتين)')}
+ sh.forEach(x=>delete x._n);
  EZ.pendMap=ezStageMap(v);EZ.pendLight=ezLight(v);
- if(!sh.length){alert('مش لاقي لقطات في النص.\nالرد لازم يكون بشكل «لقطة 1 | الشخصية | المدة» أو سطر لكل لقطة «الاسم: الحوار [dur=3]».\nانسخ «أمر السيناريو» تاني وابعته للذكاء الاصطناعي.');return}
- if(alt&&sh.some(x=>!(x.descAr||'').trim()))alert('⚠️ الرد ده مكتوب بالشكل المختصر (سطر لكل لقطة) ومن غير وصف «ماذا يحدث» لكل لقطة.\nحوّلته '+sh.length+' لقطة، بس الأحسن تبعت «أمر السيناريو» للذكاء الاصطناعي عشان يرجع بالشكل الكامل (لقطة 1 | ...) فيه الوصف والحركة.');EZ.pend=sh;ezRender();setTimeout(()=>{const e=$('ezPrev');if(e)e.scrollIntoView({block:'start'})},50)}
-function ezApply(){const sh=EZ.pend;if(!sh)return;try{localStorage.setItem('ez_undo',JSON.stringify(S.shots))}catch(e){}
- sh.forEach((s,i)=>{const o=S.shots[i];if(o&&o.uid&&o.cid===s.cid&&(o.descAr||'')===(s.descAr||'')){s.uid=o.uid;s.imgSt=o.imgSt||'';s.st=o.st;s.tries=o.tries}});
- S.shots=sh;if(EZ.pendMap){S.stageMapAr=EZ.pendMap;EZ.pendMap=''}if(EZ.pendLight){S.lightAr=EZ.pendLight;EZ.pendLight=''}EZ.pend=null;ensureUids();save();schedTr();toast('تم إنشاء '+sh.length+' لقطة ✓ — شوف «المراجع المطلوبة» في خطوة ١');ezRender()}
+ if(!sh.length){alert('مش لاقي لقطات في النص.\nالرد لازم يكون بشكل «لقطة 1 | الشخصية | المدة» أو سطر لكل لقطة «الاسم: الحوار [dur=3]».\nالنص اللي لصقته محفوظ في الخانة.');return}
+ if(alt&&sh.some(x=>!(x.descAr||'').trim()))alert('⚠️ الرد ده مكتوب بالشكل المختصر (سطر لكل لقطة) ومن غير وصف «ماذا يحدث» لكل لقطة.\nحوّلته '+sh.length+' لقطة، بس الأحسن تبعت «أمر السيناريو» للذكاء الاصطناعي عشان يرجع بالشكل الكامل (لقطة 1 | ...) فيه الوصف والحركة.');
+ EZ.pend=sh;EZ.pendAdd=!!add;ezApply()}
+function ezApply(){let sh=EZ.pend;if(!sh)return;try{localStorage.setItem('ez_undo',JSON.stringify(S.shots))}catch(e){}const add=EZ.pendAdd;EZ.pendAdd=false;const n0=add?S.shots.length:0;if(add)sh=S.shots.concat(sh);
+ sh.forEach((s,i)=>{if(i<n0)return;const o=S.shots[i];if(o&&o.uid&&o.cid===s.cid&&(o.descAr||'')===(s.descAr||'')){s.uid=o.uid;s.imgSt=o.imgSt||'';s.st=o.st;s.tries=o.tries}});
+ S.shots=sh;if(EZ.pendMap){S.stageMapAr=EZ.pendMap;EZ.pendMap=''}if(EZ.pendLight){S.lightAr=EZ.pendLight;EZ.pendLight=''}EZ.pend=null;ensureUids();save();try{svFlush()}catch(e){}schedTr();ezPasteSet('');toast((add?'تمت إضافة '+(sh.length-n0)+' لقطة — المجموع '+sh.length:'تم إنشاء '+sh.length+' لقطة')+' ✓ واتحفظت');ezRender()}
 async function ezNewScript(){if(!confirm('سيناريو جديد؟\nهيتمسح السيناريو واللقطات وصورها من الصفحة، وتفضل الشخصيات والأماكن.\nنسخة من القديم بتتحفظ في الأرشيف، وتقدر ترجّعها بـ «رجّع اللقطات القديمة».'))return;
  await clrArchive();try{localStorage.setItem('ez_undo',JSON.stringify(S.shots))}catch(e){}
  S.shots=[];EZ.pend=null;EZ.pendMap='';EZ.pendLight='';EZ.cur=0;S.stageMapAr='';S.lightAr='';S.fullScript='';S.dlgDraft='';S.raw='';
@@ -3726,8 +3731,9 @@ function ez2(){
  <div id="ezDurSug">${ezDurSugHTML()}</div>
  <button class="ezb bl" onclick="ezCopyReady()">📋 نسخ أمر تحويل السيناريو الجاهز لقطات</button></div>`)}
  <div class="ezc"><h4>🎬 رد الذكاء الاصطناعي (للطريقتين)</h4><div class="ezm">انسخ الأمر في Claude أو ChatGPT والصق الرد هنا.</div>
- <textarea id="ezPaste" data-fx="1" rows="4" placeholder="الصق رد الذكاء الاصطناعي هنا (لقطة 1 | ...)"></textarea>
- <button class="ezb g" onclick="ezParse()">✂️ حوّل الرد إلى لقطات</button>${(S.stageMapAr||'').trim()?`<label class="ezl">🗺️ خريطة المكان (ثابتة لكل الحلقة)</label><textarea data-fx="1" rows="2" onchange="S.stageMapAr=this.value;schedTr();save()">${esc(S.stageMapAr)}</textarea>`:''}${(S.lightAr||'').trim()?`<label class="ezl">💡 إضاءة الحلقة (ثابتة)</label><textarea data-fx="1" rows="2" onchange="S.lightAr=this.value;schedTr();save()">${esc(S.lightAr)}</textarea>`:''}${(()=>{try{return localStorage.getItem('ez_undo')?'<button class="ezb" onclick="ezUndo()">↩️ رجّع اللقطات القديمة</button>':''}catch(e){return ''}})()}</div>
+ <textarea id="ezPaste" data-fx="1" rows="6" placeholder="الصق رد الذكاء الاصطناعي هنا (لقطة 1 | ...) — أي طول، والنص بيتحفظ لوحده" oninput="ezPasteSet(this.value)">${esc(EZ.paste||'')}</textarea>
+ <div class="ezm" style="font-size:12px">${(EZ.paste||'').length?'💾 محفوظ: '+(EZ.paste||'').length+' حرف • '+((EZ.paste||'').match(new RegExp(EZHDR.source,'gim'))||[]).length+' لقطة في النص':''}</div>
+ <button class="ezb g" onclick="ezParse(0)">✂️ حوّل الرد إلى لقطات${S.shots.length?' (يستبدل الحالي)':''}</button>${S.shots.length?`<button class="ezb bl" onclick="ezParse(1)">➕ كمّل: ضيف الجزء ده بعد اللقطة ${S.shots.length}</button>`:''}${(S.stageMapAr||'').trim()?`<label class="ezl">🗺️ خريطة المكان (ثابتة لكل الحلقة)</label><textarea data-fx="1" rows="2" onchange="S.stageMapAr=this.value;schedTr();save()">${esc(S.stageMapAr)}</textarea>`:''}${(S.lightAr||'').trim()?`<label class="ezl">💡 إضاءة الحلقة (ثابتة)</label><textarea data-fx="1" rows="2" onchange="S.lightAr=this.value;schedTr();save()">${esc(S.lightAr)}</textarea>`:''}${(()=>{try{return localStorage.getItem('ez_undo')?'<button class="ezb" onclick="ezUndo()">↩️ رجّع اللقطات القديمة</button>':''}catch(e){return ''}})()}</div>
  ${ezPrevHTML()}${S.shots.length?ezCheckHTML()+ezTrHTML():''}
  <div class="ezm" style="margin-bottom:8px">${S.shots.length} لقطة • ${tot} ثانية${tg&&tot!==tg?` <span style="color:#fcd34d">(المطلوب ${tg})</span>`:''}${S.shots.length?' • اللقطة 1 هي الهوك':''}</div>`+
  S.shots.map((s,i)=>`<div class="ezc"><div class="ezh"><b>${i+1}</b><select onchange="ezSet(${i},'cid',this.value,1)">${ch(s)}</select><select onchange="ezSet(${i},'dur',this.value,1)">${du(s)}</select><select onchange="ezSet(${i},'emo',this.value)">${em(s)}</select>${(S.places||[]).length?`<select onchange="ezSet(${i},'place',this.value)"><option value="">📍 الأساسي</option>${S.places.map(p=>`<option value="${p.id}" ${s.place===p.id?'selected':''}>📍 ${esc(p.name||'مكان')}</option>`).join('')}</select>`:''}
