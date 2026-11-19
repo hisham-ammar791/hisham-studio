@@ -416,7 +416,7 @@ window.CORE.adv=(html,open)=>`<details ${open?'open':''} style="margin-top:8px;b
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();ev=e;const b=document.getElementById('instBtn');if(b){b.style.display='';b.title='ثبّت الاستوديو ده كتطبيق لوحده'}});
 document.addEventListener('click',async e=>{if(!e.target.closest('#instBtn'))return;
  if(ev){ev.prompt();const r=await ev.userChoice;if(r&&r.outcome==='accepted')C.toast('📲 اتثبت ✓ هتلاقيه على الشاشة الرئيسية');ev=null;e.target.closest('#instBtn').style.display='none'}
- else alert('من قايمة المتصفح (⋮) اختار «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».')});
+ else alert(matchMedia('(display-mode: standalone)').matches?'الاستوديو ده مفتوح كتطبيق بالفعل.':'افتح الصفحة دي من Chrome، ومن القايمة (⋮) اختار «تثبيت التطبيق».\nلو مش ظاهر: امسح أيقونة «الاستوديو» القديمة من الشاشة الرئيسية الأول، وبعدين جرّب تاني.')});
 window.addEventListener('appinstalled',()=>{const b=document.getElementById('instBtn');if(b)b.style.display='none'})})();
 
 /* ================= 🪝 نوع الهوك والمشاعر ================= */

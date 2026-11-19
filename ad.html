@@ -41,7 +41,7 @@ textarea{resize:vertical}
 </style>
 </head>
 <body>
-<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>📣 استوديو الإعلانات</h1><button class="b" id="instBtn" style="margin:0;display:none">📲</button><button class="b" data-a="hist" style="margin:0">🕘</button></header>
+<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>📣 استوديو الإعلانات</h1><button class="b" id="instBtn" style="margin:0">📲</button><button class="b" data-a="hist" style="margin:0">🕘</button></header>
 <nav id="nav"></nav>
 <main id="app"></main>
 <script src="core.js"></script>
@@ -233,6 +233,7 @@ CORE.work({presets:[{"name": "💊 إعلان صيدلية كوميدي — في
   if(!head&&!sh.length){alert('مش لاقي حاجة أطبقها');return false}
   if(head)P.script=head;if(sh.length){sh.forEach((x,k)=>{const o=P.shots[k];if(o){x.img=o.img;x.frame=o.frame;x.done=o.done}});P.shots=sh}
   st.save();return [head&&'الإعلان',sh.length&&sh.length+' لقطة'].filter(Boolean).join(' + ')}}});CORE.bindMusic(p,()=>st.save(),()=>MCTX());CORE.bindPub(p,()=>st.save(),render,()=>MCTX()+'\n'+shotsTxt().slice(0,2500));
+if(matchMedia('(display-mode: standalone)').matches){const ib=document.getElementById('instBtn');if(ib)ib.style.display='none'}
 st.snap('عند الفتح');render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
