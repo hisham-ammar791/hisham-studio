@@ -57,12 +57,13 @@ const G=()=>CORE.pick(CORE.GENRES,p().genre),L=()=>CORE.pick(CORE.LANGS,p().lang
 const visName=()=>(p().customVisual||'').trim()||V()[1];
 const visRules=()=>(p().customVisual||'').trim()?'التزم بالوصف المخصص حرفيًا':V()[3];
 const voiceTxt=()=>p().voice==='custom'?('يتقلد بصمة العينة دي:\n"""'+(p().customVoice||'')+'"""'):VO()[1]+': '+VO()[2];
-const singerLine=()=>{const s=(p().singer||'').trim();return s?'الشخصية/المقدم: '+s+'\n':''};
+const singerLine=()=>{const s=(p().singer||'').trim();return CORE.castTxt(p())+(s?'الشخصية/المقدم: '+s+'\n':'')};
+const MCTX=()=>{const P=p();return `إعلان ${kindName()}${P.bName?' لـ'+P.bName:''}، ${G()[1]}، مدته ${P.sec} ثانية.\n${(P.script||P.idea||'').slice(0,1500)}`};
 const kindName=()=>CORE.pick(KINDS,p().kind)[1].replace(/^\S+\s/,'');
 const brandTxt=()=>{const P=p();return [P.bName&&'البراند/المنتج: '+P.bName,P.bCat&&'الفئة: '+P.bCat,P.bAudience&&'الجمهور: '+P.bAudience,P.bOffer&&'العرض/السعر: '+P.bOffer,P.bIdentity&&'الهوية (ألوان، نبرة، شعار): '+P.bIdentity].filter(Boolean).join('\n')};
 const RULES=()=>p().health?'\nقواعد إعلان المنتجات الصحية (إلزامي): ممنوع ادعاء علاج أو شفاء أو نتائج مضمونة، وممنوع أرقام أو دراسات غير موجودة فعلًا، وممنوع قبل/بعد مضلل، وممنوع التخويف المبالغ. اكتب «استشر الصيدلي أو الطبيب» لو المنتج دواء أو مكمل. الصدق أولًا.':'';
 const STRUCT='الهيكل الإلزامي: (1) هوك في أول ثانيتين/أول سطر: لفظي + بصري + سمعي. (2) تضخيم ألم غياب المنتج بموقف حقيقي من حياة الجمهور. (3) الحل والتحول: المنتج وإزاي الحياة بتتغير. (4) بناء الثقة: دليل، تجربة، تفصيلة صادقة. (5) دعوة واضحة لإجراء واحد.';
-const base=()=>{const P=p();return `${brandTxt()}\nفكرة/زاوية الإعلان: ${P.idea.trim()||'اقترح أقوى زاوية'}\nالمنصة: ${CORE.pick(PLATS,P.platform)[1]}\nالنوع: ${G()[1]} (${G()[2]}).\nاللغة: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة: ${voiceTxt()}\n${STRUCT}${RULES()}\n${CORE.WRITING}`};
+const base=()=>{const P=p();return `${brandTxt()}\n${CORE.castTxt(P)}فكرة/زاوية الإعلان: ${P.idea.trim()||'اقترح أقوى زاوية'}\nالمنصة: ${CORE.pick(PLATS,P.platform)[1]}\nالنوع: ${G()[1]} (${G()[2]}).\nاللغة: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة: ${voiceTxt()}\n${STRUCT}${RULES()}\n${CORE.WRITING}`};
 
 const PR={
 write(){const P=p();if(!P.bName.trim()&&!P.idea.trim()){alert('اكتب اسم المنتج أو فكرة الإعلان الأول');return ''}
@@ -75,7 +76,7 @@ ab(){const P=p();return `أنت كاتب إعلانات عالمي. اكتب 3 �
 plats(){const P=p();if(!P.script.trim()){alert('الصق الإعلان الجاهز الأول');return ''}return `حوّل الإعلان ده لنسخ مخصصة لكل منصة: فيسبوك، إنستجرام (ريلز وبوست)، تيك توك، يوتيوب شورتس، حالة واتساب. لكل منصة: المدة أو الطول المناسب، والهوك المعدّل، والكابشن، والهاشتاجات، وملاحظة إخراج واحدة. حافظ على نفس الرسالة واللغة.${RULES()}\n\nالإعلان:\n"""\n${P.script.trim()}\n"""`},
 team(){const P=p();if(!P.script.trim()){alert('الصق الإعلان الجاهز الأول');return ''}return CORE.teamReview('إعلان '+kindName()+(P.health?' لمنتج صحي (افحص الالتزام بقواعده)':''),CORE.TEAM.ad,P.script.trim()+'\n\n'+brandTxt()+RULES())},
 design(){const P=p();return `أنت مصمم جرافيك ومخرج فني عالمي. اكتب أمر توليد صورة ${P.kind==='poster'?'البوستر':'الإعلان'} بالإنجليزي، مقاس ${P.aspect}، شكل: ${visName()} (${visRules()}).\n${brandTxt()}\nاستخدم ألوان وهوية البراند، ومساحة نظيفة للعنوان. لو المولّد بيغلط في الكتابة العربية: الصورة بدون نص، والنص يتضاف في تطبيق تصميم (اذكر أماكنه). ارجع بأمر واحد نهائي + سطر مكان كل نص.\n${P.script.trim()?'الإعلان:\n"""'+P.script.trim()+'"""':''}`},
-voiceDir(){const P=p();if(!P.script.trim()){alert('الصق الإعلان الجاهز الأول');return ''}return `أنت مخرج صوت ومعلّق عالمي. جهّز الإعلان ده للتسجيل باللهجة: ${L()[1]}.\nارجع بـ: (1) وصف صوت المعلق (السن، الطبقة، النبرة، السرعة) بالعربي وبالإنجليزي لتطبيقات توليد الصوت. (2) النص مقسم لجمل مع توجيه أداء لكل جملة [ضحكة] [وقفة] [همس] [حماس]، وتشكيل الكلمات اللي ممكن تتنطق غلط. (3) الموسيقى والمؤثرات وتوقيتها.\n\nالإعلان:\n"""\n${P.script.trim()}\n"""`},
+voiceDir(){const P=p();if(!P.script.trim()){alert('الصق الإعلان الجاهز الأول');return ''}return `أنت مخرج صوت ومعلّق عالمي. جهّز الإعلان ده للتسجيل باللهجة: ${L()[1]}.${CORE.castVoices(P)?'\nأصوات الشخصيات الثابتة (التزم بيها):\n'+CORE.castVoices(P):''}\nارجع بـ: (1) وصف صوت المعلق (السن، الطبقة، النبرة، السرعة) بالعربي وبالإنجليزي لتطبيقات توليد الصوت. (2) النص مقسم لجمل مع توجيه أداء لكل جملة [ضحكة] [وقفة] [همس] [حماس]، وتشكيل الكلمات اللي ممكن تتنطق غلط. (3) الموسيقى والمؤثرات وتوقيتها.\n\nالإعلان:\n"""\n${P.script.trim()}\n"""`},
 ctx(){const P=p();return `الشكل البصري: ${visName()} (${visRules()}).\n${singerLine()}المقاس: ${P.aspect}. مدة الإعلان: ${P.sec} ثانية.\n`},
 shots(k){const P=p(),n=CORE.partsN(P.sec,P.parts),[a,b]=CORE.partRange(P.sec,n,k);
  const fmt=`اكتب الناتج بالشكل ده بالظبط ومن غير أي كلام تاني:\nلقطة 1 | المدة بالثواني | الكلام المنطوق في اللقطة (أو بدون)\nالمشهد: وصف بصري محدد\nالكاميرا: واسعة أو متوسطة أو قريبة وحركتها\nالحركة: الحركة الوحيدة ومقدارها\nالإضاءة: المصدر والاتجاه والألوان\n\nلقطة 2 | ...`;
@@ -83,7 +84,7 @@ shots(k){const P=p(),n=CORE.partsN(P.sec,P.parts),[a,b]=CORE.partRange(P.sec,n,k
   return `أنت فريق محترف: ${CORE.TEAM.ad}. حوّل سكريبت الإعلان ده للقطات فيديو.\n${PR.ctx()}${brandTxt()}\nالسكريبت:\n"""\n${P.script.trim()}\n"""\n\nقواعد: اللقطة الأولى هي الهوك (أقوى صورة). كل لقطة 2 إلى 6 ثواني. المنتج يظهر واضح في لقطة الحل ولقطة الدعوة. ثبات الشخصية والمكان والمنتج بين اللقطات. ممنوع نصوص في الصورة (النص يتضاف في المونتاج). مجموع المدد = ${P.sec} ثانية.${RULES()}\n\n${fmt}`+(n>1?`\n\n⚠️ هنشتغل على ${n} أجزاء. اكتب الجزء 1 فقط: من 0 إلى ${b} ثانية، واكتب «تم الجزء 1 من ${n}» وانتظر «كمّل».`:'')}
  return `كمّل: اكتب الجزء ${k+1} من ${n} بنفس الصيغة والقواعد. من ${a} إلى ${b} ثانية. ابدأ من «لقطة ${P.shots.length+1}». ما تعيدش اللي فات. ${k===n-1?'ده آخر جزء: اختم بالدعوة للإجراء. ':''}اكتب «تم الجزء ${k+1} من ${n}».`},
 teamBoard(){const P=p();if(!P.shots.length){alert('مفيش لقطات');return ''}return CORE.teamReview('ستوري بورد إعلان',CORE.TEAM.ad,PR.ctx()+P.shots.map((s,i)=>`لقطة ${i+1} | ${s.dur}ث | ${s.lyric||'بدون'}\nالمشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}`).join('\n\n')+RULES())},
-shotP(i){const P=p(),s=P.shots[i];return `لقطة ${i+1} من ${P.shots.length} — المدة ${s.dur} ثانية — المقاس ${P.aspect}\nالشكل البصري: ${visName()} — ${visRules()}\n${singerLine()}${P.bName?'المنتج: '+P.bName+(P.bIdentity?' ('+P.bIdentity+')':'')+'\n':''}المشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}\n${s.lyric?'الكلام المنطوق: '+s.lyric+'\n':''}${i>0?'استمر من نفس الشخصية والمكان والمنتج والإضاءة اللي في اللقطة السابقة.\n':''}ممنوع: أي نصوص أو علامات مائية أو تغيير شكل المنتج أو الشخصية.`},
+shotP(i){const P=p(),s=P.shots[i],F=s.frame&&CORE.castFrames(P).find(f=>f.id===s.frame);return `${F?'مرجع الكادر المرفق: «'+F.name+'» (التزم بأماكن الشخصيات والمكان فيه)\n':''}لقطة ${i+1} من ${P.shots.length} — المدة ${s.dur} ثانية — المقاس ${P.aspect}\nالشكل البصري: ${visName()} — ${visRules()}\n${singerLine()}${P.bName?'المنتج: '+P.bName+(P.bIdentity?' ('+P.bIdentity+')':'')+'\n':''}المشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}\n${s.lyric?'الكلام المنطوق: '+s.lyric+'\n':''}${i>0?'استمر من نفس الشخصية والمكان والمنتج والإضاءة اللي في اللقطة السابقة.\n':''}ممنوع: أي نصوص أو علامات مائية أو تغيير شكل المنتج أو الشخصية.`},
 shotEn(i){return `ترجم أمر توليد الفيديو ده للإنجليزي بصيغة أمر احترافي لـ Google Flow، مع الحفاظ على كل التفاصيل والأرقام، واترك الكلام المنطوق بلغته الأصلية بين علامتي تنصيص. ارجع بالأمر فقط:\n"""\n${PR.shotP(i)}\n"""`}
 };
 
@@ -111,7 +112,7 @@ function s0(){const P=p();return `<div class="c"><h3>📣 نوع الإعلان<
  <label class="l">الهوية (ألوان، نبرة، شعار)</label><textarea data-f="bIdentity" rows="2">${esc(P.bIdentity)}</textarea>
  <label class="l" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-chk="health" ${P.health?'checked':''} style="width:auto"> منتج صحي أو دواء أو مكمل (يطبّق قواعد الإعلان الصحي)</label>
  <button class="b" data-a="saveBrand">💾 احفظ البراند</button>${P.brandSel!==''?`<button class="b r" data-a="delBrand">🗑️</button>`:''}</div>
- <div class="c"><h3>✍️ الفكرة والأسلوب</h3>
+ `+CORE.castCard(P)+`<div class="c"><h3>✍️ الفكرة والأسلوب</h3>
  <label class="l">الفكرة أو الزاوية (اختياري، الذكاء يقترح لو فاضية)</label><textarea data-f="idea" rows="3">${esc(P.idea)}</textarea>
  <div class="row"><div><label class="l">المنصة</label>${sel('platform',PLATS,P.platform)}</div><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div></div>
  <div class="row"><div><label class="l">اللغة</label>${sel('lang',CORE.LANGS,P.lang)}</div><div><label class="l">السخرية</label>${sel('satire',CORE.SATIRE,P.satire)}</div></div>
@@ -125,11 +126,11 @@ function s1(){const P=p(),n=CORE.partsN(P.sec,P.parts);
  if(P.kind==='video'){const sg=`<select data-f="singerId"><option value="">— اكتب بنفسك —</option>${OLD.chars.map(c=>`<option value="${esc(c.id)}"${c.id===P.singerId?' selected':''}>${esc(c.name)}</option>`).join('')}</select>`;
   return `<div class="c"><h3>🎬 تنفيذ الفيديو</h3>
   <div class="row"><div><label class="l">المقاس</label>${sel('aspect',ASPECTS,P.aspect)}</div><div><label class="l">المدة (ث)</label><input type="number" data-f="sec" value="${esc(P.sec)}"></div></div>
-  <label class="l">الشخصية أو المقدم (من شخصياتك)</label>${OLD.chars.length?sg:''}<textarea data-f="singer" rows="2" placeholder="الشكل الثابت">${esc(P.singer)}</textarea>
+  <label class="l">شخصية إضافية (اختياري، الأساسي من «الشخصيات» في خطوة ①)</label><textarea data-f="singer" rows="2" placeholder="الشكل الثابت">${esc(P.singer)}</textarea>
   <label class="l">عدد الأجزاء</label>${sel('parts',[['auto','تلقائي ('+n+')'],['1','بدون تقسيم'],['2','2'],['3','3'],['4','4']],String(P.parts))}
   ${Array.from({length:n},(_,k)=>{const [a,b]=CORE.partRange(P.sec,n,k);return pair('shots:'+k,n>1?`الجزء ${k+1}/${n} (${a}–${b} ث)`:'أمر تقسيم الإعلان لقطات')}).join('')}
-  <div class="m">انقل الرد لخطوة ③.</div>${pair('design','أمر صورة الغلاف/الثمبنيل')}${pair('voiceDir','تجهيز التعليق الصوتي')}</div>`}
- if(P.kind==='audio')return `<div class="c"><h3>🔊 تنفيذ الصوتي</h3><div class="m">جهّز التسجيل، وولّد الصوت في التطبيق اللي تختاره.</div>${pair('voiceDir','توجيه المعلق + النص المشكول + المؤثرات')}${pair('plats','نسخ لكل منصة')}</div>`;
+  <div class="m">انقل الرد لخطوة ③.</div>${pair('design','أمر صورة الغلاف/الثمبنيل')}${pair('voiceDir','تجهيز التعليق الصوتي')}</div>`+CORE.musicCard(P)}
+ if(P.kind==='audio')return `<div class="c"><h3>🔊 تنفيذ الصوتي</h3><div class="m">جهّز التسجيل، وولّد الصوت في التطبيق اللي تختاره.</div>${pair('voiceDir','توجيه المعلق + النص المشكول + المؤثرات')}${pair('plats','نسخ لكل منصة')}</div>`+CORE.musicCard(P);
  return `<div class="c"><h3>🖼️ تنفيذ ${P.kind==='poster'?'البوستر':'البوست'}</h3>
  <label class="l">المقاس</label>${sel('aspect',ASPECTS,P.aspect)}
  <label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}<input data-f="customVisual" placeholder="أو شكل مخصص" value="${esc(P.customVisual)}" style="margin-top:6px">
@@ -139,7 +140,7 @@ function shotCard(s,i){const P=p();return `<div class="shot${s.done?' done':''}"
  <label class="l">المشهد</label><textarea rows="3" data-si="${i}" data-sf="desc">${esc(s.desc)}</textarea>
  <div class="row"><div><label class="l">الكاميرا</label><input data-si="${i}" data-sf="cam" value="${esc(s.cam)}"></div><div><label class="l">الحركة</label><input data-si="${i}" data-sf="move" value="${esc(s.move)}"></div></div>
  <label class="l">الإضاءة</label><input data-si="${i}" data-sf="light" value="${esc(s.light)}">
- ${s.img?`<img src="${s.img}" alt="">`:''}
+ ${CORE.castFrames(P).length?`<label class="l">🖼️ مرجع الكادر</label><select data-si="${i}" data-sf="frame"><option value="">—</option>${CORE.castFrames(P).map(f=>`<option value="${f.id}"${f.id===s.frame?' selected':''}>${esc(f.name)}</option>`).join('')}</select>`:''}${s.img?`<img src="${s.img}" alt="">`:(s.frame&&CORE.frameImg(s.frame)?`<img src="${CORE.frameImg(s.frame)}" alt="" style="opacity:.8">`:'')}
  <div><label class="b" style="display:inline-block">🖼️ ${s.img?'غيّر':'ارفع'} صورة البداية<input type="file" accept="image/*" data-img="${i}" hidden></label>
  <button class="b${s.done?' on':''}" data-a="done" data-i="${i}">✓ ${s.done?'اتنفذت':'تمت'}</button></div>
  ${pair('shotP:'+i,'أمر اللقطة')}<button class="b" data-a="shotEn" data-i="${i}">🌐 أمر ترجمة للإنجليزي</button></div>`}
@@ -147,7 +148,7 @@ function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
  if(P.sendMode&&P.shots.length){const i=Math.min(P.sendIdx,P.shots.length-1),s=P.shots[i];
   return `<div class="c"><div class="hd"><b>▶ وضع الإرسال لـ Flow: لقطة ${i+1} من ${P.shots.length}</b><button class="b" data-a="exitSend" style="margin:0">خروج</button></div>
   <div class="m">1) شارك الصورة  2) انسخ الأمر  3) تمت ✓</div>
-  ${s.img?`<img src="${s.img}" style="max-width:100%;border-radius:10px;margin-top:8px">`:'<div class="m">مفيش صورة بداية للقطة دي (ارفعها من القايمة لو محتاجها).</div>'}
+  ${(s.img||CORE.frameImg(s.frame))?`<img src="${s.img||CORE.frameImg(s.frame)}" style="max-width:100%;border-radius:10px;margin-top:8px">`:'<div class="m">مفيش صورة بداية للقطة دي (ارفعها أو اختار مرجع كادر).</div>'}
   <button class="b bl" data-a="shareImg" data-i="${i}" style="width:100%">📤 شارك الصورة</button>
   <button class="b bl" data-a="shotP:${i}" style="width:100%">📋 انسخ الأمر</button>
   <button class="b g" data-a="nextSend" style="width:100%">✓ تمت والتالي</button>
@@ -184,13 +185,14 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='send'){P.sendMode=true;P.sendIdx=0;st.save();render();return}
  if(a==='exitSend'){P.sendMode=false;st.save();render();return}
  if(a==='nextSend'){if(P.shots[P.sendIdx])P.shots[P.sendIdx].done=true;if(P.sendIdx<P.shots.length-1)P.sendIdx++;else{P.sendMode=false;toast('خلصت كل اللقطات 🎉')}st.save();render();return}
- if(a==='shareImg'){const s=P.shots[i];if(s&&s.img)CORE.shareImage(s.img,'shot'+(i+1)+'.jpg');else toast('مفيش صورة');return}
+ if(a==='shareImg'){const s=P.shots[i],im=s&&(s.img||CORE.frameImg(s.frame));if(im)CORE.shareImage(im,'shot'+(i+1)+'.jpg');else toast('مفيش صورة');return}
  if(a==='done'){P.shots[i].done=!P.shots[i].done;st.save();render();return}
  if(a==='del'){if(confirm('تمسح اللقطة '+(i+1)+'؟')){st.snap('قبل حذف لقطة',true);P.shots.splice(i,1);st.save();render()}return}
  if(a==='up'||a==='dn'){const j=a==='up'?i-1:i+1;if(j<0||j>=P.shots.length)return;[P.shots[i],P.shots[j]]=[P.shots[j],P.shots[i]];st.save();render();return}
  if(a==='shotEn'){CORE.copy(PR.shotEn(i),'اتنسخ أمر الترجمة ✓ الصقه في أي تطبيق ذكاء');return}
  const send=a.endsWith('!');if(send)a=a.slice(0,-1);const [fn,arg]=a.split(':');if(!PR[fn])return;
  const txt=PR[fn](arg===undefined?undefined:+arg);if(!txt)return;st.snap('قبل '+fn);if(send)CORE.send(txt);else CORE.copy(txt,'تم النسخ ✓')});
+CORE.bindCast(p,()=>st.save(),render);CORE.bindMusic(p,()=>st.save(),()=>MCTX());
 st.snap('عند الفتح');render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>

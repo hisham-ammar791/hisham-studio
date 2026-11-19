@@ -55,7 +55,8 @@ const G=()=>CORE.pick(CORE.GENRES,p().genre),L=()=>CORE.pick(CORE.LANGS,p().lang
 const visName=()=>(p().customVisual||'').trim()||V()[1];
 const visRules=()=>(p().customVisual||'').trim()?'التزم بالوصف المخصص حرفيًا':V()[3];
 const voiceTxt=()=>p().voice==='custom'?('يتقلد بصمة العينة دي (إيقاعها ومفرداتها وطول جملها):\n"""'+(p().customVoice||'')+'"""'):VO()[1]+': '+VO()[2];
-const singerLine=()=>{const s=(p().singer||'').trim();return s?'المغني/البطل: '+s+'\n':''};
+const singerLine=()=>{const s=(p().singer||'').trim();return CORE.castTxt(p())+(s?'المغني/البطل: '+s+'\n':'')};
+const MCTX=()=>{const P=p();return `أغنية${P.title?' «'+P.title+'»':''}، ${G()[1]}، مدتها ${P.sec} ثانية.\n${(P.lyrics||P.idea||'').slice(0,1500)}`};
 
 /* ---------- الأوامر ---------- */
 const PR={
@@ -79,7 +80,7 @@ timing(){const P=p();if(!P.lyrics.trim()){alert('الصق الكلمات الأ�
 typo(){return `أنت مصمم موشن جرافيك عالمي. اقترح شكل الكلمات على صورة أغنية (${visName()}، ${G()[1]}): الخط (عربي مناسب)، الحجم، اللون والظل، مكانها على الصورة، وطريقة ظهورها وخروجها (تُكتب، تنبض مع الإيقاع، تدخل من جنب)، وتغيير الشكل في المذهب. ارجع بحل واحد قاطع وتعليمات تنفيذه في تطبيق مونتاج مثل CapCut.`},
 teamClip(){const P=p();return CORE.teamReview('فكرة كليب',CORE.TEAM.song,`${PR.ctx()}النوع: ${CLIPS.find(c=>c[0]===P.clip)[1]}\nالكلمات:\n${P.lyrics.trim()||P.idea.trim()}`)},
 teamBoard(){const P=p();if(!P.shots.length){alert('مفيش لقطات');return ''}return CORE.teamReview('ستوري بورد كليب',CORE.TEAM.song,PR.ctx()+P.shots.map((s,i)=>`لقطة ${i+1} | ${s.dur}ث | ${s.lyric||'بدون'}\nالمشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}`).join('\n\n'))},
-shotP(i){const P=p(),s=P.shots[i];return `لقطة ${i+1} من ${P.shots.length} — المدة ${s.dur} ثانية — المقاس ${P.aspect}\nالشكل البصري: ${visName()} — ${visRules()}\n${singerLine()}المشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}\n${s.lyric?'الكلمات المغناة في اللقطة: '+s.lyric+'\n':''}${i>0?'استمر من نفس الشخصية والمكان والإضاءة اللي في اللقطة السابقة بالظبط.\n':''}ممنوع: أي نصوص أو علامات مائية أو تغيير في شكل الشخصية.`},
+shotP(i){const P=p(),s=P.shots[i],F=s.frame&&CORE.castFrames(P).find(f=>f.id===s.frame);return `${F?'مرجع الكادر المرفق: «'+F.name+'» (التزم بأماكن الشخصيات والمكان فيه)\n':''}لقطة ${i+1} من ${P.shots.length} — المدة ${s.dur} ثانية — المقاس ${P.aspect}\nالشكل البصري: ${visName()} — ${visRules()}\n${singerLine()}المشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}\n${s.lyric?'الكلمات المغناة في اللقطة: '+s.lyric+'\n':''}${i>0?'استمر من نفس الشخصية والمكان والإضاءة اللي في اللقطة السابقة بالظبط.\n':''}ممنوع: أي نصوص أو علامات مائية أو تغيير في شكل الشخصية.`},
 shotEn(i){return `ترجم أمر توليد الفيديو ده للإنجليزي بصيغة أمر احترافي لـ Google Flow، مع الحفاظ على كل التفاصيل والأرقام. ارجع بالأمر فقط:\n"""\n${PR.shotP(i)}\n"""`}
 };
 
@@ -97,7 +98,7 @@ function parseShots(t){const re=new RegExp(HDR.source,'gim'),idx=[];let m;while(
 /* ---------- العرض ---------- */
 function sel(f,list,v){return `<select data-f="${f}">${CORE.opts(list,v)}</select>`}
 function pair(a,label){return `<div class="pair"><button class="b bl" data-a="${a}">📋 ${label}</button><button class="b" data-a="${a}!" title="أرسل لتطبيق">📤</button></div>`}
-function s0(){const P=p();return `<div class="c"><h3>🎼 الأغنية</h3>
+function s0(){const P=p();return CORE.castCard(P)+`<div class="c"><h3>🎼 الأغنية</h3>
  <label class="l">اسم الأغنية (اختياري)</label><input data-f="title" value="${esc(P.title)}">
  <label class="l">الفكرة أو الموضوع</label><textarea data-f="idea" rows="4">${esc(P.idea)}</textarea>
  <div class="row"><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div><div><label class="l">لغة الكلمات</label>${sel('lang',CORE.LANGS,P.lang)}</div></div>
@@ -115,7 +116,7 @@ function s1(){const P=p(),n=CORE.partsN(P.sec,P.parts),lyric=P.clip==='lyric';
  <label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}
  <label class="l">أو شكل مخصص (اختياري، يغلب الاختيار فوق)</label><input data-f="customVisual" placeholder="مثال: نفس شكل كورفو ولوتا" value="${esc(P.customVisual)}">
  <div class="row"><div><label class="l">المقاس</label>${sel('aspect',ASPECTS,P.aspect)}</div><div><label class="l">مدة الأغنية (ث)</label><input type="number" data-f="sec" value="${esc(P.sec)}"></div></div>
- <label class="l">المغني أو البطل (من شخصياتك المحفوظة)</label>${OLD.chars.length?sg:''}
+ <label class="l">المغني أو البطل (علّمه في «الشخصيات» في خطوة ①، أو اكتب هنا)</label>
  <textarea data-f="singer" rows="2" placeholder="الشكل الثابت: ملامحه وملابسه">${esc(P.singer)}</textarea></div>
  <div class="c"><h3>${lyric?'🖼️ أوامر الصورة المتحركة':'✂️ تقسيم الكليب للقطات'}</h3>
  ${lyric?`${pair('cover','أمر صورة الغلاف')}${pair('anim','أمر تحريك الصورة')}
@@ -124,13 +125,13 @@ function s1(){const P=p(),n=CORE.partsN(P.sec,P.parts),lyric=P.clip==='lyric';
  :`<label class="l">عدد الأجزاء (للأغاني الطويلة)</label>${sel('parts',[['auto','تلقائي ('+n+')'],['1','بدون تقسيم'],['2','2'],['3','3'],['4','4'],['5','5'],['6','6']],String(P.parts))}
    ${Array.from({length:n},(_,k)=>{const [a,b]=CORE.partRange(P.sec,n,k);return pair('shots:'+k,n>1?`الجزء ${k+1}/${n} (${a}–${b} ث)`:'أمر تقسيم الكليب لقطات')}).join('')}
    <div class="m">${n>1?'الصق الجزء 1 في الذكاء الاصطناعي، وانقل رده لخطوة ③، وبعدها الجزء اللي بعده في نفس الشات وكمّل بزر «➕ كمّل».':'الصق الأمر، وانقل الرد لخطوة ③.'}</div>`}
- ${pair('teamClip','راجع فكرة الكليب بالفريق')}</div>`}
+ ${pair('teamClip','راجع فكرة الكليب بالفريق')}</div>`+CORE.musicCard(P)}
 function shotCard(s,i){const P=p();return `<div class="shot${s.done?' done':''}"><div class="hd"><b>لقطة ${i+1}</b><span class="tag">${s.dur}ث</span><button class="b" data-a="up" data-i="${i}" style="margin:0">⬆️</button><button class="b" data-a="dn" data-i="${i}" style="margin:0">⬇️</button><button class="b r" data-a="del" data-i="${i}" style="margin:0">🗑️</button></div>
  <div class="row"><div><label class="l">المدة</label><input type="number" data-si="${i}" data-sf="dur" value="${esc(s.dur)}"></div><div style="flex:3"><label class="l">الكلمات</label><input data-si="${i}" data-sf="lyric" value="${esc(s.lyric)}"></div></div>
  <label class="l">المشهد</label><textarea rows="3" data-si="${i}" data-sf="desc">${esc(s.desc)}</textarea>
  <div class="row"><div><label class="l">الكاميرا</label><input data-si="${i}" data-sf="cam" value="${esc(s.cam)}"></div><div><label class="l">الحركة</label><input data-si="${i}" data-sf="move" value="${esc(s.move)}"></div></div>
  <label class="l">الإضاءة</label><input data-si="${i}" data-sf="light" value="${esc(s.light)}">
- ${s.img?`<img src="${s.img}" alt="">`:''}
+ ${CORE.castFrames(P).length?`<label class="l">🖼️ مرجع الكادر</label><select data-si="${i}" data-sf="frame"><option value="">—</option>${CORE.castFrames(P).map(f=>`<option value="${f.id}"${f.id===s.frame?' selected':''}>${esc(f.name)}</option>`).join('')}</select>`:''}${s.img?`<img src="${s.img}" alt="">`:(s.frame&&CORE.frameImg(s.frame)?`<img src="${CORE.frameImg(s.frame)}" alt="" style="opacity:.8">`:'')}
  <div><label class="b" style="display:inline-block">🖼️ ${s.img?'غيّر':'ارفع'} صورة البداية<input type="file" accept="image/*" data-img="${i}" hidden></label>
  <button class="b${s.done?' on':''}" data-a="done" data-i="${i}">✓ ${s.done?'اتنفذت':'تمت'}</button></div>
  ${pair('shotP:'+i,'أمر اللقطة')}<button class="b" data-a="shotEn" data-i="${i}">🌐 أمر ترجمة للإنجليزي</button></div>`}
@@ -138,7 +139,7 @@ function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
  if(P.sendMode&&P.shots.length){const i=Math.min(P.sendIdx,P.shots.length-1),s=P.shots[i];
   return `<div class="c"><div class="hd"><b>▶ وضع الإرسال لـ Flow: لقطة ${i+1} من ${P.shots.length}</b><button class="b" data-a="exitSend" style="margin:0">خروج</button></div>
   <div class="m">1) شارك الصورة  2) انسخ الأمر  3) تمت ✓</div>
-  ${s.img?`<img src="${s.img}" style="max-width:100%;border-radius:10px;margin-top:8px">`:'<div class="m">مفيش صورة بداية للقطة دي (ارفعها من القايمة لو محتاجها).</div>'}
+  ${(s.img||CORE.frameImg(s.frame))?`<img src="${s.img||CORE.frameImg(s.frame)}" style="max-width:100%;border-radius:10px;margin-top:8px">`:'<div class="m">مفيش صورة بداية للقطة دي (ارفعها أو اختار مرجع كادر).</div>'}
   <button class="b bl" data-a="shareImg" data-i="${i}" style="width:100%">📤 شارك الصورة</button>
   <button class="b bl" data-a="shotP:${i}" style="width:100%">📋 انسخ الأمر</button>
   <button class="b g" data-a="nextSend" style="width:100%">✓ تمت والتالي</button>
@@ -171,13 +172,14 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='send'){P.sendMode=true;P.sendIdx=0;st.save();render();return}
  if(a==='exitSend'){P.sendMode=false;st.save();render();return}
  if(a==='nextSend'){if(P.shots[P.sendIdx])P.shots[P.sendIdx].done=true;if(P.sendIdx<P.shots.length-1)P.sendIdx++;else{P.sendMode=false;toast('خلصت كل اللقطات 🎉')}st.save();render();return}
- if(a==='shareImg'){const s=P.shots[i];if(s&&s.img)CORE.shareImage(s.img,'shot'+(i+1)+'.jpg');else toast('مفيش صورة');return}
+ if(a==='shareImg'){const s=P.shots[i],im=s&&(s.img||CORE.frameImg(s.frame));if(im)CORE.shareImage(im,'shot'+(i+1)+'.jpg');else toast('مفيش صورة');return}
  if(a==='done'){P.shots[i].done=!P.shots[i].done;st.save();render();return}
  if(a==='del'){if(confirm('تمسح اللقطة '+(i+1)+'؟')){st.snap('قبل حذف لقطة',true);P.shots.splice(i,1);st.save();render()}return}
  if(a==='up'||a==='dn'){const j=a==='up'?i-1:i+1;if(j<0||j>=P.shots.length)return;[P.shots[i],P.shots[j]]=[P.shots[j],P.shots[i]];st.save();render();return}
  if(a==='shotEn'){CORE.copy(PR.shotEn(i),'اتنسخ أمر الترجمة ✓ الصقه في أي تطبيق ذكاء');return}
  const send=a.endsWith('!');if(send)a=a.slice(0,-1);const [fn,arg]=a.split(':');if(!PR[fn])return;
  const txt=PR[fn](arg===undefined?undefined:+arg);if(!txt)return;st.snap('قبل '+fn);if(send)CORE.send(txt);else CORE.copy(txt,'تم النسخ ✓')});
+CORE.bindCast(p,()=>st.save(),render);CORE.bindMusic(p,()=>st.save(),()=>MCTX());
 st.snap('عند الفتح');render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>

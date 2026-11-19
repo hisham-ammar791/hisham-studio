@@ -55,9 +55,10 @@ const G=()=>CORE.pick(CORE.GENRES,p().genre),L=()=>CORE.pick(CORE.LANGS,p().lang
 const visName=()=>(p().customVisual||'').trim()||V()[1];
 const visRules=()=>(p().customVisual||'').trim()?'التزم بالوصف المخصص حرفيًا':V()[3];
 const voiceTxt=()=>p().voice==='custom'?('يتقلد بصمة العينة دي:\n"""'+(p().customVoice||'')+'"""'):VO()[1]+': '+VO()[2];
-const chars=()=>OLD.chars.filter(c=>p().charIds.includes(c.id));
-const castTxt=()=>{const a=chars().map(c=>'- '+c.name+': '+(c.ar||'')+((c.voiceAr||'').trim()?' | الصوت: '+c.voiceAr.trim():'')),x=(p().singer||'').trim();return (a.length||x)?'الشخصيات (شكلها وصوتها ثابتين في كل لقطة):\n'+a.join('\n')+(x?'\n'+x:'')+'\n':''};
+const castTxt=()=>{const x=(p().singer||'').trim();return CORE.castTxt(p())+(x?'شخصيات إضافية:\n'+x+'\n':'')};
+const _oldCast=()=>{const a=chars().map(c=>'- '+c.name+': '+(c.ar||'')+((c.voiceAr||'').trim()?' | الصوت: '+c.voiceAr.trim():'')),x=(p().singer||'').trim();return (a.length||x)?'الشخصيات (شكلها وصوتها ثابتين في كل لقطة):\n'+a.join('\n')+(x?'\n'+x:'')+'\n':''};
 const singerLine=()=>castTxt();
+const MCTX=()=>{const P=p();return `${CORE.pick(FORMS,P.form)[1]}${P.series?' من مسلسل «'+P.series+'»':''}، ${G()[1]}، مدته ${P.sec} ثانية.\n${(P.script||P.idea||'').slice(0,1500)}`};
 const memTxt=()=>{const P=p();if(P.form!=='episode')return '';return (P.series?'المسلسل: '+P.series+'\n':'')+(P.bible.trim()?'عالم المسلسل وقواعده:\n'+P.bible.trim()+'\n':'')+(P.eps.length?'ملخص الحلقات السابقة (التزم بالاستمرارية ولا تكرر نفس النكتة أو الحبكة):\n'+P.eps.map((e,i)=>'حلقة '+(i+1)+': '+e).join('\n')+'\n':'')};
 const base=()=>{const P=p();return `${memTxt()}${castTxt()}${P.place.trim()?'المكان: '+P.place.trim()+'\n':''}الشكل: ${CORE.pick(FORMS,P.form)[1]}، مدته ${P.sec} ثانية، مقاس ${P.aspect}.\nالنوع: ${G()[1]} (${G()[2]}).\nالشكل البصري: ${visName()} (${visRules()}).\nلغة الحوار والراوي: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة: ${voiceTxt()}\n${CORE.WRITING}`};
 const PR={
@@ -74,7 +75,7 @@ shots(k){const P=p(),n=CORE.partsN(P.sec,P.parts),[a,b]=CORE.partRange(P.sec,n,k
  return `كمّل: اكتب الجزء ${k+1} من ${n} بنفس الصيغة والقواعد. من ${a} إلى ${b} ثانية. ابدأ من «لقطة ${P.shots.length+1}». ما تعيدش اللي فات. ${k===n-1?'ده آخر جزء: اختم القصة بوضوح. ':''}اكتب «تم الجزء ${k+1} من ${n}».`+(P.shots.length?'\n\nملخص اللي اتكتب (للسياق فقط):\n'+P.shots.map((s,i)=>(i+1)+') '+(s.desc||'').slice(0,80)).join('\n'):'')},
 reels(){const P=p();if(!P.shots.length){alert('مفيش لقطات');return ''}return `أنت مونتير ومخطط محتوى. قسّم اللقطات دي لريلز مستقلة بالترتيب من غير إعادة ترتيب. العدد تحدده القصة. كل ريل لازم يكون: هوك، ثم مشكلة، ثم تصاعد، ثم قفلة كوميدية أو مشوّقة، ومدته بين 15 و60 ثانية. لكل ريل: أرقام اللقطات، والعنوان، والهوك المكتوب على الشاشة، والكابشن. اللقطة اللي مش هتشتغل لوحدها قول إزاي تتلحم.\n\n`+P.shots.map((s,i)=>`لقطة ${i+1} | ${s.dur}ث | ${s.lyric||'بدون'} | ${s.desc}`).join('\n')},
 teamBoard(){const P=p();if(!P.shots.length){alert('مفيش لقطات');return ''}return CORE.teamReview('ستوري بورد',CORE.TEAM.film,PR.ctx()+P.shots.map((s,i)=>`لقطة ${i+1} | ${s.dur}ث | ${s.lyric||'بدون'}\nالمشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}`).join('\n\n'))},
-shotP(i){const P=p(),s=P.shots[i];return `لقطة ${i+1} من ${P.shots.length} — المدة ${s.dur} ثانية — المقاس ${P.aspect}\nالشكل البصري: ${visName()} — ${visRules()}\n${castTxt()}${P.place.trim()?'المكان: '+P.place.trim()+'\n':''}المشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}\n${s.lyric?'الحوار: '+s.lyric+' (حركة الفم مطابقة للكلام، والمستمع بيتفاعل بشكل طبيعي)\n':'بدون كلام.\n'}${i>0?'استمر من نفس الشخصيات والملابس والمكان والإضاءة اللي في آخر كادر من اللقطة السابقة.\n':''}الصوت: كل شخصية بصوتها الثابت بدون تغيير.\nممنوع: نصوص، علامات مائية، تغيير شكل أو ملابس أي شخصية.`},
+shotP(i){const P=p(),s=P.shots[i],F=s.frame&&CORE.castFrames(P).find(f=>f.id===s.frame);return `${F?'مرجع الكادر المرفق: «'+F.name+'» (التزم بأماكن الشخصيات والمكان فيه)\n':''}لقطة ${i+1} من ${P.shots.length} — المدة ${s.dur} ثانية — المقاس ${P.aspect}\nالشكل البصري: ${visName()} — ${visRules()}\n${castTxt()}${P.place.trim()?'المكان: '+P.place.trim()+'\n':''}المشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}\n${s.lyric?'الحوار: '+s.lyric+' (حركة الفم مطابقة للكلام، والمستمع بيتفاعل بشكل طبيعي)\n':'بدون كلام.\n'}${i>0?'استمر من نفس الشخصيات والملابس والمكان والإضاءة اللي في آخر كادر من اللقطة السابقة.\n':''}الصوت: كل شخصية بصوتها الثابت بدون تغيير.\nممنوع: نصوص، علامات مائية، تغيير شكل أو ملابس أي شخصية.`},
 check(i){return `أنت مشرف جودة وراكور في فيلم عالمي. هرفق لك صورة/كادر اللقطة ${i+1}. قارنها بالوصف ده وبشكل الشخصيات الثابت، وافحص بعمق: الشخصيات والملامح والملابس، العدد، المكان، الوضع والنظرة، الأيدي والأصابع، الخلفية، الإضاءة، والأسلوب البصري. ارجع بحكم واحد قاطع: «مقبولة» أو «أعد التوليد»، وسبب في سطر، وتعليمة تعديل واحدة جاهزة للصق في المولّد. بدون خيارات.\n\nالوصف:\n"""\n${PR.shotP(i)}\n"""`},
 shotEn(i){return `ترجم أمر توليد الفيديو ده للإنجليزي بصيغة أمر احترافي لـ Google Flow، مع الحفاظ على كل التفاصيل، واترك الحوار المنطوق بلغته الأصلية بين علامتي تنصيص. ارجع بالأمر فقط:\n"""\n${PR.shotP(i)}\n"""`}
 };
@@ -98,9 +99,7 @@ function s0(){const P=p(),ep=P.form==='episode';return `<div class="c"><h3>🎬 
  ${ep?`<div class="c"><h3>🧠 ذاكرة المسلسل</h3><label class="l">اسم المسلسل</label><input data-f="series" value="${esc(P.series)}">
  <label class="l">عالم المسلسل وقواعده (ثابت)</label><textarea data-f="bible" rows="3">${esc(P.bible)}</textarea>
  <div class="m">${P.eps.length?P.eps.map((e,i)=>`<div style="display:flex;gap:6px;align-items:center;margin-top:4px"><span style="flex:1">حلقة ${i+1}: ${esc(e.slice(0,90))}</span><button class="b r" data-a="delEp" data-i="${i}" style="margin:0">🗑️</button></div>`).join(''):'لسه مفيش حلقات محفوظة.'}</div></div>`:''}
- <div class="c"><h3>👥 الشخصيات والمكان</h3>${OLD.chars.length?`<div class="m">من شخصياتك المحفوظة:</div>`+OLD.chars.map(c=>`<label class="l" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-ch="${esc(c.id)}" ${P.charIds.includes(c.id)?'checked':''} style="width:auto">${esc(c.name)}</label>`).join(''):'<div class="m">مفيش شخصيات محفوظة في الاستوديو القديم.</div>'}
- <label class="l">شخصيات إضافية (الاسم: الشكل الثابت)</label><textarea data-f="singer" rows="2">${esc(P.singer)}</textarea>
- <label class="l">المكان الأساسي</label>${OLD.places.length?`<select data-f="placeSel"><option value="">— اختار مكان محفوظ —</option>${OLD.places.map((x,i)=>`<option value="${i}">${esc(x.name||'')}</option>`).join('')}</select>`:''}<textarea data-f="place" rows="2" style="margin-top:6px">${esc(P.place)}</textarea></div>
+ `+CORE.castCard(P)+`<div class="c"><label class="l">شخصيات إضافية مؤقتة (الاسم: الشكل)</label><textarea data-f="singer" rows="2">${esc(P.singer)}</textarea></div>
  <div class="c"><h3>💡 الفكرة والأسلوب</h3><textarea data-f="idea" rows="4" placeholder="الفكرة أو الموضوع">${esc(P.idea)}</textarea>
  <div class="row"><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div><div><label class="l">الشكل البصري</label>${sel('visual',VISL,P.visual)}</div></div>
  <input data-f="customVisual" placeholder="أو شكل مخصص (اختياري)" value="${esc(P.customVisual)}" style="margin-top:6px">
@@ -113,13 +112,13 @@ function s1(){const P=p(),n=CORE.partsN(P.sec,P.parts);return `<div class="c"><h
  <label class="l">عدد الأجزاء</label>${sel('parts',[['auto','تلقائي ('+n+')'],['1','بدون تقسيم'],['2','2'],['3','3'],['4','4'],['5','5'],['6','6'],['8','8']],String(P.parts))}
  ${Array.from({length:n},(_,k)=>{const [a,b]=CORE.partRange(P.sec,n,k);return pair('shots:'+k,n>1?`الجزء ${k+1}/${n} (${a}–${b} ث)`:'أمر تقسيم السيناريو لقطات')}).join('')}
  <div class="m">${n>1?'كل جزء في نفس الشات بالترتيب، وانقل كل رد لخطوة ③ («حوّل» للأول، و«➕ كمّل» للباقي).':'انقل الرد لخطوة ③.'}</div></div>
- <div class="c"><h3>🎞️ ريلز من الحلقة</h3><div class="m">بعد ما اللقطات تتعمل: تقسيم لريلز مستقلة بالترتيب.</div>${pair('reels','أمر تقسيم الريلز')}</div>`}
+ <div class="c"><h3>🎞️ ريلز من الحلقة</h3><div class="m">بعد ما اللقطات تتعمل: تقسيم لريلز مستقلة بالترتيب.</div>${pair('reels','أمر تقسيم الريلز')}</div>`+CORE.musicCard(P)}
 function shotCard(s,i){const P=p();return `<div class="shot${s.done?' done':''}"><div class="hd"><b>لقطة ${i+1}</b><span class="tag">${s.dur}ث</span><button class="b" data-a="up" data-i="${i}" style="margin:0">⬆️</button><button class="b" data-a="dn" data-i="${i}" style="margin:0">⬇️</button><button class="b r" data-a="del" data-i="${i}" style="margin:0">🗑️</button></div>
  <div class="row"><div><label class="l">المدة</label><input type="number" data-si="${i}" data-sf="dur" value="${esc(s.dur)}"></div><div style="flex:3"><label class="l">الحوار</label><input data-si="${i}" data-sf="lyric" value="${esc(s.lyric)}"></div></div>
  <label class="l">المشهد</label><textarea rows="3" data-si="${i}" data-sf="desc">${esc(s.desc)}</textarea>
  <div class="row"><div><label class="l">الكاميرا</label><input data-si="${i}" data-sf="cam" value="${esc(s.cam)}"></div><div><label class="l">الحركة</label><input data-si="${i}" data-sf="move" value="${esc(s.move)}"></div></div>
  <label class="l">الإضاءة</label><input data-si="${i}" data-sf="light" value="${esc(s.light)}">
- ${s.img?`<img src="${s.img}" alt="">`:''}
+ ${CORE.castFrames(P).length?`<label class="l">🖼️ مرجع الكادر</label><select data-si="${i}" data-sf="frame"><option value="">—</option>${CORE.castFrames(P).map(f=>`<option value="${f.id}"${f.id===s.frame?' selected':''}>${esc(f.name)}</option>`).join('')}</select>`:''}${s.img?`<img src="${s.img}" alt="">`:(s.frame&&CORE.frameImg(s.frame)?`<img src="${CORE.frameImg(s.frame)}" alt="" style="opacity:.8">`:'')}
  <div><label class="b" style="display:inline-block">🖼️ ${s.img?'غيّر':'ارفع'} صورة البداية<input type="file" accept="image/*" data-img="${i}" hidden></label>
  <button class="b${s.done?' on':''}" data-a="done" data-i="${i}">✓ ${s.done?'اتنفذت':'تمت'}</button></div>
  ${pair('shotP:'+i,'أمر اللقطة')}${pair('check:'+i,'افحص الكادر (ارفق الصورة في التطبيق)')}<button class="b" data-a="shotEn" data-i="${i}">🌐 أمر ترجمة للإنجليزي</button></div>`}
@@ -127,7 +126,7 @@ function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
  if(P.sendMode&&P.shots.length){const i=Math.min(P.sendIdx,P.shots.length-1),s=P.shots[i];
   return `<div class="c"><div class="hd"><b>▶ وضع الإرسال لـ Flow: لقطة ${i+1} من ${P.shots.length}</b><button class="b" data-a="exitSend" style="margin:0">خروج</button></div>
   <div class="m">1) شارك الصورة  2) انسخ الأمر  3) تمت ✓</div>
-  ${s.img?`<img src="${s.img}" style="max-width:100%;border-radius:10px;margin-top:8px">`:'<div class="m">مفيش صورة بداية للقطة دي (ارفعها من القايمة لو محتاجها).</div>'}
+  ${(s.img||CORE.frameImg(s.frame))?`<img src="${s.img||CORE.frameImg(s.frame)}" style="max-width:100%;border-radius:10px;margin-top:8px">`:'<div class="m">مفيش صورة بداية للقطة دي (ارفعها أو اختار مرجع كادر).</div>'}
   <button class="b bl" data-a="shareImg" data-i="${i}" style="width:100%">📤 شارك الصورة</button>
   <button class="b bl" data-a="shotP:${i}" style="width:100%">📋 انسخ الأمر</button>
   <button class="b g" data-a="nextSend" style="width:100%">✓ تمت والتالي</button>
@@ -164,13 +163,14 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='send'){P.sendMode=true;P.sendIdx=0;st.save();render();return}
  if(a==='exitSend'){P.sendMode=false;st.save();render();return}
  if(a==='nextSend'){if(P.shots[P.sendIdx])P.shots[P.sendIdx].done=true;if(P.sendIdx<P.shots.length-1)P.sendIdx++;else{P.sendMode=false;toast('خلصت كل اللقطات 🎉')}st.save();render();return}
- if(a==='shareImg'){const s=P.shots[i];if(s&&s.img)CORE.shareImage(s.img,'shot'+(i+1)+'.jpg');else toast('مفيش صورة');return}
+ if(a==='shareImg'){const s=P.shots[i],im=s&&(s.img||CORE.frameImg(s.frame));if(im)CORE.shareImage(im,'shot'+(i+1)+'.jpg');else toast('مفيش صورة');return}
  if(a==='done'){P.shots[i].done=!P.shots[i].done;st.save();render();return}
  if(a==='del'){if(confirm('تمسح اللقطة '+(i+1)+'؟')){st.snap('قبل حذف لقطة',true);P.shots.splice(i,1);st.save();render()}return}
  if(a==='up'||a==='dn'){const j=a==='up'?i-1:i+1;if(j<0||j>=P.shots.length)return;[P.shots[i],P.shots[j]]=[P.shots[j],P.shots[i]];st.save();render();return}
  if(a==='shotEn'){CORE.copy(PR.shotEn(i),'اتنسخ أمر الترجمة ✓ الصقه في أي تطبيق ذكاء');return}
  const send=a.endsWith('!');if(send)a=a.slice(0,-1);const [fn,arg]=a.split(':');if(!PR[fn])return;
  const txt=PR[fn](arg===undefined?undefined:+arg);if(!txt)return;st.snap('قبل '+fn);if(send)CORE.send(txt);else CORE.copy(txt,'تم النسخ ✓')});
+CORE.bindCast(p,()=>st.save(),render);CORE.bindMusic(p,()=>st.save(),()=>MCTX());
 st.snap('عند الفتح');render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>

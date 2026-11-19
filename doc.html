@@ -58,7 +58,8 @@ const visRules=()=>(p().customVisual||'').trim()?'التزم بالوصف الم
 const voiceTxt=()=>p().voice==='custom'?('يتقلد بصمة العينة دي:\n"""'+(p().customVoice||'')+'"""'):VO()[1]+': '+VO()[2];
 const formName=()=>CORE.pick(FORMS,p().form)[1];
 const elsTxt=()=>p().els.map(k=>CORE.pick(ELS,k)[1]).join('، ');
-const singerLine=()=>{const s=(p().host||'').trim();return s?'المقدم/الراوي الظاهر: '+s+'\n':''};
+const singerLine=()=>{const s=(p().host||'').trim();return CORE.castTxt(p())+(s?'المقدم/الراوي الظاهر: '+s+'\n':'')};
+const MCTX=()=>{const P=p();return `${formName()} عن «${P.topic.slice(0,200)}»، ${G()[1]}، مدته ${P.sec} ثانية.\n${(P.script||'').slice(0,1500)}`};
 const TEAM_DOC='باحث وثائقي محترف، وكاتب محتوى عالمي، ومعد برامج، ومخرج وثائقي، ومدير تصوير، ومونتير، ومهندس صوت، ومعلّق صوتي';
 const PR={
 ideas(){return `أنت معد برامج وثائقية عالمي. اقترح 8 مواضيع ${formName()} قوية${p().topic.trim()?' في مجال: '+p().topic.trim():''} (غموض، تاريخ، علم، قصص حقيقية غريبة). لكل موضوع: العنوان، والهوك في جملة، وليه هيشد الجمهور العربي، ومدى توفر المصادر (عالي/متوسط/ضعيف). رشّح الأقوى في سطر.`},
@@ -69,7 +70,7 @@ write(){const P=p();if(!P.research.trim()&&!P.topic.trim()){alert('اكتب ال
  return `أنت فريق محترف: ${TEAM_DOC}. اكتب نص ${formName()} مدته ${P.sec} ثانية عن: ${P.topic.trim()}\nالعناصر المتفق عليها: ${elsTxt()}.\n${singerLine()}قواعد الصدق: استخدم ✅ كحقائق. ⚠️ تتقال بصيغة «يُروى أن» أو «بعض المصادر تقول». ❌ ما تدخلش إلا كإشاعة صريحة ومن غير تأكيد. ممنوع إضافة معلومات من خارج البحث.\nالهيكل: هوك صادم في أول 5 ثواني (أغرب تفصيلة)، ثم سؤال مفتوح يتقفل في الآخر، ثم فصول قصيرة كل فصل ينتهي بجملة تشد، ثم الذروة، ثم خاتمة تسيب أثر.\nالناتج: فقرات مرقمة، لكل فقرة: [الصورة: ...] ثم نص ${P.form==='podcast'?'المتكلم':'الراوي'}، و[نص الشاشة: ...] و[صوت: ...] لو موجودين. وعدد الكلمات مناسب للمدة (حوالي 2.3 كلمة في الثانية).\nالنوع: ${G()[1]}. اللغة: ${L()[2]}.\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}البصمة: ${voiceTxt()}\n${CORE.WRITING}\n\nالبحث:\n"""\n${P.research.trim()||'(لا يوجد بحث: استخدم المعلومات المؤكدة فقط واذكر مصادرها)'}\n"""`},
 team(){const P=p();if(!P.script.trim()){alert('الصق النص الأول');return ''}return CORE.teamReview('نص '+formName()+' (افحص كمان الدقة: أي جملة فيها ادعاء بدون مصدر في البحث علّمها)',TEAM_DOC,P.script.trim())},
 human(){const P=p();if(!P.script.trim()){alert('الصق النص الأول');return ''}return `أنت محرر عربي محترف. علّم كل جملة في النص ده بتبان مكتوبة بالذكاء الاصطناعي (عبارات عامة، إيقاع متكرر، ثلاثيات، مقدمات وخاتمات محفوظة)، وأعد كتابتها بصوت إنسان حكّاء باللغة: ${L()[1]}. حافظ على المعلومات والطول. ارجع بالنسخة النهائية فقط.\n\n"""\n${P.script.trim()}\n"""`},
-voiceDir(){const P=p();if(!P.script.trim()){alert('الصق النص الأول');return ''}return `أنت مخرج صوت ومعلّق وثائقي عالمي. جهّز النص ده للتسجيل باللهجة/اللغة: ${L()[1]}. ارجع بـ: (1) وصف صوت المعلق (السن، الطبقة، النبرة، السرعة) بالعربي وبالإنجليزي لتطبيقات توليد الصوت. (2) النص مقسم لجمل مع توجيه الأداء [وقفة] [همس] [تصاعد]، وتشكيل الكلمات الصعبة والأسماء الأجنبية. (3) الموسيقى والمؤثرات وتوقيتها.\n\n"""\n${P.script.trim()}\n"""`},
+voiceDir(){const P=p();if(!P.script.trim()){alert('الصق النص الأول');return ''}return `أنت مخرج صوت ومعلّق وثائقي عالمي. جهّز النص ده للتسجيل باللهجة/اللغة: ${L()[1]}.${CORE.castVoices(P)?'\nأصوات الشخصيات/الضيوف الثابتة:\n'+CORE.castVoices(P):''} ارجع بـ: (1) وصف صوت المعلق (السن، الطبقة، النبرة، السرعة) بالعربي وبالإنجليزي لتطبيقات توليد الصوت. (2) النص مقسم لجمل مع توجيه الأداء [وقفة] [همس] [تصاعد]، وتشكيل الكلمات الصعبة والأسماء الأجنبية. (3) الموسيقى والمؤثرات وتوقيتها.\n\n"""\n${P.script.trim()}\n"""`},
 slides(){const P=p();if(!P.script.trim()&&!P.topic.trim()){alert('اكتب الموضوع أو الصق النص');return ''}return `أنت مصمم عروض تقديمية عالمي. حوّل ده لهيكل عرض شرائح: لكل شريحة: العنوان، و3 نقاط قصيرة كحد أقصى، ووصف الصورة أو الرسم، وملاحظات المتحدث. أول شريحة هوك وآخر شريحة خلاصة ودعوة. اللغة: ${L()[1]}.\n\n"""\n${P.script.trim()||P.topic.trim()}\n"""`},
 ctx(){const P=p();return `الشكل البصري: ${visName()} (${visRules()}).\n${singerLine()}العناصر: ${elsTxt()}.\nالمقاس: ${P.aspect}. المدة: ${P.sec} ثانية.\n`},
 shots(k){const P=p(),n=CORE.partsN(P.sec,P.parts),[a,b]=CORE.partRange(P.sec,n,k);
@@ -78,7 +79,7 @@ shots(k){const P=p(),n=CORE.partsN(P.sec,P.parts),[a,b]=CORE.partRange(P.sec,n,k
   return `أنت فريق محترف: ${TEAM_DOC}. حوّل النص ده للقطات مرئية بنفس الكلام حرفيًا.\n${PR.ctx()}النص:\n"""\n${P.script.trim()}\n"""\n\nقواعد: اللقطة 1 هي الهوك. كل لقطة 3 إلى 7 ثواني، وتغطي جملة الراوي اللي فيها. استخدم العناصر المتفق عليها بس. ممنوع نصوص في الصورة المولّدة (النص على الشاشة يتضاف في المونتاج). مجموع المدد = ${P.sec} ثانية.\n\n${fmt}`+(n>1?`\n\n⚠️ هنشتغل على ${n} أجزاء. اكتب الجزء 1 فقط: من 0 إلى ${b} ثانية، واكتب «تم الجزء 1 من ${n}» وانتظر «كمّل».`:'')}
  return `كمّل: اكتب الجزء ${k+1} من ${n} بنفس الصيغة والقواعد. من ${a} إلى ${b} ثانية. ابدأ من «لقطة ${P.shots.length+1}». ما تعيدش اللي فات. اكتب «تم الجزء ${k+1} من ${n}».`},
 teamBoard(){const P=p();if(!P.shots.length){alert('مفيش لقطات');return ''}return CORE.teamReview('ستوري بورد '+formName(),TEAM_DOC,PR.ctx()+P.shots.map((s,i)=>`لقطة ${i+1} | ${s.dur}ث | ${s.lyric||'بدون'}\nالمشهد: ${s.desc}\nالكاميرا: ${s.cam}`).join('\n\n'))},
-shotP(i){const P=p(),s=P.shots[i];return `لقطة ${i+1} من ${P.shots.length} — المدة ${s.dur} ثانية — المقاس ${P.aspect}\nالشكل البصري: ${visName()} — ${visRules()}\n${singerLine()}المشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}\n${s.lyric?'التعليق الصوتي على اللقطة (للتوقيت فقط، مش مكتوب على الصورة): '+s.lyric+'\n':''}ممنوع: نصوص، علامات مائية، وجوه أشخاص حقيقيين معروفين.`},
+shotP(i){const P=p(),s=P.shots[i],F=s.frame&&CORE.castFrames(P).find(f=>f.id===s.frame);return `${F?'مرجع الكادر المرفق: «'+F.name+'» (التزم بأماكن الشخصيات والمكان فيه)\n':''}لقطة ${i+1} من ${P.shots.length} — المدة ${s.dur} ثانية — المقاس ${P.aspect}\nالشكل البصري: ${visName()} — ${visRules()}\n${singerLine()}المشهد: ${s.desc}\nالكاميرا: ${s.cam}\nالحركة: ${s.move}\nالإضاءة: ${s.light}\n${s.lyric?'التعليق الصوتي على اللقطة (للتوقيت فقط، مش مكتوب على الصورة): '+s.lyric+'\n':''}ممنوع: نصوص، علامات مائية، وجوه أشخاص حقيقيين معروفين.`},
 shotEn(i){return `ترجم أمر توليد الفيديو ده للإنجليزي بصيغة أمر احترافي لـ Google Flow، مع الحفاظ على كل التفاصيل. ارجع بالأمر فقط:\n"""\n${PR.shotP(i)}\n"""`}
 };
 
@@ -111,16 +112,16 @@ function s1(){const P=p(),n=CORE.partsN(P.sec,P.parts);return `<div class="c"><h
  <div class="row"><div><label class="l">اللغة</label>${sel('lang',CORE.LANGS,P.lang)}</div><div><label class="l">السخرية</label>${sel('satire',CORE.SATIRE,P.satire)}</div></div>
  <label class="l">البصمة</label>${sel('voice',CORE.VOICES,P.voice)}${P.voice==='custom'?`<textarea data-f="customVoice" rows="3" placeholder="عينة نص">${esc(P.customVoice)}</textarea>`:''}
  ${pair('write','أمر كتابة النص')}</div>
- <div class="c"><h3>📝 النص</h3><textarea data-f="script" rows="9">${esc(P.script)}</textarea>
+ `+CORE.castCard(P)+`<div class="c"><h3>📝 النص</h3><textarea data-f="script" rows="9">${esc(P.script)}</textarea>
  ${pair('team','راجع بالفريق + الدقة')}${pair('human','اكشف الأثر الآلي وأعد الصياغة')}${pair('voiceDir','تجهيز التعليق الصوتي')}${pair('slides','هيكل شرائح')}</div>
  <div class="c"><h3>✂️ تقسيم للقطات</h3><label class="l">عدد الأجزاء</label>${sel('parts',[['auto','تلقائي ('+n+')'],['1','بدون تقسيم'],['2','2'],['3','3'],['4','4'],['5','5'],['6','6'],['8','8']],String(P.parts))}
- ${Array.from({length:n},(_,k)=>{const [a,b]=CORE.partRange(P.sec,n,k);return pair('shots:'+k,n>1?`الجزء ${k+1}/${n} (${a}–${b} ث)`:'أمر التقسيم لقطات')}).join('')}<div class="m">انقل الردود لخطوة ③.</div></div>`}
+ ${Array.from({length:n},(_,k)=>{const [a,b]=CORE.partRange(P.sec,n,k);return pair('shots:'+k,n>1?`الجزء ${k+1}/${n} (${a}–${b} ث)`:'أمر التقسيم لقطات')}).join('')}<div class="m">انقل الردود لخطوة ③.</div></div>`+CORE.musicCard(P)}
 function shotCard(s,i){const P=p();return `<div class="shot${s.done?' done':''}"><div class="hd"><b>لقطة ${i+1}</b><span class="tag">${s.dur}ث</span><button class="b" data-a="up" data-i="${i}" style="margin:0">⬆️</button><button class="b" data-a="dn" data-i="${i}" style="margin:0">⬇️</button><button class="b r" data-a="del" data-i="${i}" style="margin:0">🗑️</button></div>
  <div class="row"><div><label class="l">المدة</label><input type="number" data-si="${i}" data-sf="dur" value="${esc(s.dur)}"></div><div style="flex:3"><label class="l">التعليق</label><input data-si="${i}" data-sf="lyric" value="${esc(s.lyric)}"></div></div>
  <label class="l">المشهد</label><textarea rows="3" data-si="${i}" data-sf="desc">${esc(s.desc)}</textarea>
  <div class="row"><div><label class="l">الكاميرا</label><input data-si="${i}" data-sf="cam" value="${esc(s.cam)}"></div><div><label class="l">الحركة</label><input data-si="${i}" data-sf="move" value="${esc(s.move)}"></div></div>
  <label class="l">الإضاءة</label><input data-si="${i}" data-sf="light" value="${esc(s.light)}">
- ${s.img?`<img src="${s.img}" alt="">`:''}
+ ${CORE.castFrames(P).length?`<label class="l">🖼️ مرجع الكادر</label><select data-si="${i}" data-sf="frame"><option value="">—</option>${CORE.castFrames(P).map(f=>`<option value="${f.id}"${f.id===s.frame?' selected':''}>${esc(f.name)}</option>`).join('')}</select>`:''}${s.img?`<img src="${s.img}" alt="">`:(s.frame&&CORE.frameImg(s.frame)?`<img src="${CORE.frameImg(s.frame)}" alt="" style="opacity:.8">`:'')}
  <div><label class="b" style="display:inline-block">🖼️ ${s.img?'غيّر':'ارفع'} صورة البداية<input type="file" accept="image/*" data-img="${i}" hidden></label>
  <button class="b${s.done?' on':''}" data-a="done" data-i="${i}">✓ ${s.done?'اتنفذت':'تمت'}</button></div>
  ${pair('shotP:'+i,'أمر اللقطة')}<button class="b" data-a="shotEn" data-i="${i}">🌐 أمر ترجمة للإنجليزي</button></div>`}
@@ -128,7 +129,7 @@ function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
  if(P.sendMode&&P.shots.length){const i=Math.min(P.sendIdx,P.shots.length-1),s=P.shots[i];
   return `<div class="c"><div class="hd"><b>▶ وضع الإرسال لـ Flow: لقطة ${i+1} من ${P.shots.length}</b><button class="b" data-a="exitSend" style="margin:0">خروج</button></div>
   <div class="m">1) شارك الصورة  2) انسخ الأمر  3) تمت ✓</div>
-  ${s.img?`<img src="${s.img}" style="max-width:100%;border-radius:10px;margin-top:8px">`:'<div class="m">مفيش صورة بداية للقطة دي (ارفعها من القايمة لو محتاجها).</div>'}
+  ${(s.img||CORE.frameImg(s.frame))?`<img src="${s.img||CORE.frameImg(s.frame)}" style="max-width:100%;border-radius:10px;margin-top:8px">`:'<div class="m">مفيش صورة بداية للقطة دي (ارفعها أو اختار مرجع كادر).</div>'}
   <button class="b bl" data-a="shareImg" data-i="${i}" style="width:100%">📤 شارك الصورة</button>
   <button class="b bl" data-a="shotP:${i}" style="width:100%">📋 انسخ الأمر</button>
   <button class="b g" data-a="nextSend" style="width:100%">✓ تمت والتالي</button>
@@ -163,13 +164,14 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='send'){P.sendMode=true;P.sendIdx=0;st.save();render();return}
  if(a==='exitSend'){P.sendMode=false;st.save();render();return}
  if(a==='nextSend'){if(P.shots[P.sendIdx])P.shots[P.sendIdx].done=true;if(P.sendIdx<P.shots.length-1)P.sendIdx++;else{P.sendMode=false;toast('خلصت كل اللقطات 🎉')}st.save();render();return}
- if(a==='shareImg'){const s=P.shots[i];if(s&&s.img)CORE.shareImage(s.img,'shot'+(i+1)+'.jpg');else toast('مفيش صورة');return}
+ if(a==='shareImg'){const s=P.shots[i],im=s&&(s.img||CORE.frameImg(s.frame));if(im)CORE.shareImage(im,'shot'+(i+1)+'.jpg');else toast('مفيش صورة');return}
  if(a==='done'){P.shots[i].done=!P.shots[i].done;st.save();render();return}
  if(a==='del'){if(confirm('تمسح اللقطة '+(i+1)+'؟')){st.snap('قبل حذف لقطة',true);P.shots.splice(i,1);st.save();render()}return}
  if(a==='up'||a==='dn'){const j=a==='up'?i-1:i+1;if(j<0||j>=P.shots.length)return;[P.shots[i],P.shots[j]]=[P.shots[j],P.shots[i]];st.save();render();return}
  if(a==='shotEn'){CORE.copy(PR.shotEn(i),'اتنسخ أمر الترجمة ✓ الصقه في أي تطبيق ذكاء');return}
  const send=a.endsWith('!');if(send)a=a.slice(0,-1);const [fn,arg]=a.split(':');if(!PR[fn])return;
  const txt=PR[fn](arg===undefined?undefined:+arg);if(!txt)return;st.snap('قبل '+fn);if(send)CORE.send(txt);else CORE.copy(txt,'تم النسخ ✓')});
+CORE.bindCast(p,()=>st.save(),render);CORE.bindMusic(p,()=>st.save(),()=>MCTX());
 st.snap('عند الفتح');render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
