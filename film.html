@@ -91,6 +91,21 @@ function parseShots(t){const re=new RegExp(HDR.source,'gim'),idx=[];let m;while(
   let dur=num(h[0]||'');if(!dur)dur=4;
   return {dur:Math.max(1,Math.min(15,dur)),lyric:none(h[1]||g('الكلمات','الأغنية')),desc:g('المشهد','ماذا يحدث','الوصف'),cam:g('الكاميرا'),move:g('الحركة'),light:g('الإضاءة','الاضاءة'),look:none(g('تغيير الشكل','تغيير اللبس','تغيير الملامح')),img:'',done:false}})}
 
+
+/* ---------- صورة البداية + الاستمرار ---------- */
+function camKind(c){c=c||'';return /قريب|close/i.test(c)?'close':/واسع|عام|wide/i.test(c)?'wide':/متوسط|medium/i.test(c)?'mid':/كتف/.test(c)?'ots':''}
+function imgNeed(i){const sh=p().shots,s=sh[i];if(!s)return {n:true,why:''};if(s.imgMode==='new')return {n:true,why:'اخترت صورة جديدة'};if(s.imgMode==='last')return {n:false,why:'اخترت آخر كادر'};
+ if(i===0)return {n:true,why:'أول لقطة'};const pr=sh[i-1];if((s.frame||'')!==(pr.frame||''))return {n:true,why:'مرجع كادر مختلف'};if((s.look||'').trim())return {n:true,why:'تغيير في الشكل'};
+ const a=camKind(s.cam),b=camKind(pr.cam);if(a&&b&&a!==b)return {n:true,why:'زاوية الكاميرا اتغيرت'};return {n:false,why:'نفس الكادر بيكمل'}}
+function imgBadge(i){const k=imgNeed(i);return k.n?`<div class="m" style="color:#7dd3fc;margin-top:6px">🖼️ محتاج صورة بداية جديدة (${k.why})</div>`:`<div class="m" style="color:#86efac;margin-top:6px">🔗 خد آخر كادر من فيديو اللقطة ${i} واستخدمه صورة البداية (${k.why})</div>`}
+PR.imgP=function(i){const P=p(),s=P.shots[i],LK=lookAt(i),F=s.frame&&CORE.castFrames(P).find(f=>f.id===s.frame);
+ return `Generate ONE still image: the exact first frame of shot ${i+1}. Aspect ratio ${P.aspect}.
+الشكل البصري: ${visName()} — ${visRules()}
+${singerLine()}${F?'مرجع الكادر المرفق «'+F.name+'»: نفس أماكن الشخصيات والمكان والزاوية بالظبط.\n':''}${LK?'تغيير مقصود في الشكل أو اللبس (لازم يظهر): '+LK+'\n':''}المشهد (اللحظة الأولى): ${s.desc}
+الكاميرا: ${s.cam}
+الإضاءة: ${s.light}
+${CORE.lessonsTxt()}ممنوع: أي نصوص أو حروف أو علامات مائية، أو تغيير شكل الشخصيات عن الوصف الثابت، أو أيدي وأصابع مشوهة.`};
+{const _sp=PR.shotP;PR.shotP=i=>{const k=imgNeed(i);return _sp(i)+'\n'+(k.n?'':'صورة البداية المرفقة هي آخر كادر من اللقطة السابقة: كمّل منها بالظبط بنفس الأماكن والإضاءة.\n')+CORE.lessonsTxt()}}
 /* ---------- العرض ---------- */
 function lookAt(i){const sh=p().shots;if(sh[i]&&(sh[i].look||'').trim())return sh[i].look.trim();for(let j=i-1;j>=0;j--){const x=sh[j];if((x.look||'').trim())return x.lookKeep?x.look.trim():''}return ''}
 const thumb=s=>s.img||CORE.frameImg(s.frame)||'';
@@ -126,14 +141,14 @@ function shotCard(s,i){const P=p();return `<div class="shot${s.done?' done':''}"
  ${CORE.castFrames(P).length?`<label class="l">🖼️ مرجع الكادر</label><select data-si="${i}" data-sf="frame"><option value="">—</option>${CORE.castFrames(P).map(f=>`<option value="${f.id}"${f.id===s.frame?' selected':''}>${esc(f.name)}</option>`).join('')}</select>`:''}${s.img?`<img src="${s.img}" alt="">`:(s.frame&&CORE.frameImg(s.frame)?`<img src="${CORE.frameImg(s.frame)}" alt="" style="opacity:.8">`:'')}
  <div><label class="b" style="display:inline-block">🖼️ ${s.img?'غيّر':'ارفع'} صورة البداية<input type="file" accept="image/*" data-img="${i}" hidden></label>
  <button class="b${s.done?' on':''}" data-a="done" data-i="${i}">✓ ${s.done?'اتنفذت':'تمت'}</button></div>
- ${pair('shotP:'+i,'أمر اللقطة')}${pair('check:'+i,'افحص الكادر (ارفق الصورة في التطبيق)')}<button class="b" data-a="shotEn" data-i="${i}">🌐 أمر ترجمة للإنجليزي</button></div>`}
+ ${imgBadge(i)}<label class="l">صورة البداية</label><select data-si="${i}" data-sf="imgMode"><option value="">تلقائي</option><option value="new"${s.imgMode==='new'?' selected':''}>صورة جديدة</option><option value="last"${s.imgMode==='last'?' selected':''}>آخر كادر من اللي قبلها</option></select>${pair('imgP:'+i,'أمر صورة البداية (إنجليزي)')}${pair('shotP:'+i,'أمر الفيديو (إنجليزي)')}${pair('check:'+i,'افحص الكادر (ارفق الصورة في التطبيق)')}<button class="b" data-a="shotAr" data-i="${i}">🇪🇬 نسخة عربي</button><button class="b" data-a="lesson" data-i="${i}">📚 سجّل غلطة</button></div>`}
 function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
  if(P.sendMode&&P.shots.length){const i=Math.min(P.sendIdx,P.shots.length-1),s=P.shots[i];
   return `<div class="c"><div class="hd"><b>▶ وضع الإرسال لـ Flow: لقطة ${i+1} من ${P.shots.length}</b><button class="b" data-a="exitSend" style="margin:0">خروج</button></div>
-  <div class="m">1) شارك الصورة  2) انسخ الأمر  3) تمت ✓</div>
+  <div class="m">1) صورة البداية  2) انسخ أمر الفيديو  3) تمت ✓</div>${imgBadge(i)}
   ${(s.img||CORE.frameImg(s.frame))?`<img src="${s.img||CORE.frameImg(s.frame)}" style="max-width:100%;border-radius:10px;margin-top:8px">`:'<div class="m">مفيش صورة بداية للقطة دي (ارفعها أو اختار مرجع كادر).</div>'}
   <button class="b bl" data-a="shareImg" data-i="${i}" style="width:100%">📤 شارك الصورة</button>
-  <button class="b bl" data-a="shotP:${i}" style="width:100%">📋 انسخ الأمر</button>
+  <button class="b" data-a="imgP:${i}" style="width:100%">🖼️ انسخ أمر صورة البداية</button><button class="b bl" data-a="shotP:${i}" style="width:100%">📋 انسخ أمر الفيديو (إنجليزي)</button>
   <button class="b g" data-a="nextSend" style="width:100%">✓ تمت والتالي</button>
   <div class="m" style="margin-top:8px">${esc(PR.shotP(i)).replace(/\n/g,'<br>')}</div></div>`}
  return `<div class="c"><h3>📥 رد الذكاء الاصطناعي</h3><textarea data-f="paste" rows="6" placeholder="الصق الرد هنا (لقطة 1 | ...). أي طول، وبيتحفظ لوحده">${esc(P.paste)}</textarea>
@@ -159,7 +174,7 @@ document.addEventListener('change',async e=>{const t=e.target,P=p();
  if(t.dataset.f&&t.tagName==='SELECT'){P[t.dataset.f]=t.value;st.save();if(t.dataset.f==='placeSel'&&t.value!==''){const x=OLD.places[+t.value];P.place=(x.name||'')+': '+(x.ar||'');st.save()}if(['voice','genre','visual','parts','placeSel'].includes(t.dataset.f))render();return}
  if(t.dataset.img!==undefined&&t.files[0]){const d=await shrink(t.files[0]);if(d){P.shots[+t.dataset.img].img=d;st.save();render()}else toast('الصورة ما اتقرتش')}});
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;let a=b.dataset.a;const P=p(),i=+b.dataset.i;
- if(a==='home'){location.href='./';return}
+ if(a==='home'){CORE.leaveOk().then(ok=>{if(ok)location.href='./'});return}
  if(a==='ins'){st.snap('قبل إضافة لقطة',true);P.shots.splice(i+1,0,{dur:4,lyric:'',desc:'',cam:'',move:'',light:'',look:'',img:'',done:false});st.save();render();setTimeout(()=>{const e=document.getElementById('shot'+(i+1));if(e){e.scrollIntoView({block:'center'});const t=e.querySelector('[data-sf=desc]');t&&t.focus()}},50);return}
  if(a==='grid'){P.grid=!P.grid;st.save();render();return}
  if(a==='form'){P.form=b.dataset.k;st.save();render();return}
@@ -175,9 +190,11 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='done'){P.shots[i].done=!P.shots[i].done;st.save();render();return}
  if(a==='del'){if(confirm('تمسح اللقطة '+(i+1)+'؟')){st.snap('قبل حذف لقطة',true);P.shots.splice(i,1);st.save();render()}return}
  if(a==='up'||a==='dn'){const j=a==='up'?i-1:i+1;if(j<0||j>=P.shots.length)return;[P.shots[i],P.shots[j]]=[P.shots[j],P.shots[i]];st.save();render();return}
+ if(a==='shotAr'){CORE.copy(PR.shotP(i),'اتنسخ بالعربي ✓');return}
+ if(a==='lesson'){const t=prompt('اكتب الغلطة اللي حصلت في اللقطة '+(i+1)+' عشان الأوامر الجاية تتجنبها:');if(t)CORE.addLesson(t);return}
  if(a==='shotEn'){CORE.copy(PR.shotEn(i),'اتنسخ أمر الترجمة ✓ الصقه في أي تطبيق ذكاء');return}
  const send=a.endsWith('!');if(send)a=a.slice(0,-1);const [fn,arg]=a.split(':');if(!PR[fn])return;
- const txt=PR[fn](arg===undefined?undefined:+arg);if(!txt)return;st.snap('قبل '+fn);if(send)CORE.send(txt);else CORE.copy(txt,'تم النسخ ✓')});
+ const txt=PR[fn](arg===undefined?undefined:+arg);if(!txt)return;st.snap('قبل '+fn);const en=['shotP','imgP'].includes(fn);if(send)(en?CORE.sendEn:CORE.send)(txt);else (en?CORE.copyEn:CORE.copy)(txt,'تم النسخ ✓')});
 (()=>{let drag=null;
 document.addEventListener('pointerdown',e=>{const h=e.target.closest('[data-gh]');if(!h)return;e.preventDefault();drag={from:+h.dataset.gh,to:+h.dataset.gh};h.closest('.gt').style.opacity='.5'});
 document.addEventListener('pointermove',e=>{if(!drag)return;e.preventDefault();const el=document.elementFromPoint(e.clientX,e.clientY),t=el&&el.closest('.gt');document.querySelectorAll('.gt').forEach(x=>x.style.outline='');if(t){drag.to=+t.dataset.gi;t.style.outline='2px solid #38bdf8'}},{passive:false});
@@ -185,7 +202,7 @@ document.addEventListener('pointerup',()=>{if(!drag)return;const {from,to}=drag;
 document.addEventListener('click',e=>{if(e.target.closest('[data-gh]'))return;const t=e.target.closest('.gt');if(!t)return;const P=p(),i=+t.dataset.gi;P.grid=false;st.save();render();setTimeout(()=>{const x=document.getElementById('shot'+i);x&&x.scrollIntoView({block:'start'})},50)});})();
 CORE.bindCast(p,()=>st.save(),render);
 const shotsTxt=()=>p().shots.map((s,i)=>`لقطة ${i+1} | ${s.dur} | ${s.lyric||'بدون'}\nالمشهد: ${s.desc||''}\nالكاميرا: ${s.cam||''}\nالحركة: ${s.move||''}\nالإضاءة: ${s.light||''}${s.look?'\nتغيير الشكل: '+s.look:''}`).join('\n\n');
-CORE.work({ns:'film',st,def:DEF,render,check:{team:CORE.TEAM.film,
+CORE.work({ctx:()=>MCTX()+'\n'+shotsTxt().slice(0,2500),ns:'film',st,def:DEF,render,check:{team:CORE.TEAM.film,
  text:()=>{const P=p(),a=(P.script||'').trim(),b=shotsTxt();return (a?'[السيناريو]\n'+a+'\n\n':'')+(b?'[اللقطات]\n'+b:'')},
  apply:v=>{const P=p(),i=v.search(new RegExp(HDR.source,'im')),head=(i>0?v.slice(0,i):(i<0?v:'')).replace(/\[(?:السيناريو|اللقطات)\]/g,'').trim(),sh=i>=0?parseShots(v.slice(i)):[];
   if(!head&&!sh.length){alert('مش لاقي حاجة أطبقها');return false}

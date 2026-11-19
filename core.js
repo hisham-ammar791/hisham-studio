@@ -202,16 +202,22 @@ C.gdLoad=async function(id){return await (await f(API+'/drive/v3/files/'+id+'?al
 C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
  const bar=()=>{let el=document.getElementById('wbar');if(!el){el=document.createElement('div');el.id='wbar';const h=document.querySelector('header');h.parentNode.insertBefore(el,h.nextSibling)}
   el.innerHTML=`<div style="display:flex;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap"><span style="font-size:13px;color:var(--muted)">📁</span><input id="wName" value="${esc(P().wname||'')}" placeholder="اسم العمل" style="flex:1;min-width:120px;padding:6px 8px;font-size:14px">
-  <button class="b" data-w="save" style="margin:0">☁️ حفظ</button><button class="b" data-w="open" style="margin:0">📂 فتح</button><button class="b" data-w="new" style="margin:0">🆕 جديد</button><button class="b bl" data-w="check" style="margin:0">🔎 فحص</button></div>`};
+  <button class="b" data-w="save" style="margin:0">☁️ حفظ</button><button class="b" data-w="open" style="margin:0">📂 فتح</button><button class="b" data-w="new" style="margin:0">🆕 جديد</button><button class="b bl" data-w="check" style="margin:0">🔎 فحص</button><button class="b" data-w="pub" style="margin:0">📢 نشر</button><button class="b" data-w="lessons" style="margin:0">📚</button></div>${dirty()?'<div style="background:#422006;color:#fcd34d;font-size:12px;padding:3px 12px">● فيه تعديلات ما اتحفظتش على Drive</div>':''}`};
  C._wbar=bar;
- async function save(silent){const n=(P().wname||'').trim();if(!n){alert('اكتب اسم العمل الأول');return false}try{C.toast('⏳ بحفظ على Drive…',8000);const r=await C.gdSave(ns,n,P());if(r)C.toast('☁️ اتحفظ «'+n+'» على Drive ✓');return r}catch(e){C.toast('⚠️ '+e.message,4000);return false}}
- async function openBox(){if(!(await C.gdConnect()))return;let l=[];try{C.toast('⏳ بجيب أعمالك…');l=await C.gdList(ns)}catch(e){C.toast('⚠️ '+e.message);return}
+ const DK='hs_dirty_'+ns,dirty=()=>!!localStorage.getItem(DK)&&JSON.stringify(P())!==JSON.stringify(Object.assign({},o.def,{step:0}));
+ const sv0=st.save;st.save=function(){sv0.apply(st,arguments);if(!localStorage.getItem(DK)){try{localStorage.setItem(DK,'1')}catch(e){}bar()}};
+ const clean=()=>{try{localStorage.removeItem(DK)}catch(e){}bar()};
+ C.workDirty=dirty;
+ window.addEventListener('beforeunload',e=>{if(dirty()&&!C._leaving){e.preventDefault();e.returnValue='فيه تعديلات ما اتحفظتش على Drive'}});
+ C.leaveOk=async function(){if(!dirty())return true;const k=await ask3s((P().wname||'').trim());if(k==='x')return false;if(k==='save'){const r=await save();if(!r&&!confirm('الحفظ ما نجحش. تكمل برضه؟'))return false}C._leaving=true;return true};
+ async function save(silent){const n=(P().wname||'').trim();if(!n){alert('اكتب اسم العمل الأول');return false}try{C.toast('⏳ بحفظ على Drive…',8000);const r=await C.gdSave(ns,n,P());if(r){C.toast('☁️ اتحفظ «'+n+'» على Drive ✓');clean()}return r}catch(e){C.toast('⚠️ '+e.message,4000);return false}}
+ async function openBox(){if(!(await C.leaveOk()))return;if(!(await C.gdConnect()))return;let l=[];try{C.toast('⏳ بجيب أعمالك…');l=await C.gdList(ns)}catch(e){C.toast('⚠️ '+e.message);return}
   let ov=document.getElementById('wOpen');if(ov)ov.remove();ov=document.createElement('div');ov.id='wOpen';ov.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
   const items=q=>l.filter(x=>!q||(x.appProperties.name||'').includes(q)).map(x=>`<div style="display:flex;gap:8px;align-items:center;border-top:1px dashed #334155;padding:8px 0"><div style="flex:1"><b>${esc(x.appProperties.name)}</b><div class="m" style="font-size:12px">${new Date(x.modifiedTime).toLocaleString('ar-EG',{dateStyle:'short',timeStyle:'short'})}</div></div><button class="b g" data-o="${x.id}" style="margin:0">افتح</button></div>`).join('')||'<div class="m">مفيش أعمال بالاسم ده.</div>';
   ov.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:80vh;overflow:auto;padding:12px;color:#fff"><b>📂 أعمالك على Drive (${l.length})</b><input id="wQ" placeholder="اكتب اسم العمل…" style="margin-top:8px" value="${esc((P().wname||'').trim())}"><div id="wL">${items((P().wname||'').trim())}</div><button class="b" data-o="x" style="width:100%;margin-top:10px">إغلاق</button></div>`;
   document.body.appendChild(ov);ov.querySelector('#wQ').oninput=e=>{ov.querySelector('#wL').innerHTML=items(e.target.value.trim())};
   ov.onclick=async e=>{const b=e.target.closest('[data-o]');if(e.target===ov||(b&&b.dataset.o==='x')){ov.remove();return}if(!b)return;
-   if(!confirm('تفتح العمل ده؟ الحالي هيتحفظ في سجل النسخ 🕘 الأول.'))return;try{const d=await C.gdLoad(b.dataset.o);st.snap('قبل فتح عمل من Drive',true);st.set(d);ov.remove();bar();render();C.toast('اتفتح ✓')}catch(x){C.toast('⚠️ '+x.message)}}}
+   if(!confirm('تفتح العمل ده؟ الحالي هيتحفظ في سجل النسخ 🕘 الأول.'))return;try{const d=await C.gdLoad(b.dataset.o);st.snap('قبل فتح عمل من Drive',true);st.set(d);clean();ov.remove();bar();render();C.toast('اتفتح ✓')}catch(x){C.toast('⚠️ '+x.message)}}}
  function ask3(n){return new Promise(res=>{const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;z-index:99;background:#000c;display:flex;align-items:flex-end';
   ov.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;padding:14px;color:#fff"><b style="font-size:16px">🆕 عمل جديد</b><div class="m" style="margin:6px 0 10px">تعمل إيه في العمل الحالي${n?' «'+esc(n)+'»':''} قبل ما تبدأ؟</div>
   <button class="b g" data-k="save" style="width:100%;margin:0 0 8px">☁️ احفظه على Google Drive وابدأ جديد</button>
@@ -224,7 +230,11 @@ C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
     const r=await save();if(!r){if(!confirm('الحفظ على Drive ما نجحش. تمسح برضه؟ (فيه نسخة في سجل النسخ 🕘 على الموبايل)'))return}}
    else if(!confirm('متأكد؟ العمل هيتمسح من الصفحة (فيه نسخة احتياطية في سجل النسخ 🕘).'))return;
    st.snap('قبل عمل جديد',true)}
-  st.reset();bar();render();window.scrollTo(0,0);C.toast('🆕 صفحة جديدة')}
+  st.reset();clean();render();window.scrollTo(0,0);C.toast('🆕 صفحة جديدة')}
+ function ask3s(n){return new Promise(res=>{const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;z-index:99;background:#000c;display:flex;align-items:flex-end';
+  ov.innerHTML=`<div style="background:#0f172a;border:1px solid #f59e0b;border-radius:16px 16px 0 0;width:100%;padding:14px;color:#fff"><b style="font-size:16px">⚠️ تذكير بالحفظ</b><div class="m" style="margin:6px 0 10px">العمل${n?' «'+esc(n)+'»':''} فيه تعديلات ما اتحفظتش على Google Drive.</div>
+  <button class="b g" data-k="save" style="width:100%;margin:0 0 8px">☁️ احفظ على Drive وكمّل</button><button class="b" data-k="go" style="width:100%;margin:0 0 8px">كمّل من غير حفظ (يفضل على الموبايل)</button><button class="b" data-k="x" style="width:100%;margin:0">إلغاء</button></div>`;
+  document.body.appendChild(ov);ov.onclick=e=>{const b=e.target.closest('[data-k]');if(e.target!==ov&&!b)return;const k=b?b.dataset.k:'x';ov.remove();res(k)}})}
  function check(){const ov=document.createElement('div');ov.id='wChk';ov.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
   ov.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:88vh;overflow:auto;padding:12px;color:#fff"><b>🔎 فحص العمل بالذكاء الاصطناعي</b><div class="m" style="margin:4px 0">1) انسخ أمر الفحص وابعته للتطبيق اللي تختاره. 2) الصق الرد هنا. 3) اضغط «طبّق»: النسخة المصححة بتحل محل الحالية (والقديمة في 🕘).</div>
   <div class="pair"><button class="b bl" data-c="copy">📋 انسخ أمر الفحص</button><button class="b" data-c="send">📤</button></div>
@@ -237,6 +247,50 @@ C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
    if(a==='apply'){let v=ta.value;if(!v.trim()){alert('الصق الرد الأول');return}const m=v.match(/===\s*بداية\s*===([\s\S]*?)===\s*نهاية\s*===/);if(m)v=m[1].trim();else if(!confirm('الرد مفيهوش علامات ===بداية=== و===نهاية===. أطبّق الرد كله؟'))return;
     st.snap('قبل تطبيق الفحص',true);const r=o.check.apply(v);if(r===false)return;P().chkPaste='';st.save();ov.remove();render();C.toast('✅ اتطبق التصحيح ('+r+')')}}}
  document.addEventListener('input',e=>{if(e.target.id==='wName'){P().wname=e.target.value;st.save()}});
- document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w;if(a==='save')save();if(a==='open')openBox();if(a==='new')nw();if(a==='check')check()});
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w;if(a==='save')save();if(a==='open')openBox();if(a==='new')nw();if(a==='check')check();if(a==='lessons')C.lessonsBox();if(a==='pub'){const t=C.pubPrompt(o.ctx?o.ctx():'');C.copy(t,'اتنسخ أمر حزمة النشر ✓')}});
  bar()};
 })();
+
+/* ================= 🌐 ترجمة تلقائية للإنجليزي ================= */
+(function(){
+const C=window.CORE,TK='hs_trc';let cache={};try{cache=JSON.parse(localStorage.getItem(TK)||'{}')}catch(e){}
+const AR=/[؀-ۿ]/;
+async function g1(q){try{const r=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q='+encodeURIComponent(q));if(r.ok){const j=await r.json();const t=(j[0]||[]).map(x=>x[0]||'').join('').trim();if(t)return t}}catch(e){}
+ try{const r=await fetch('https://api.mymemory.translated.net/get?langpair=ar|en&q='+encodeURIComponent(q.slice(0,480)));const j=await r.json();return (j&&j.responseData&&j.responseData.translatedText)||''}catch(e){return ''}}
+async function tr(q){q=q.trim();if(!q||!AR.test(q))return q;if(cache[q])return cache[q];const t=await g1(q);if(t){cache[q]=t;try{const k=Object.keys(cache);if(k.length>1500)k.slice(0,500).forEach(x=>delete cache[x]);localStorage.setItem(TK,JSON.stringify(cache))}catch(e){}}return t||null}
+/* الكلام المنطوق يفضل بلغته الأصلية؛ الباقي يترجم */
+const KEEP=/^(الحوار|الكلام المنطوق|الكلمات المغناة في اللقطة|التعليق الصوتي على اللقطة[^:]*)\s*[:：]\s*/;
+C.toEn=async function(txt){const lines=String(txt).split('\n'),out=[];let fail=0;
+ for(const l of lines){if(!AR.test(l)){out.push(l);continue}
+  const m=l.match(KEEP);if(m){const lab=await tr(m[1]);out.push((lab||'Spoken line')+' (keep spoken exactly in the original language): "'+l.slice(m[0].length).trim()+'"');continue}
+  const t=await tr(l);if(t)out.push(t);else{out.push(l);fail++}}
+ return {text:out.join('\n'),fail}};
+C.copyEn=async function(txt,msg){C.toast('⏳ بترجم للإنجليزي…',8000);const r=await C.toEn(txt);if(r.fail)C.toast('⚠️ '+r.fail+' سطر ما اتترجمش (اتأكد من النت)',4000);return r.fail?C.copy(r.text,'اتنسخ (فيه سطور عربي)'):C.copy(r.text,msg||'اتنسخ بالإنجليزي ✓')};
+C.sendEn=async function(txt){C.toast('⏳ بترجم…',8000);const r=await C.toEn(txt);return C.send(r.text)};
+})();
+
+/* ================= 📚 سجل الدروس (بيتعلم من الأخطاء) ================= */
+(function(){
+const C=window.CORE,LK='hs_lessons';
+C.lessons=()=>{try{return JSON.parse(localStorage.getItem(LK)||'[]')}catch(e){return []}};
+const sv=l=>{try{localStorage.setItem(LK,JSON.stringify(l))}catch(e){}};
+C.addLesson=function(t){t=(t||'').trim();if(!t)return;const l=C.lessons();if(!l.includes(t)){l.unshift(t);sv(l.slice(0,40))}C.toast('📚 اتحفظ الدرس ✓ وهيدخل في الأوامر الجاية')};
+C.lessonsTxt=()=>{const l=C.lessons().slice(0,15);return l.length?'تجنّب الأخطاء دي (حصلت قبل كده في التوليد):\n'+l.map(x=>'- '+x).join('\n')+'\n':''};
+C.lessonsBox=function(){const l=C.lessons();let o=document.getElementById('lsBox');if(o)o.remove();o=document.createElement('div');o.id='lsBox';o.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
+ o.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:80vh;overflow:auto;padding:12px;color:#fff"><b>📚 سجل الدروس</b><div class="m" style="margin:4px 0">كل درس هنا بيدخل في أوامر الصور والفيديو في كل الاستوديوهات (آخر 15). اكتب الغلطة اللي حصلت بكلامك.</div>
+ <textarea id="lsNew" rows="2" placeholder="مثال: الأيدي بتطلع بـ6 صوابع / الشنب بيختفي في اللقطات القريبة"></textarea><button class="b g" data-l="add" style="width:100%">➕ احفظ الدرس</button>
+ ${l.map((x,i)=>`<div style="display:flex;gap:8px;align-items:center;border-top:1px dashed #334155;padding:6px 0"><span style="flex:1;font-size:14px">${C.esc(x)}</span><button class="b r" data-l="${i}" style="margin:0">🗑️</button></div>`).join('')||'<div class="m">لسه مفيش دروس.</div>'}
+ <button class="b" data-l="x" style="width:100%;margin-top:10px">إغلاق</button></div>`;
+ document.body.appendChild(o);o.onclick=e=>{const b=e.target.closest('[data-l]');if(e.target===o||(b&&b.dataset.l==='x')){o.remove();return}if(!b)return;
+  if(b.dataset.l==='add'){C.addLesson(o.querySelector('#lsNew').value);C.lessonsBox();return}const l2=C.lessons();l2.splice(+b.dataset.l,1);sv(l2);C.lessonsBox()}};
+})();
+
+/* ================= 📢 حزمة النشر ================= */
+window.CORE.pubPrompt=ctx=>`أنت مدير محتوى سوشيال ميديا عالمي. جهّز حزمة نشر للعمل ده لكل منصة: فيسبوك، إنستجرام ريلز، تيك توك، يوتيوب شورتس، ويوتيوب (فيديو كامل لو مناسب).
+لكل منصة: العنوان، وأول سطر هوك، والكابشن بطول المنصة، و5 إلى 10 هاشتاجات (عربي وإنجليزي)، وأفضل وقت نشر للجمهور المصري والعربي، ودعوة للتفاعل.
+وفي الآخر: أمر صورة مصغّرة (Thumbnail) بالإنجليزي، وجملة قصيرة تتكتب عليها (3 كلمات كحد أقصى).
+اللغة: نفس لغة العمل، بأسلوب بشري جذاب من غير كليشيهات.
+${window.CORE.WRITING}
+
+العمل:
+${ctx}`;
