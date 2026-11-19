@@ -202,7 +202,7 @@ C.gdLoad=async function(id){return await (await f(API+'/drive/v3/files/'+id+'?al
 C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
  const bar=()=>{let el=document.getElementById('wbar');if(!el){el=document.createElement('div');el.id='wbar';const h=document.querySelector('header');h.parentNode.insertBefore(el,h.nextSibling)}
   el.innerHTML=`<div style="display:flex;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap"><span style="font-size:13px;color:var(--muted)">📁</span><input id="wName" value="${esc(P().wname||'')}" placeholder="اسم العمل" style="flex:1;min-width:120px;padding:6px 8px;font-size:14px">
-  <button class="b" data-w="save" style="margin:0">☁️ حفظ</button><button class="b" data-w="open" style="margin:0">📂 فتح</button><button class="b" data-w="new" style="margin:0">🆕 جديد</button><button class="b bl" data-w="check" style="margin:0">🔎 فحص</button><button class="b" data-w="pub" style="margin:0">📢 نشر</button><button class="b" data-w="lessons" style="margin:0">📚</button></div>${dirty()?'<div style="background:#422006;color:#fcd34d;font-size:12px;padding:3px 12px">● فيه تعديلات ما اتحفظتش على Drive</div>':''}`};
+  <button class="b" data-w="save" style="margin:0">☁️ حفظ</button><button class="b" data-w="open" style="margin:0">📂 فتح</button><button class="b" data-w="new" style="margin:0">🆕 جديد</button><button class="b bl" data-w="check" style="margin:0">🔎 فحص</button><button class="b" data-w="tools" style="margin:0">🧰 أدوات</button></div>${dirty()?'<div style="background:#422006;color:#fcd34d;font-size:12px;padding:3px 12px">● فيه تعديلات ما اتحفظتش على Drive</div>':''}`};
  C._wbar=bar;
  const DK='hs_dirty_'+ns,dirty=()=>!!localStorage.getItem(DK)&&JSON.stringify(P())!==JSON.stringify(Object.assign({},o.def,{step:0}));
  const sv0=st.save;st.save=function(){sv0.apply(st,arguments);if(!localStorage.getItem(DK)){try{localStorage.setItem(DK,'1')}catch(e){}bar()}};
@@ -247,7 +247,7 @@ C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
    if(a==='apply'){let v=ta.value;if(!v.trim()){alert('الصق الرد الأول');return}const m=v.match(/===\s*بداية\s*===([\s\S]*?)===\s*نهاية\s*===/);if(m)v=m[1].trim();else if(!confirm('الرد مفيهوش علامات ===بداية=== و===نهاية===. أطبّق الرد كله؟'))return;
     st.snap('قبل تطبيق الفحص',true);const r=o.check.apply(v);if(r===false)return;P().chkPaste='';st.save();ov.remove();render();C.toast('✅ اتطبق التصحيح ('+r+')')}}}
  document.addEventListener('input',e=>{if(e.target.id==='wName'){P().wname=e.target.value;st.save()}});
- document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w;if(a==='save')save();if(a==='open')openBox();if(a==='new')nw();if(a==='check')check();if(a==='lessons')C.lessonsBox();if(a==='pub'){const t=C.pubPrompt(o.ctx?o.ctx():'');C.copy(t,'اتنسخ أمر حزمة النشر ✓')}});
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w;if(a==='save')save();if(a==='open')openBox();if(a==='new')nw();if(a==='check')check();if(a==='tools')C.toolsMenu(o,st,render,bar);if(a==='lessons')C.lessonsBox();if(a==='pub'){const t=C.pubPrompt(o.ctx?o.ctx():'');C.copy(t,'اتنسخ أمر حزمة النشر ✓')}});
  bar()};
 })();
 
@@ -294,3 +294,54 @@ ${window.CORE.WRITING}
 
 العمل:
 ${ctx}`;
+
+/* ================= 🧰 قايمة الأدوات: وصفات، هوكات، مسابقات، 10 مخرجات، خطة 30 يوم، نسخة إنجليزية ================= */
+(function(){
+const C=window.CORE,esc=C.esc,HK='hs_hooks';
+C.hooks=()=>{try{return JSON.parse(localStorage.getItem(HK)||'[]')}catch(e){return []}};
+const hsv=l=>{try{localStorage.setItem(HK,JSON.stringify(l.slice(0,60)))}catch(e){}};
+const P_={
+ hooks:ctx=>{const b=C.hooks().slice(0,10);return `أنت أقوى كاتب هوكات في العالم للسوشيال ميديا العربية. اكتب 10 هوكات لأول 3 ثواني للعمل ده، متنوعة: سؤال صادم، رقم غريب، موقف مضحك، تحدي، سر، عكس المتوقع، صورة غريبة، صوت مفاجئ، جملة ناقصة، مواجهة.
+لكل هوك: الجملة المنطوقة أو المكتوبة، والصورة في أول ثانية، والصوت. وقيّم كل واحد من 10، ورشّح الأقوى في سطر.
+${b.length?'هوكات نجحت معايا قبل كده (اتعلم من أسلوبها من غير ما تكررها):\n'+b.map(x=>'- '+x).join('\n')+'\n':''}${C.WRITING}\n\nالعمل:\n${ctx}`},
+ test3:ctx=>`أنت خبير احتفاظ بالمشاهدين في تيك توك وريلز ويوتيوب شورتس. افحص أول 3 ثواني من العمل ده فقط (أول لقطة أو اتنين): الصورة الأولى، أول كلمة، أول صوت.
+ارجع بحكم واحد قاطع: «يشد» أو «المشاهد هيعدّي». وسبب في سطر. ولو مش بيشد: بديل واحد جاهز للصورة والكلام والصوت. بدون خيارات.\n\nالعمل:\n${ctx}`,
+ comp:ctx=>`أنت عضو لجنة تحكيم في مهرجانات أفلام الذكاء الاصطناعي العالمية. قيّم العمل ده بمعايير المسابقات: الفكرة والأصالة، القصة والبناء، الإخراج والتكوين، ثبات الشخصيات والراكور بين اللقطات، جودة الحركة، الصوت والموسيقى، المونتاج والإيقاع، الأثر العاطفي، والاستخدام الذكي للذكاء الاصطناعي.
+لكل معيار: درجة من 10 وسطر واحد. وبعدها:
+1) الدرجة النهائية، وهل يدخل مسابقة دولية دلوقتي ولا لأ.
+2) أهم 3 تعديلات بالترتيب ترفع الدرجة.
+3) قايمة التسليم: العنوان بالعربي والإنجليزي، ملخص (Logline) بالإنجليزي في سطرين، ترجمة (Subtitles) إنجليزي، الإفصاح عن أدوات الذكاء المستخدمة، حقوق الموسيقى والأصوات، المدة والمقاس المطلوبين.
+بدون مجاملة.\n\nالعمل:\n${ctx}`,
+ multi:ctx=>`أنت مدير محتوى عالمي. حوّل العمل ده لـ10 مخرجات منفصلة جاهزة للنشر:
+1) ريل 30 ثانية (أي لقطات وبأي ترتيب + هوك مكتوب). 2) ريل 15 ثانية مختلف. 3) تيزر 7 ثواني. 4) كاروسيل 7 شرائح (نص كل شريحة + وصف الصورة). 5) بوست فيسبوك طويل. 6) بوست قصير + سؤال للتفاعل. 7) حالة واتساب. 8) سكريبت بودكاست أو صوتي دقيقة. 9) عنوان وصف يوتيوب. 10) 3 أفكار جزء تاني.
+كل مخرج مستقل ومفهوم لوحده.\n${C.WRITING}\n\nالعمل:\n${ctx}`,
+ plan:(ctx,page)=>`أنت مخطط محتوى عالمي. اعمل خطة نشر 30 يوم لصفحة «${page}» بناءً على نوع العمل ده.
+جدول: اليوم | نوع المنشور (ريل/كاروسيل/بوست/لايف/ستوري) | الفكرة | الهوك | الهدف (وصول/تفاعل/بيع/متابعين).
+قواعد: تنويع في الأنواع، ما يتكررش نفس النوع يومين ورا بعض، 3 أفكار «ترند» قابلة للتعديل، أفضل مواعيد النشر للجمهور المصري. وفي الآخر: أهم 5 أرقام أتابعها.\n\nمثال من شغل الصفحة:\n${ctx}`,
+ en:ctx=>`أنت مترجم وكاتب محتوى عالمي بالإنجليزي. اعمل نسخة إنجليزية من العمل ده للجمهور العالمي: مش ترجمة حرفية. حافظ على النبرة والسخرية والتشويق، وغيّر الأمثلة والنكت المحلية لحاجات يفهمها جمهور عالمي، واكتب الحوار طبيعي زي ما الناس بتتكلم. حافظ على نفس شكل اللقطات (Shot 1 | ...) لو موجود. ارجع بالنسخة الإنجليزية كاملة، وبعدها قايمة قصيرة بالتغييرات الثقافية اللي عملتها.\n\nالعمل:\n${ctx}`
+};
+C.toolsMenu=function(o,st,render,bar){const ctx=()=>(o.ctx?o.ctx():'')||'(لسه مفيش شغل: اكتب الفكرة الأول)';
+ let ov=document.getElementById('tlBox');if(ov)ov.remove();ov=document.createElement('div');ov.id='tlBox';ov.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
+ const it=(k,t,d)=>`<div class="pair"><button class="b bl" data-t="${k}" style="text-align:right">${t}<div style="font-size:11px;opacity:.75;font-weight:400">${d}</div></button><button class="b" data-t="${k}!">📤</button></div>`;
+ ov.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:88vh;overflow:auto;padding:12px;color:#fff"><b style="font-size:16px">🧰 أدوات</b>
+ ${(o.presets||[]).length?`<div class="m" style="margin-top:8px">🎯 وصفات جاهزة (بتملا الاختيارات، وتعدّل اللي يعجبك):</div><div style="display:flex;flex-wrap:wrap;gap:6px">${o.presets.map((p,i)=>`<button class="b g" data-p="${i}" style="margin:0">${esc(p.name)}</button>`).join('')}</div>`:''}
+ <div class="m" style="margin-top:10px">أوامر (بتتنسخ وتلصقها في التطبيق اللي تختاره):</div>
+ ${it('hooks','🪝 اقترح 10 هوكات','من بنك الهوكات اللي نجحت معاك')}${it('test3','⏱️ اختبار الـ3 ثواني الأولى','حكم واحد: يشد ولا لأ')}${it('comp','🏆 وضع المسابقات','تقييم لجنة تحكيم + قايمة التسليم')}${it('multi','♻️ عمل واحد = 10 مخرجات','ريلز، كاروسيل، بوستات، تيزر…')}${it('plan','🗓️ خطة محتوى 30 يوم','لصفحة تختارها')}${it('en','🌍 نسخة إنجليزية للعالمية','بنفس النبرة مع تغيير الأمثلة المحلية')}${it('pub','📢 حزمة النشر','عنوان وكابشن وهاشتاجات لكل منصة')}
+ <div style="display:flex;gap:6px;margin-top:10px"><button class="b" data-x="hookbank" style="flex:1;margin:0">🪝 بنك الهوكات (${C.hooks().length})</button><button class="b" data-x="lessons" style="flex:1;margin:0">📚 الدروس (${C.lessons().length})</button></div>
+ <button class="b" data-x="x" style="width:100%;margin-top:10px">إغلاق</button></div>`;
+ document.body.appendChild(ov);
+ ov.onclick=e=>{const b=e.target.closest('[data-t],[data-p],[data-x]');if(e.target===ov){ov.remove();return}if(!b)return;
+  if(b.dataset.x==='x'){ov.remove();return}if(b.dataset.x==='lessons'){ov.remove();C.lessonsBox();return}if(b.dataset.x==='hookbank'){ov.remove();C.hookBank();return}
+  if(b.dataset.p!==undefined){const p=o.presets[+b.dataset.p];if(!confirm('تطبّق وصفة «'+p.name+'»؟ هتغيّر الاختيارات بس (النوع والشكل والمدة…)، والكتابة بتفضل.'))return;st.snap('قبل وصفة',true);Object.assign(st.get(),JSON.parse(JSON.stringify(p.set)));st.save();ov.remove();bar();render();C.toast('🎯 اتطبقت «'+p.name+'»');return}
+  let k=b.dataset.t,send=k.endsWith('!');if(send)k=k.slice(0,-1);let t;
+  if(k==='pub')t=C.pubPrompt(ctx());else if(k==='plan'){const pg=(prompt('اسم الصفحة اللي هتعمل لها الخطة:',localStorage.getItem('hs_lastpage')||'')||'').trim();if(!pg)return;try{localStorage.setItem('hs_lastpage',pg)}catch(x){}t=P_.plan(ctx(),pg)}else t=P_[k](ctx());
+  send?C.send(t):C.copy(t,'اتنسخ ✓ الصقه في التطبيق')}};
+C.hookBank=function(){const l=C.hooks();let o=document.getElementById('hkBox');if(o)o.remove();o=document.createElement('div');o.id='hkBox';o.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
+ o.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:80vh;overflow:auto;padding:12px;color:#fff"><b>🪝 بنك الهوكات</b><div class="m" style="margin:4px 0">احفظ هنا أي هوك نجح معاك (مشاهدات أو تفاعل عالي). أمر «اقترح 10 هوكات» بيتعلم منهم.</div>
+ <textarea id="hkNew" rows="2" placeholder="مثال: «أنا عمري ما شفت زبون بيطلب كده…» + لقطة قريبة على وش فهيم"></textarea><button class="b g" data-h="add" style="width:100%">➕ احفظ الهوك</button>
+ ${l.map((x,i)=>`<div style="display:flex;gap:8px;align-items:center;border-top:1px dashed #334155;padding:6px 0"><span style="flex:1;font-size:14px">${esc(x)}</span><button class="b" data-h="c${i}" style="margin:0">📋</button><button class="b r" data-h="d${i}" style="margin:0">🗑️</button></div>`).join('')||'<div class="m">لسه فاضي.</div>'}
+ <button class="b" data-h="x" style="width:100%;margin-top:10px">إغلاق</button></div>`;
+ document.body.appendChild(o);o.onclick=e=>{const b=e.target.closest('[data-h]');if(e.target===o||(b&&b.dataset.h==='x')){o.remove();return}if(!b)return;const h=b.dataset.h,L=C.hooks();
+  if(h==='add'){const v=o.querySelector('#hkNew').value.trim();if(!v)return;L.unshift(v);hsv(L);C.toast('🪝 اتحفظ ✓');C.hookBank();return}
+  if(h[0]==='c'){C.copy(L[+h.slice(1)]);return}if(h[0]==='d'){L.splice(+h.slice(1),1);hsv(L);C.hookBank()}}};
+})();
