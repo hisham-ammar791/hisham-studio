@@ -248,7 +248,7 @@ C.gdLoad=async function(id){return await (await f(API+'/drive/v3/files/'+id+'?al
 C.packWork=function(P){const d=JSON.parse(JSON.stringify(P)),c=P.cast||{},L={};['chars','places','props','frames'].forEach(k=>{L[k]=(C.lib[k]||[]).filter(x=>(c[k]||[]).includes(x.id))});d._lib=L;return d};
 C.unpackWork=function(d){d=d||{};const L=d._lib;delete d._lib;let n=0;if(L){['chars','places','props','frames'].forEach(k=>{(L[k]||[]).forEach(x=>{if(x&&x.id&&!C.lib[k].some(y=>y.id===x.id)){C.lib[k].push(x);n++}})});if(n)C.libSave()}return d};
 /* شريط العمل */
-C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
+C.work=function(o){const {ns,st,render}=o,P=()=>st.get();C._page={st,def:o.def,render,ns};
  const bar=()=>{let el=document.getElementById('wbar');if(!el){el=document.createElement('div');el.id='wbar';const h=document.querySelector('header');h.parentNode.insertBefore(el,h.nextSibling)}
   el.innerHTML=`<div style="display:flex;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap"><span style="font-size:13px;color:var(--muted)">📁</span><input id="wName" value="${esc(P().wname||'')}" placeholder="اسم العمل" style="flex:1;min-width:120px;padding:6px 8px;font-size:14px">
   <button class="b" data-w="save" style="margin:0">☁️ حفظ</button><button class="b" data-w="open" style="margin:0">📂 فتح</button><button class="b" data-w="new" style="margin:0">🆕 جديد</button><button class="b bl" data-w="check" style="margin:0">🔎 فحص</button><button class="b" data-w="tools" style="margin:0">🧰 أدوات</button></div>${dirty()?'<div style="background:#422006;color:#fcd34d;font-size:12px;padding:3px 12px">● فيه تعديلات ما اتحفظتش على Drive</div>':''}`};
@@ -616,7 +616,7 @@ C.gemRun=async function(parts,onStep,opt){opt=opt||{};if(!C.gemKey())throw new E
  for(const x of parts){if(typeof x==='string')P.push({text:x});else if(x.blob){const d=await C.b64(x.blob);size+=d.length;P.push({inline_data:{mime_type:x.blob.type||x.mime||'application/octet-stream',data:d}})}else if(x.b64){size+=x.b64.length;P.push({inline_data:{mime_type:x.mime,data:x.b64}})}}
  if(size>95e6)throw new Error('الملفات كبيرة أوي على الإيجنت (أكتر من 95 ميجا). قصّر الأغنية أو قلل الفيديوهات');
  onStep&&onStep('🤖 الفريق بيشتغل… ('+model.replace('models/','')+')');
- const r=await fetch(BASE+'/'+model+':generateContent?key='+encodeURIComponent(C.gemKey()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({contents:(opt.history||[]).map(h=>({role:h.role,parts:[{text:h.text}]})).concat([{role:'user',parts:P}]),generationConfig:{temperature:opt.temp==null?.6:opt.temp,maxOutputTokens:16384}},opt.search?{tools:[{google_search:{}}]}:{}))});
+ const r=await fetch(BASE+'/'+model+':generateContent?key='+encodeURIComponent(C.gemKey()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({systemInstruction:{parts:[{text:(opt.sys===false?'':C.CREW||'')+(opt.sysExtra?'\n'+opt.sysExtra:'')}]},contents:(opt.history||[]).map(h=>({role:h.role,parts:[{text:h.text}]})).concat([{role:'user',parts:P}]),generationConfig:{temperature:opt.temp==null?.6:opt.temp,maxOutputTokens:16384}},opt.search?{tools:[{google_search:{}}]}:{}))});
  const j=await r.json().catch(()=>({}));if(!r.ok){if(r.status===404){try{localStorage.removeItem(MK)}catch(e){}}throw new Error((j.error&&j.error.message)||('Gemini رد بخطأ '+r.status))}
  const cand=(j.candidates||[])[0]||{},t=cand.content;let out=t&&t.parts?t.parts.filter(p=>!p.thought).map(p=>p.text||'').join(''):'';if(!out.trim())throw new Error('Gemini ما ردّش (ممكن المحتوى اتمنع أو الحد المجاني خلص)');
  const G=cand.groundingMetadata&&cand.groundingMetadata.groundingChunks;if(opt.search&&G&&G.length){const seen={};const L=G.map(g=>g.web).filter(w=>w&&w.uri&&!seen[w.uri]&&(seen[w.uri]=1)).slice(0,12);if(L.length)out+='\n\nالمصادر اللي اتبحث فيها:\n'+L.map(w=>'- '+(w.title||'')+': '+w.uri).join('\n')}
@@ -625,6 +625,19 @@ C.gemRun=async function(parts,onStep,opt){opt=opt||{};if(!C.gemKey())throw new E
 C.between=t=>{const m=String(t||'').match(/===\s*بداية\s*===([\s\S]*?)===\s*نهاية\s*===/);return m?m[1].trim():null};
 const MARK='\n\nمهم للبرنامج: اكتب الناتج النهائي المطلوب بس بين السطرين ===بداية=== و===نهاية===، وأي شرح أو ملاحظات قبلهم.';
 C.AGMARK=MARK;
+
+/* ===== دستور الفريق العالمي (بيتبعت مع كل طلب للإيجنت) ===== */
+C.CREW=`أنت مش مساعد عادي. أنت فريق إنتاج عالمي كامل بيشتغل كأنه شخص واحد متكامل، ومستواه مستوى أفضل الأفلام والإعلانات والكليبات في العالم. الفريق:
+1) سيناريست وكاتب محتوى: بناء درامي محكم، هوك من أول ثانيتين، صراع وتصاعد وذروة ونهاية مؤثرة، حوار بشري طبيعي يتقال بصوت عالي، وكوميديا أو تشويق حسب النوع. بيكتب بالعامية المصرية أو باللغة المطلوبة، ومش باين أبدًا إنه مكتوب بالذكاء الاصطناعي.
+2) مخرج: رؤية واضحة لكل مشهد، توجيه أداء الممثلين وأصواتهم، إيقاع، وكل لقطة ليها سبب في الحكاية.
+3) مدير تصوير ومهندس كادرات: حجم اللقطة والعدسة والزاوية وحركة الكاميرا المناسبة لكل لحظة، وقواعد التكوين (الأثلاث، العمق، الخطوط الموجّهة، المساحة السلبية)، وقاعدة 180 درجة واستمرارية الاتجاه.
+4) مهندس إضاءة: مصدر الضوء واتجاهه وجودته (ناعم/حاد) ودرجة حرارته، والإضاءة بتخدم الإحساس، ونفس منطق الإضاءة ثابت بين اللقطات.
+5) مهندس ألوان (Colorist): لوحة ألوان للعمل كله، وتلوين يخدم الإحساس، وثبات الألوان بين اللقطات.
+6) مونتير: القطع على الحركة، match cut و smash cut و jump cut في مكانهم، تنويع أطوال اللقطات، وانتقالات قليلة ومبررة.
+7) مهندس صوت ومكساج: وضوح الكلام أولًا، الموسيقى تحت الكلام، المؤثرات بتبني العالم، ومستوى علوّ مناسب للمنصات.
+8) مصمم جرافيك: هوية بصرية، خطوط مناسبة للعربي والإنجليزي، تسلسل بصري واضح، بوسترات وصور مصغّرة بتجذب من أول نظرة.
+9) باحث ومثقف عالمي: معلومات دقيقة، وكل معلومة مهمة بمصدرها لو متاح البحث، ومش بيخترع أرقام أو أسماء أو أحداث. لو مش متأكد بيقول «غير مؤكد».
+قواعد ثابتة: نفّذ اللي صاحب الشغل طالبه بالظبط وبأعلى احترافية، من غير ما تغيّر حاجة مطلبش يغيّرها. لو الطلب ممكن يتعمل أحسن قول اقتراحك في سطر، ونفّذ طلبه هو. التزم بأي شكل ناتج مطلوب منك حرفيًا (علامات، JSON، صيغة لقطات)، عشان البرنامج بيقرا ردك ويطبّقه أوتوماتيك. ردك بالعامية المصرية ومختصر، إلا لو المطلوب نص طويل.`;
 /* ===== محرك «اعمل العمل كله»: خطوات بنقط مراجعة ===== */
 C.agentFlow=function(o){if(!C.gemKey()){C.agentKeyBox();return}let ov=document.getElementById('agFlow');if(ov)ov.remove();ov=document.createElement('div');ov.id='agFlow';ov.style.cssText='position:fixed;inset:0;z-index:97;background:#000c;display:flex;align-items:flex-end';
  const S=o.steps.map(x=>Object.assign({st:'wait'},x));let cur=-1,out='',auto=false,busy=false,stopped=false,hist=[];
@@ -663,9 +676,53 @@ C.agentShots=function(PR,getP,applyParse,label){return {label:label||'تقسيم
 /* خطوات الترند والنشر */
 C.agentPub=function(getP,save,getCtx){return [{label:'الترندات (بحث جوجل)',search:true,gate:true,gateLabel:'الترندات والهاشتاجات المنتشرة دلوقتي:',build:()=>C.trendsPrompt(getP(),getCtx()),pick:x=>x,apply:out=>{const P=getP();P.pub=P.pub||{};P.pub.trends=out;save()}},
  {label:'حزمة النشر',gate:true,gateLabel:'خطة النشر والكابشن والهاشتاجات لكل منصة:',build:()=>C.pubPack(getP(),getCtx()),pick:x=>x,apply:out=>{const P=getP();const r=C.pubParse(out);P.pub=Object.assign(P.pub||{},{raw:out},r.items.length?r:{});P.pub.posted={};save()}}]};
+
+/* ===== «اطلب أي حاجة»: الفريق يقرا العمل ويعدّل فيه أو يرد ===== */
+const NOEDIT=['step','sendIdx','sendMode','grid','wname','pub','cast','chkPaste','paste','media','edl','logo','brands','brandSel','agentNote'];
+function slim(P){return JSON.stringify(P,(k,v)=>{if(NOEDIT.includes(k)&&k!=='wname')return undefined;if(typeof v==='string'&&v.startsWith('data:'))return undefined;if(k==='img'||k==='thumb')return undefined;return v}).slice(0,40000)}
+C.agentAsk=async function(req,onStep){const pg=C._page;if(!pg)throw new Error('الصفحة دي مش جاهزة للإيجنت');const P=pg.st.get(),D=pg.def;
+ const fields=Object.keys(D).filter(k=>!NOEDIT.includes(k)&&['string','number','boolean'].includes(typeof D[k]));
+ const prompt=`طلب صاحب الشغل:
+${req}
+
+حالة العمل الحالية (JSON):
+${slim(P)}
+
+${C.castTxt?C.castTxt(P):''}
+الخانات اللي تقدر تعدّلها: ${fields.join('، ')}${Array.isArray(D.shots)?'، واللقطات shots (كل لقطة: dur بالثواني، lyric الكلام المنطوق، desc المشهد، cam الكاميرا والكادر، move الحركة، light الإضاءة، look تغيير الشكل)':''}.
+
+نفّذ الطلب كفريق عالمي. لو الطلب سؤال أو استشارة أو حاجة مش مكانها خانة (زي أمر بوستر أو لوحة ألوان أو بحث) حطها كاملة في answer.
+اكتب ردك كده: سطر أو اتنين شرح، وبعدين JSON صحيح بين ===بداية=== و===نهاية===:
+{"answer":"ردك أو الناتج الكامل لو مطلوب","set":{"اسم_الخانة":"القيمة الجديدة كاملة"},"shotEdits":[{"i":0,"light":"..."}],"shots":null}
+- set: الخانات اللي اتغيرت بس، بقيمتها الجديدة الكاملة.
+- shotEdits: تعديل لقطات موجودة (i رقم اللقطة من 0).
+- shots: لو هتعيد كتابة اللقطات كلها أو تزود لقطات، حط القايمة الكاملة الجديدة، وإلا null.
+- ما تغيّرش أي حاجة الطلب ما طلبهاش.`;
+ const out=await C.gemRun([prompt],onStep,{search:/ابحث|بحث|ترند|مصدر|إحصائ|حقيقي|تاريخ/.test(req)});
+ const raw=C.between(out);let o=null;if(raw){try{o=JSON.parse(raw.replace(/,\s*([}\]])/g,'$1'))}catch(e){}}
+ if(!o)return {answer:out,changed:[]};
+ const before=JSON.stringify(P),changed=[];
+ Object.entries(o.set||{}).forEach(([k,v])=>{if(!fields.includes(k))return;P[k]=typeof D[k]==='number'?(+v||0):typeof D[k]==='boolean'?!!v:String(v);changed.push(k)});
+ if(Array.isArray(P.shots)){const F=['dur','lyric','desc','cam','move','light','look'];
+  if(Array.isArray(o.shots)&&o.shots.length){const old=P.shots;P.shots=o.shots.map((x,i)=>{const b=Object.assign({dur:4,lyric:'',desc:'',cam:'',move:'',light:'',look:'',img:'',done:false},old[i]?{img:old[i].img,frame:old[i].frame,done:old[i].done,imgMode:old[i].imgMode}:{});F.forEach(f=>{if(x[f]!=null)b[f]=f==='dur'?Math.max(1,Math.min(15,+x[f]||4)):String(x[f])});return b});changed.push(o.shots.length+' لقطة')}
+  (o.shotEdits||[]).forEach(e=>{const s=P.shots[+e.i];if(!s)return;F.forEach(f=>{if(e[f]!=null)s[f]=f==='dur'?Math.max(1,Math.min(15,+e[f]||s.dur)):String(e[f])});changed.push('لقطة '+(+e.i+1))})}
+ if(changed.length){pg.st.save()}return {answer:(o.answer||'')+(out.includes('المصادر اللي اتبحث فيها')?'\n\n'+out.slice(out.indexOf('المصادر اللي اتبحث فيها')):''),changed,before}};
+C.askBox=function(){return `<div style="margin-top:10px"><label class="l">💬 اطلب أي حاجة من الفريق</label><textarea id="askIn" rows="2" placeholder="مثال: خلي البطل صعيدي ولهجته قوية، وغيّر إضاءة كل اللقطات لليل بإضاءة نيون زرقا وحمرا، واقترح بوستر للفيلم"></textarea>
+ <button class="b bl" data-a="askGo" style="width:100%">🎬 نفّذ</button><div id="askOut"></div></div>`};
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-a="askGo"],[data-ask]');if(!b)return;const pg=C._page;if(!pg)return;
+ if(b.dataset.ask==='undo'){if(C._askUndo){pg.st.snap('قبل التراجع',true);pg.st.set(JSON.parse(C._askUndo));C._askUndo=null;pg.render();C.toast('↩️ رجع زي ما كان')}return}
+ if(b.dataset.ask==='copy'){C.copy(C._askAns||'','اتنسخ ✓');return}
+ if(!C.gemKey()){C.agentKeyBox();return}const req=(document.getElementById('askIn')||{}).value||'';if(!req.trim()){C.toast('اكتب طلبك الأول');return}
+ const box=document.getElementById('askOut');const say=t=>{if(box)box.innerHTML='<div class="m">'+esc(t)+'</div>'};b.disabled=true;
+ try{pg.st.snap('قبل طلب الإيجنت',true);const r=await C.askAgent(req,say);C._askUndo=r.before||null;C._askAns=r.answer||'';pg.render();
+  const bx=document.getElementById('askOut');if(bx)bx.innerHTML=`<div class="shot" style="border-color:#10b981">${r.changed.length?'<b>✅ اتعدّل: '+esc(r.changed.join('، '))+'</b>':'<b>💬 رد الفريق</b>'}${r.answer?`<div style="white-space:pre-wrap;font-size:14px;margin-top:6px">${esc(r.answer)}</div>`:''}<div>${r.answer?'<button class="b" data-ask="copy">📋 نسخ</button>':''}${r.changed.length?'<button class="b" data-ask="undo">↩️ تراجع</button>':''}</div></div>`;
+  const ta=document.getElementById('askIn');if(ta)ta.value=''}
+ catch(x){say('⚠️ '+x.message)}b.disabled=false});
+C.askAgent=C.agentAsk;
 C.agentKeyBox=function(){let o=document.getElementById('agKeyBox');if(o)o.remove();o=document.createElement('div');o.id='agKeyBox';o.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
  o.innerHTML=`<div style="background:#0f172a;border:1px solid #10b981;border-radius:16px 16px 0 0;width:100%;padding:12px;color:#fff"><b>🔑 الإيجنت محتاج مفتاح Gemini</b>${C.agentKeyHTML().replace('<details','<details open')}<button class="b" style="width:100%;margin-top:8px" onclick="this.closest('#agKeyBox').remove()">إغلاق</button></div>`;document.body.appendChild(o)};
-C.agentBtn=(label)=>`<div class="c" style="border-color:#10b981"><button class="b g" data-a="agentAll" style="width:100%;font-size:16px;padding:12px">🤖 ${label||'اعمل العمل كله بالإيجنت'}</button><div class="m">بيكتب ويقسّم ويملا الستوري بورد لوحده، ويقف عند كل مرحلة تراجعها وتعدّل فيها. ${C.gemKey()?'':'(محتاج مفتاح Gemini مجاني)'}</div></div>`;
+C.agentBtn=(label)=>`<div class="c" style="border-color:#10b981"><h3>🤖 فريقك العالمي</h3><div class="m">سيناريست ومخرج ومدير تصوير ومهندس إضاءة وألوان ومونتير ومهندس صوت ومصمم جرافيك وباحث، شغالين كإيجنت واحد. ${C.gemKey()?'':'(محتاج مفتاح Gemini مجاني)'}</div>
+ <button class="b g" data-a="agentAll" style="width:100%;font-size:16px;padding:12px">🎬 ${label||'اعمل العمل كله'}</button><div class="m">بيكتب ويقسّم ويملا الستوري بورد لوحده، ويقف عند كل مرحلة تراجعها.</div>${C.askBox()}</div>`;
 /* كارت الإيجنت (مشترك) */
 C.agentKeyHTML=function(){const has=!!C.gemKey();return `<details${has?'':' open'} style="margin-top:6px"><summary style="font-size:13px;color:#94a3b8">🔑 مفتاح Gemini ${has?'✓ متحط':'(مطلوب لوضع الإيجنت)'}</summary>
  <div class="m" style="font-size:12px">خده ببلاش من aistudio.google.com/apikey (Get API key). بيتحفظ على الجهاز ده بس، ومش بيدخل في النسخة الاحتياطية. الملفات بتتبعت لـ Google عشان Gemini يشوفها ويسمعها.</div>
