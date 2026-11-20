@@ -48,7 +48,7 @@ textarea{resize:vertical}
 <script src="fieldtools.js"></script>
 <script>
 const {esc,toast}=CORE;
-const DEF={step:0,kind:'video',bName:'',bCat:'',bAudience:'',bOffer:'',bIdentity:'',brands:[],brandSel:'',health:false,
+const DEF={step:0,inspo:'',useInspo:true,kind:'video',bName:'',bCat:'',bAudience:'',bOffer:'',bIdentity:'',brands:[],brandSel:'',health:false,
  idea:'',platform:'all',genre:'comedy',lang:'eg',satire:'light',voice:'sales',customVoice:'',script:'',
  visual:'cine',customVisual:'',aspect:'9:16',sec:30,parts:'auto',singer:'',singerId:'',paste:'',shots:[],sendIdx:0};
 const st=CORE.store('ad',DEF);const p=()=>st.get();
@@ -76,7 +76,21 @@ write(){const P=p();if(!P.bName.trim()&&!P.idea.trim()){alert('اكتب اسم �
   audio:`اكتب إعلان صوتي مدته ${P.sec} ثانية.\nالناتج: سكريبت سطر بسطر: [الصوت/الشخص + توجيه الأداء بين قوسين] الجملة، مع [مؤثر] و[موسيقى] في أماكنها، وعدد الكلمات مناسب للمدة (حوالي 2.5 كلمة في الثانية). وبعده «توجيه المعلق:» نوع الصوت والنبرة والسرعة باللهجة المختارة.`,
   post:`اكتب بوست إعلاني.\nالناتج: (1) 3 هوكات مختلفة لأول سطر، وعلّم الأقوى. (2) البوست كامل بالأقوى، فقرات قصيرة جدًا مناسبة للموبايل. (3) دعوة للإجراء. (4) 7 هاشتاجات. (5) فكرة الصورة المرافقة في سطرين.`,
   poster:`صمم بوستر إعلاني (أنت مصمم عالمي ومعلن).\nالناتج: العنوان الرئيسي (أقل من 7 كلمات)، والعنوان الفرعي، ونص الدعوة للإجراء، وتوزيع العناصر على البوستر (التسلسل البصري)، والألوان بالكود، ونوع الخط، ومقاس ${P.aspect}.`}[P.kind];
- return `أنت فريق إعلان محترف: ${CORE.TEAM.ad}.\n${out}\n\n${base()}`},
+ return `أنت فريق إعلان محترف: ${CORE.TEAM.ad}.\n${out}\n\n${base()}${P.useInspo&&P.inspo.trim()?'\n\nإلهام من إعلانات عالمية ناجحة من نفس النوع (استلهم الفكرة والتكنيك وما تنسخش، وما تستخدمش أسماء أو شعارات البراندات دي):\n'+P.inspo.trim().slice(0,3500):''}`},
+world(){const P=p();if(!P.bName.trim()&&!P.bCat.trim()&&!P.idea.trim()){alert('اكتب المنتج أو الفئة أو الفكرة الأول');return ''}
+ return `أنت باحث إعلانات عالمي ومدير إبداعي فاز في Cannes Lions. ابحث على النت دلوقتي (بحث حي) عن أقوى 6 إعلانات عالمية من نفس النوع: إعلان ${kindName()}، وفي نفس الفئة (${P.bCat||'الفئة الأقرب للمنتج'}) أو بتحل نفس المشكلة أو بتلعب على نفس الإحساس${P.idea.trim()?'، وقريبة من الفكرة دي: '+P.idea.trim():''}. ونوّع بين إعلانات عالمية وعربية ناجحة.
+
+لكل إعلان اكتب:
+- البراند، والبلد، والسنة، والوكالة لو معروفة، والجوايز لو أخدت (Cannes Lions أو D&AD أو Effie).
+- رابط تتفرج عليه منه، أو مصدر.
+- الفكرة في سطرين، والهوك في أول ثواني (إيه اللي بيتشاف وبيتسمع).
+- الهيكل باختصار، وليه نجح (السبب النفسي أو الإبداعي)، والنتيجة لو منشورة بأرقام حقيقية.
+- إزاي أستلهمه لمنتجي في السوق المصري من غير ما أنسخه: فكرة عملية في سطرين، وأول 3 ثواني.
+علّم كل معلومة: ✅ متأكد ومعاك مصدر، أو ⚠️ غير متأكد. ممنوع تخترع إعلان أو جايزة أو رقم.
+
+وفي الآخر: «أقوى 3 أفكار لمنتجي» مستوحاة من الحاجات اللي فوق. لكل فكرة: الاسم، والهوك، والقصة في 4 سطور، وليه هتنجح مع الجمهور ده.
+
+${brandTxt()}${RULES()}`},
 ab(){const P=p();return `أنت كاتب إعلانات عالمي. اكتب 3 نسخ مختلفة من إعلان ${kindName()} للاختبار A/B، كل نسخة بزاوية هوك مختلفة (مثلًا: سؤال صادم، موقف مضحك، رقم أو حقيقة، تحدي). لكل نسخة: الهوك، والنسخة كاملة، وجمهورها الأنسب. وفي الآخر: أيهم تختبر الأول ولماذا في سطر.\n${P.script.trim()?'الإعلان الحالي للبناء عليه:\n"""'+P.script.trim()+'"""\n':''}\n${base()}`},
 plats(){const P=p();if(!P.script.trim()){alert('الصق الإعلان الجاهز الأول');return ''}return `حوّل الإعلان ده لنسخ مخصصة لكل منصة: فيسبوك، إنستجرام (ريلز وبوست)، تيك توك، يوتيوب شورتس، حالة واتساب. لكل منصة: المدة أو الطول المناسب، والهوك المعدّل، والكابشن، والهاشتاجات، وملاحظة إخراج واحدة. حافظ على نفس الرسالة واللغة.${RULES()}\n\nالإعلان:\n"""\n${P.script.trim()}\n"""`},
 team(){const P=p();if(!P.script.trim()){alert('الصق الإعلان الجاهز الأول');return ''}return CORE.teamReview('إعلان '+kindName()+(P.health?' لمنتج صحي (افحص الالتزام بقواعده)':''),CORE.TEAM.ad,P.script.trim()+'\n\n'+brandTxt()+RULES())},
@@ -138,7 +152,10 @@ function s0(){const P=p();return `<div class="c"><h3>📣 نوع الإعلان<
  <label class="l">الهوية (ألوان، نبرة، شعار)</label><textarea data-f="bIdentity" rows="2">${esc(P.bIdentity)}</textarea>
  <label class="l" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-chk="health" ${P.health?'checked':''} style="width:auto"> منتج صحي أو دواء أو مكمل (يطبّق قواعد الإعلان الصحي)</label>
  <button class="b" data-a="saveBrand">💾 احفظ البراند</button>${P.brandSel!==''?`<button class="b r" data-a="delBrand">🗑️</button>`:''}</div>
- `+CORE.castCard(P)+`<div class="c"><h3>✍️ الفكرة والأسلوب</h3>
+ `+CORE.castCard(P)+`<div class="c"><h3>🌍 أفكار عالمية من نفس النوع</h3><div class="m">بحث عن أنجح إعلانات العالم من نفس نوع إعلانك وفئته: فكرتها وهوكها وليه نجحت، وإزاي تستلهمها لمنتجك. ابعت الأمر لتطبيق بيدوّر على النت (Gemini أو Perplexity أو ChatGPT بالبحث أو Grok).</div>
+ ${pair('world','أمر الإلهام العالمي')}<textarea data-f="inspo" rows="${P.inspo?5:3}" placeholder="الصق الرد هنا، أو احتفظ بالفكرة اللي عجبتك بس">${esc(P.inspo)}</textarea>
+ <label class="l" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-chk="useInspo" ${P.useInspo?'checked':''} style="width:auto"> استخدم الإلهام ده في أمر كتابة الإعلان</label></div>
+ <div class="c"><h3>✍️ الفكرة والأسلوب</h3>
  <label class="l">الفكرة أو الزاوية (اختياري، الذكاء يقترح لو فاضية)</label><textarea data-f="idea" rows="3">${esc(P.idea)}</textarea>
  ${CORE.hookEmoHTML(P)}<div class="row"><div><label class="l">المنصة</label>${sel('platform',PLATS,P.platform)}</div><div><label class="l">النوع</label>${sel('genre',CORE.GENRES,P.genre)}</div></div>
  <div class="row"><div><label class="l">اللغة</label>${sel('lang',CORE.LANGS,P.lang)}</div><div><label class="l">السخرية</label>${sel('satire',CORE.SATIRE,P.satire)}</div></div>

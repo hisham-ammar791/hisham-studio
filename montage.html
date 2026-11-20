@@ -495,7 +495,7 @@ function s2(){const P=p(),E=P.edl;if(!E)return `<div class="c m">لسه مفيش
  <div class="row mini"><div><label class="l">شكل الترجمة/الكلام</label><select data-e="subMode">${opts([['line','سطر سطر'],['karaoke','كاريوكي (الكلمة بتنور)']],E.subMode||'line')}</select></div></div>
  <div class="row mini"><div><label class="l">خط الترجمة</label><select data-e="subFont">${opts(FONTS.map(f=>[f[0],f[1]]),E.subFont||'cairo')}</select></div><div><label class="l">شكل الترجمة</label><select data-e="subStyle">${opts(TSTYLES,E.subStyle||'box')}</select></div></div>
  <div class="row mini"><div><label class="l">الجودة</label><select data-f="quality">${opts([['720','HD 720'],['1080','Full HD 1080']],P.quality)}</select></div></div>
- <label class="l">الترجمة على الشاشة (كل سطر: من-لـ: الكلام)</label><textarea data-subs rows="4" placeholder="0.5-2.5: أهلا يا دكتور">${esc((E.subtitles||[]).map(s=>s.t0+'-'+s.t1+': '+s.text).join('\n'))}</textarea></div>`}
+ <label class="l">الترجمة على الشاشة (كل سطر: من-لـ: الكلام)</label><textarea data-subs rows="4" placeholder="0.5-2.5: أهلا يا دكتور">${esc((E.subtitles||[]).map(s=>s.t0+'-'+s.t1+': '+s.text).join('\n'))}</textarea></div>`+CORE.pubCard(P)}
 function render(){const P=p();document.getElementById('nav').innerHTML=STEPS.map((t,k)=>`<button class="b${k===P.step?' g':''}" data-a="go" data-i="${k}">${t}</button>`).join('');
  document.getElementById('app').innerHTML=CORE.stage(P,STEPS,[s0,s1,s2][P.step]());if(P.step===2&&P.edl&&!RUN){SCRUB.vids={};SCRUB.logo=null;setTimeout(()=>renderAt(Math.min(SCRUB.t,edlDur(P.edl))),30)}}
 
@@ -567,6 +567,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
 CORE.work({presets:[{name:'😂 ريل كوميدي سريع',set:{pace:'fast',genre:'comedy',grade:'warm',platform:'reels',aspect:'9:16',sec:30}},{name:'🎬 سينمائي مؤثر',set:{pace:'slow',genre:'drama',grade:'cinematic',platform:'film',aspect:'16:9',sec:60}},{name:'📣 إعلان 15 ثانية',set:{pace:'fast',grade:'vivid',platform:'ad',aspect:'9:16',sec:15}},{name:'🎵 كليب على الإيقاع',set:{pace:'beat',grade:'cinematic',platform:'reels',aspect:'9:16',sec:45}},{name:'👻 رعب',set:{pace:'slow',genre:'horror',grade:'night',platform:'reels',aspect:'9:16',sec:45}}],
  ctx:()=>'مونتاج: '+(p().brief||'')+'\n'+mediaTxt(),ns:'montage',st,def:DEF,render,
  check:{team:TEAM,text:()=>{const P=p();return P.edl?'الطلب: '+P.brief+'\nالمواد:\n'+mediaTxt()+'\n\nخطة المونتاج (JSON):\n'+edlTxt():''},apply:v=>{const e=parseEDL(v);if(!e||!e.clips.length){alert('مش لاقي خطة سليمة في الرد');return false}p().edl=e;st.save();return e.clips.length+' لقطة'}}});
+CORE.bindPub(p,()=>st.save(),render,()=>{const P=p();return 'فيديو مونتاج: '+(P.brief||'')+'\n'+(P.lyrics?'كلام الأغنية:\n'+P.lyrics.slice(0,800)+'\n':'')+mediaTxt()});
 st.snap('عند الفتح');render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>

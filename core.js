@@ -415,7 +415,30 @@ C.hookBank=function(){const l=C.hooks();let o=document.getElementById('hkBox');i
 const C=window.CORE,esc=C.esc;
 const PLATS=[['fb','فيسبوك'],['ig','إنستجرام ريلز'],['tt','تيك توك'],['yts','يوتيوب شورتس'],['yt','يوتيوب'],['wa','حالة واتساب']];
 const LABELS=['العنوان','الهوك','الكابشن','الهاشتاجات','أفضل وقت','أول تعليق','ملاحظة'];
-const pub=P=>{P.pub=Object.assign({plats:['fb','ig','tt','yts'],raw:'',plan:'',thumb:'',items:[],posted:{}},P.pub||{});return P.pub};
+const pub=P=>{P.pub=Object.assign({plats:['fb','ig','tt','yts'],raw:'',plan:'',thumb:'',items:[],posted:{},trends:'',country:'مصر'},P.pub||{});return P.pub};
+const today=()=>new Date().toLocaleDateString('ar-EG',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+C.trendsPrompt=function(P,ctx){const u=pub(P),names=u.plats.map(k=>C.pick(PLATS,k)[1]);
+ return `أنت محلل ترندات سوشيال ميديا. النهارده ${today()}. ابحث على النت دلوقتي (بحث حي، مش من ذاكرتك) عن الترندات والهاشتاجات المنتشرة فعلًا في آخر 7 أيام في ${u.country||'مصر'} على: ${names.join('، ')}.
+مصادر تدوّر فيها: ترندات X وجوجل ترندز، وCreative Center بتاع تيك توك، والصوتيات والتحديات المنتشرة على الريلز، والأخبار والمناسبات الجاية في الأسبوعين الجايين.
+
+بعدين اختار بس اللي ليه علاقة حقيقية بالعمل ده أو بجمهوره، وارفض أي ترند حساس (حوادث، وفيات، سياسة، أزمات) أو ملوش علاقة، لأن ركوب ترند غلط بيضر الصفحة.
+
+اكتب الناتج كده ومن غير أي كلام تاني:
+=== ترندات مناسبة ===
+لكل ترند سطر: الاسم | المنصة | دليل إنه منتشر (رابط أو مصدر وتاريخ) | إزاي العمل يركب عليه بشكل ذكي في جملة
+=== هاشتاجات منتشرة دلوقتي ===
+لكل منصة: من 5 لـ 10 هاشتاجات مستخدمة فعلًا الأسبوع ده ومناسبة، وجنب كل واحد (كبير/متوسط/متخصص)
+=== صوتيات وأشكال رايجة ===
+أصوات أو تحديات أو قوالب مونتاج منتشرة ينفع العمل يستخدمها (لو موجودة)
+=== مناسبات قريبة ===
+أي مناسبة أو يوم عالمي في الأسبوعين الجايين ينفع نربطه بالعمل
+=== تحذير ===
+ترندات منتشرة بس ما ينفعش نركبها ولماذا (سطر لكل واحد)
+
+لو مش متأكد إن حاجة منتشرة فعلًا اكتب جنبها (غير مؤكد). ممنوع تخترع ترند أو هاشتاج.
+
+العمل:
+${ctx}`};
 C.pubPack=function(P,ctx){const u=pub(P),names=u.plats.map(k=>C.pick(PLATS,k)[1]);
  return `أنت مدير محتوى ومسوّق سوشيال ميديا عالمي للجمهور المصري والعربي. جهّز حزمة نشر كاملة وجاهزة للعمل ده، على المنصات دي بس: ${names.join('، ')}.
 اكتب الناتج بالشكل ده بالظبط (العلامات زي ما هي) ومن غير أي كلام تاني:
@@ -435,7 +458,7 @@ ${names.map(n=>`=== منصة: ${n} ===
 أمر صورة مصغّرة بالإنجليزي + جملة عربي قصيرة تتكتب عليها (3 كلمات كحد أقصى).
 
 قواعد: اللغة نفس لغة العمل وبأسلوب بشري جذاب، بدون كليشيهات، بدون وعود مبالغ فيها، والهاشتاجات حقيقية ومستخدمة.
-${C.WRITING}
+${u.trends.trim()?'\nالترندات والهاشتاجات المنتشرة دلوقتي (من بحث حي، النهارده '+today()+'). اركب المناسب منها بذكاء وطبيعية، واستخدم الهاشتاجات المنتشرة دي في الأول، ومتستخدمش اللي في التحذير:\n'+u.trends.trim().slice(0,3500)+'\n':'\nلو تقدر تبحث على النت دلوقتي، اعرف الهاشتاجات المنتشرة الأسبوع ده في '+(u.country||'مصر')+' واستخدم المناسب منها.\n'}${C.WRITING}
 
 العمل:
 ${ctx}`};
@@ -450,6 +473,11 @@ C.pubParse=function(t){const out={plan:'',thumb:'',items:[]};const parts=t.split
 C.pubCard=function(P){const u=pub(P);
  return `<div class="c" style="border-color:#f59e0b"><h3>📢 جاهز للنشر</h3><div class="m">خطة النشر والكابشن والهاشتاجات لكل منصة، بتتحفظ مع العمل.</div>
  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${PLATS.map(([k,n])=>`<button class="b${u.plats.includes(k)?' g':''}" data-pp="${k}" style="margin:0">${n}</button>`).join('')}</div>
+ <div class="shot"><b>🔥 1) اعرف الترند الأول</b><div class="m">الأمر ده لتطبيق بيدوّر على النت دلوقتي: <b>Grok</b> (الأقوى في ترندات X)، أو <b>Gemini</b>، أو <b>Perplexity</b>، أو ChatGPT بالبحث. بيرجع لك الترندات والهاشتاجات المنتشرة الأسبوع ده، والمناسبة لشغلك بس.</div>
+  <div class="row"><div><label class="l">البلد</label><input data-pu-country value="${esc(u.country||'مصر')}"></div></div>
+  <div class="pair"><button class="b bl" data-pu="tr">📋 أمر الترندات</button><button class="b" data-pu="tr!">📤</button></div>
+  <textarea data-pu-tr rows="${u.trends?3:4}" placeholder="الصق رد الترندات هنا، وهيدخل في حزمة النشر لوحده">${esc(u.trends||'')}</textarea>${u.trends?'<div class="m" style="color:#86efac">✓ الترندات هتدخل في أمر حزمة النشر</div>':''}</div>
+ <div class="m" style="margin-top:8px"><b>2) حزمة النشر</b></div>
  <div class="pair"><button class="b bl" data-pu="cmd">📋 أمر حزمة النشر</button><button class="b" data-pu="cmd!">📤</button></div>
  <textarea data-pu-raw rows="${u.items.length?3:6}" placeholder="الصق رد الذكاء هنا">${esc(u.raw)}</textarea><button class="b g" data-pu="parse">✂️ حوّل لكروت نشر</button>
  ${u.plan?`<div class="shot"><b>🗓️ خطة النشر</b><div class="m" style="white-space:pre-wrap;color:#e2e8f0">${esc(u.plan)}</div><button class="b" data-pc="plan">📋</button></div>`:''}
@@ -458,17 +486,21 @@ C.pubCard=function(P){const u=pub(P);
   <div style="white-space:pre-wrap;font-size:14px;margin-top:6px">${esc([it['الهوك'],it['الكابشن']].filter(Boolean).join('\n\n'))}</div>
   <div class="m" style="margin-top:6px;color:#7dd3fc;direction:rtl">${esc(it['الهاشتاجات']||'')}</div>
   ${it['أول تعليق']?`<div class="m" style="margin-top:6px">💬 أول تعليق: ${esc(it['أول تعليق'])}</div>`:''}
-  <div><button class="b bl" data-pc="all:${i}">📋 الكابشن + الهاشتاجات</button><button class="b" data-pc="cap:${i}">الكابشن</button><button class="b" data-pc="tag:${i}">#</button>${it['العنوان']?`<button class="b" data-pc="ttl:${i}">العنوان</button>`:''}${it['أول تعليق']?`<button class="b" data-pc="fc:${i}">💬</button>`:''}<button class="b${u.posted[i]?' on':''}" data-pc="done:${i}">✓ ${u.posted[i]?'اتنشر':'نشرت'}</button></div></div>`).join('')}
+  <div><button class="b g" data-pc="post:${i}">📤 انشر على ${esc(it.name)}</button><button class="b bl" data-pc="all:${i}">📋 الكابشن + الهاشتاجات</button><button class="b" data-pc="cap:${i}">الكابشن</button><button class="b" data-pc="tag:${i}">#</button>${it['العنوان']?`<button class="b" data-pc="ttl:${i}">العنوان</button>`:''}${it['أول تعليق']?`<button class="b" data-pc="fc:${i}">💬</button>`:''}<button class="b${u.posted[i]?' on':''}" data-pc="done:${i}">✓ ${u.posted[i]?'اتنشر':'نشرت'}</button></div></div>`).join('')}
  ${u.thumb?`<div class="shot"><b>🖼️ الصورة المصغّرة</b><div class="m" style="white-space:pre-wrap;color:#e2e8f0">${esc(u.thumb)}</div><button class="b" data-pc="thumb">📋</button></div>`:''}</div>`};
 C.bindPub=function(getP,save,render,getCtx){
- document.addEventListener('input',e=>{if(e.target.hasAttribute&&e.target.hasAttribute('data-pu-raw')){pub(getP()).raw=e.target.value;save()}});
+ document.addEventListener('input',e=>{const t=e.target;if(!t.hasAttribute)return;if(t.hasAttribute('data-pu-raw')){pub(getP()).raw=t.value;save()}if(t.hasAttribute('data-pu-tr')){pub(getP()).trends=t.value;save()}if(t.hasAttribute('data-pu-country')){pub(getP()).country=t.value;save()}});
  document.addEventListener('click',e=>{const b=e.target.closest('[data-pp],[data-pu],[data-pc]');if(!b)return;const P=getP(),u=pub(P);
   if(b.dataset.pp){const k=b.dataset.pp;u.plats=u.plats.includes(k)?u.plats.filter(x=>x!==k):u.plats.concat(k);save();render();return}
   if(b.dataset.pu){let k=b.dataset.pu;if(k==='parse'){if(!u.raw.trim()){alert('الصق الرد الأول');return}const r=C.pubParse(u.raw);if(!r.items.length&&!r.plan){alert('مش لاقي علامات «=== منصة: ... ===». استخدم أمر حزمة النشر من هنا.');return}Object.assign(u,r);u.posted={};save();render();C.toast('📢 '+r.items.length+' منصة جاهزة ✓');return}
-   const send=k.endsWith('!'),t=C.pubPack(P,getCtx());send?C.send(t):C.copy(t,'اتنسخ أمر حزمة النشر ✓');return}
+   const send=k.endsWith('!');if(send)k=k.slice(0,-1);const t=k==='tr'?C.trendsPrompt(P,getCtx()):C.pubPack(P,getCtx());send?C.send(t):C.copy(t,k==='tr'?'اتنسخ أمر الترندات ✓ ابعته لـ Grok أو Gemini':'اتنسخ أمر حزمة النشر ✓');return}
   const [k,i]=b.dataset.pc.split(':'),it=u.items[+i]||{};
   if(k==='done'){u.posted[i]=!u.posted[i];save();render();return}
+  if(k==='post'){const txt=[it['الهوك'],it['الكابشن'],it['الهاشتاجات']].filter(Boolean).join('\n\n');C.pubShare(txt,it.name);return}
   const t={plan:u.plan,thumb:u.thumb,all:[it['الهوك'],it['الكابشن'],it['الهاشتاجات']].filter(Boolean).join('\n\n'),cap:[it['الهوك'],it['الكابشن']].filter(Boolean).join('\n\n'),tag:it['الهاشتاجات'],ttl:it['العنوان'],fc:it['أول تعليق']}[k];if(t)C.copy(t,'اتنسخ ✓')})};
+/* نشر: الكابشن بيتنسخ، وقايمة المشاركة بتفتح بالفيديو (لو جاهز) عشان تختار التطبيق وتلصق */
+C.pubShare=async function(txt,name){await C.copy(txt,'اتنسخ الكابشن والهاشتاجات ✓ الصقهم في '+(name||'التطبيق'));const f=C._pubFile;
+ try{if(f&&navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:txt});return}if(navigator.share)await navigator.share({text:txt})}catch(e){}};
 C.pubStatus=P=>{const u=P&&P.pub;if(!u||!u.items||!u.items.length)return '';const n=Object.values(u.posted||{}).filter(Boolean).length;return n+'/'+u.items.length+' منصة اتنشر'};
 })();
 window.CORE.adv=(html,open)=>`<details ${open?'open':''} style="margin-top:8px;border:1px dashed var(--border);border-radius:10px;padding:4px 8px"><summary style="color:#94a3b8;font-size:13px;cursor:pointer">⚙️ متقدم</summary>${html}</details>`;
