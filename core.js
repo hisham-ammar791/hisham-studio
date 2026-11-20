@@ -609,9 +609,9 @@ C.gemModels=async function(){try{const c=JSON.parse(localStorage.getItem(MK)||'n
  const r=await fetch(BASE+'/models?pageSize=200&key='+encodeURIComponent(C.gemKey()));if(!r.ok)throw new Error(r.status===400||r.status===403?'المفتاح مش صحيح أو مش مفعّل. اتأكد إنك نسخته كامل من aistudio.google.com/apikey':'Gemini رد بخطأ '+r.status);
  const L=((await r.json()).models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')&&/flash/i.test(m.name)&&!/tts|image|live|audio|embed|exp|8b/i.test(m.name));
  const ver=n=>{const x=n.match(/(\d+(?:\.\d+)?)/);return x?+x[1]:0},rank=n=>(/lite/.test(n)?2:0)+(/preview/.test(n)?1:0);L.sort((a,b)=>(rank(a.name)-rank(b.name))||(ver(b.name)-ver(a.name)));
- const l=L.map(m=>m.name).slice(0,5);if(!l.length)l.push('models/gemini-2.5-flash');try{localStorage.setItem(MK,JSON.stringify({l,t:Date.now()}))}catch(e){}return l};
+ const l=L.map(m=>m.name).slice(0,7);if(!l.length)l.push('models/gemini-2.5-flash');try{localStorage.setItem(MK,JSON.stringify({l,t:Date.now()}))}catch(e){}return l};
 C.gemModel=async()=>(await C.gemModels())[0];
-const nice=(st,msg)=>st===429||/quota|RESOURCE_EXHAUSTED|rate/i.test(msg)?'الحد المجاني لـ Gemini خلص دلوقتي. استنى دقيقة وجرّب تاني، ولو فضل كده جرّب بكرة.':st===403||/API key|PERMISSION/i.test(msg)?'المفتاح مش شغال (اتأكد إنه صح ومفعّل).':st>=500?'سيرفر Gemini مشغول. جرّب تاني بعد شوية.':msg;
+const nice=(st,msg)=>st>=500?'كل موديلات Gemini زحمة دلوقتي. جرّب كمان دقيقتين.':st===429||/quota|RESOURCE_EXHAUSTED|rate/i.test(msg)?'الحد المجاني لـ Gemini خلص دلوقتي. استنى دقيقة وجرّب تاني، ولو فضل كده جرّب بكرة.':st===403||/API key|PERMISSION/i.test(msg)?'المفتاح مش شغال (اتأكد إنه صح ومفعّل).':st>=500?'سيرفر Gemini مشغول. جرّب تاني بعد شوية.':msg;
 C.b64=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(blob)});
 /* parts: نص أو {blob} أو {b64,mime} */
 C.gemRun=async function(parts,onStep,opt){opt=opt||{};if(!C.gemKey())throw new Error('حط مفتاح Gemini الأول');onStep&&onStep('🤖 بختار الموديل…');await C.gemModels();const P=[];let size=0;
@@ -623,9 +623,10 @@ C.gemRun=async function(parts,onStep,opt){opt=opt||{};if(!C.gemKey())throw new E
   const ac=new AbortController(),t0=Date.now(),lim=opt.timeout||180000,tk=setInterval(()=>{const sec=Math.round((Date.now()-t0)/1000);onStep&&onStep('🤖 الفريق بيفكر ويشتغل… '+sec+' ثانية ('+model.replace('models/','')+')'+(sec>25?' — الطلبات الكبيرة بتاخد لحد دقيقتين':''))},1000),to=setTimeout(()=>ac.abort(),lim);
   let r;try{r=await fetch(BASE+'/'+model+':generateContent?key='+encodeURIComponent(C.gemKey()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ac.signal})}catch(e){clearInterval(tk);clearTimeout(to);if(e&&e.name==='AbortError')throw new Error('Gemini اتأخر أكتر من '+Math.round(lim/60000)+' دقايق ومردّش. جرّب تاني، أو قسّم الطلب لحاجة أصغر.');throw new Error('مفيش نت أو Gemini مش بيرد')}
   clearInterval(tk);clearTimeout(to);
-  const jj=await r.json().catch(()=>({}));if(r.ok){j=jj;break}
+  const jj=await r.json().catch(()=>({}));if(r.ok){j=jj;if(mi>0){try{const l=models.slice();l.splice(mi,1);l.unshift(model);localStorage.setItem(MK,JSON.stringify({l,t:Date.now()}))}catch(e){}}break}
   const m=(jj.error&&jj.error.message)||'';lastErr=nice(r.status,m||('Gemini رد بخطأ '+r.status));
   if(useSearch&&r.status===400&&/tool|search|ground/i.test(m)){useSearch=false;mi--;continue}
+  if(r.status>=500){if(!opt._retried){opt._retried=1;onStep&&onStep('⏳ Gemini زحمة، بجرب تاني بعد ثانيتين…');await new Promise(z=>setTimeout(z,2000));mi--;continue}opt._retried=0;onStep&&onStep('🔄 الموديل ده زحمة، بجرب موديل تاني…');continue}
   if(r.status===404||r.status===429||(r.status===400&&/not (found|supported)/i.test(m))||(r.status===403&&/billing|paid|free tier/i.test(m))){if(r.status===404){try{localStorage.removeItem(MK)}catch(e){}}continue}
   throw new Error(lastErr)}
  if(!j)throw new Error(lastErr||'Gemini ما ردّش');
