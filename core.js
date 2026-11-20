@@ -1,6 +1,6 @@
 /* core.js — القلب المشترك للاستوديوهات الجديدة (صغير وآمن: ما بيلمسش الاستوديو القديم) */
 (function(){
-const CORE=window.CORE={};CORE.VER='html72';
+const CORE=window.CORE={};CORE.VER='html73';
 const $=CORE.$=id=>document.getElementById(id);
 CORE.esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 CORE.toast=function(m,ms){let t=$('coreToast');if(!t){t=document.createElement('div');t.id='coreToast';t.style.cssText='pointer-events:none;position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#0f172a;border:1px solid #38bdf8;color:#fff;padding:9px 14px;border-radius:12px;z-index:99;font-size:14px;max-width:90vw;text-align:center';document.body.appendChild(t)}
@@ -603,6 +603,7 @@ C.dupWork=async function(o,st,render){if(C.leaveOk&&!(await C.leaveOk()))return;
 (function(){
 const C=window.CORE,esc=C.esc,KK='hs_gemkey',MK='hs_gemmodel',BASE='https://generativelanguage.googleapis.com/v1beta';
 C.gemKey=()=>{let k=(localStorage.getItem(KK)||'').trim();if(!k){const o=(localStorage.getItem('studio5s_v2_key')||'').trim();if(/^AIza/.test(o)){k=o;try{localStorage.setItem(KK,o)}catch(e){}}}return k};
+C.gemSpeed=()=>localStorage.getItem('hs_gemspeed')||'fast';
 C.setGemKey=k=>{try{if(k)localStorage.setItem(KK,k.trim());else localStorage.removeItem(KK);localStorage.removeItem(MK)}catch(e){}};
 /* بيختار أحدث موديل Flash متاح للمفتاح ده، عشان أسماء الموديلات بتتغير */
 C.gemModels=async function(){try{const c=JSON.parse(localStorage.getItem(MK)||'null');if(c&&Date.now()-c.t<864e5&&Array.isArray(c.l))return c.l}catch(e){}
@@ -617,14 +618,26 @@ C.b64=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(St
 C.gemRun=async function(parts,onStep,opt){opt=opt||{};if(!C.gemKey())throw new Error('حط مفتاح Gemini الأول');onStep&&onStep('🤖 بختار الموديل…');await C.gemModels();const P=[];let size=0;
  for(const x of parts){if(typeof x==='string')P.push({text:x});else if(x.blob){const d=await C.b64(x.blob);size+=d.length;P.push({inline_data:{mime_type:x.blob.type||x.mime||'application/octet-stream',data:d}})}else if(x.b64){size+=x.b64.length;P.push({inline_data:{mime_type:x.mime,data:x.b64}})}}
  if(size>95e6)throw new Error('الملفات كبيرة أوي على الإيجنت (أكتر من 95 ميجا). قصّر الأغنية أو قلل الفيديوهات');
- const models=await C.gemModels();let j=null,lastErr='',model='',useSearch=!!opt.search;
+ const models=await C.gemModels();let j=null,lastErr='',model='',useSearch=!!opt.search;const SP=C.gemSpeed(),stream=opt.stream!==false&&!!(window.ReadableStream&&window.TextDecoder);
+ const noThink=(()=>{try{return JSON.parse(localStorage.getItem('hs_gemnothink')||'{}')}catch(e){return {}}})();
  for(let mi=0;mi<models.length&&!j;mi++){model=models[mi];onStep&&onStep('🤖 الفريق بيشتغل… ('+model.replace('models/','')+')');
-  const body=Object.assign({systemInstruction:{parts:[{text:(opt.sys===false?'':C.CREW||'')+(opt.sysExtra?'\n'+opt.sysExtra:'')}]},contents:(opt.history||[]).map(h=>({role:h.role,parts:[{text:h.text}]})).concat([{role:'user',parts:P}]),generationConfig:{temperature:opt.temp==null?.6:opt.temp,maxOutputTokens:16384}},useSearch?{tools:[{google_search:{}}]}:{});
-  const ac=new AbortController(),t0=Date.now(),lim=opt.timeout||180000,tk=setInterval(()=>{const sec=Math.round((Date.now()-t0)/1000);onStep&&onStep('🤖 الفريق بيفكر ويشتغل… '+sec+' ثانية ('+model.replace('models/','')+')'+(sec>25?' — الطلبات الكبيرة بتاخد لحد دقيقتين':''))},1000),to=setTimeout(()=>ac.abort(),lim);
-  let r;try{r=await fetch(BASE+'/'+model+':generateContent?key='+encodeURIComponent(C.gemKey()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ac.signal})}catch(e){clearInterval(tk);clearTimeout(to);if(e&&e.name==='AbortError')throw new Error('Gemini اتأخر أكتر من '+Math.round(lim/60000)+' دقايق ومردّش. جرّب تاني، أو قسّم الطلب لحاجة أصغر.');throw new Error('مفيش نت أو Gemini مش بيرد')}
+  const gc={temperature:opt.temp==null?.6:opt.temp,maxOutputTokens:SP==='fast'?8192:16384};const vv=(model.match(/(\d+(?:\.\d+)?)/)||[0,0])[1]*1;
+  if(SP!=='deep'&&!noThink[model]&&!opt._noThink){if(vv>=3)gc.thinkingConfig={thinkingLevel:SP==='fast'?'low':'medium'};else if(vv>=2.5)gc.thinkingConfig={thinkingBudget:SP==='fast'?0:1024}}
+  const body=Object.assign({systemInstruction:{parts:[{text:(opt.sys===false?'':C.CREW||'')+(opt.sysExtra?'\n'+opt.sysExtra:'')}]},contents:(opt.history||[]).map(h=>({role:h.role,parts:[{text:h.text}]})).concat([{role:'user',parts:P}]),generationConfig:gc},useSearch?{tools:[{google_search:{}}]}:{});
+  let got=0;const ac=new AbortController(),t0=Date.now(),lim=opt.timeout||180000,tk=setInterval(()=>{const sec=Math.round((Date.now()-t0)/1000);if(got)return;onStep&&onStep('🤖 الفريق بيفكر… '+sec+' ثانية ('+model.replace('models/','')+')'+(sec>25?' — الطلبات الكبيرة بتاخد وقت':''))},1000),to=setTimeout(()=>ac.abort(),lim);
+  const url=BASE+'/'+model+(stream?':streamGenerateContent?alt=sse&key=':':generateContent?key=')+encodeURIComponent(C.gemKey());
+  let r;try{r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ac.signal})}catch(e){clearInterval(tk);clearTimeout(to);if(e&&e.name==='AbortError')throw new Error('Gemini اتأخر أكتر من '+Math.round(lim/60000)+' دقايق ومردّش. جرّب تاني، أو قسّم الطلب لحاجة أصغر.');throw new Error('مفيش نت أو Gemini مش بيرد')}
+  if(r.ok&&stream){let txt='',meta=null,fin='',all='';try{const rd=r.body.getReader(),dec=new TextDecoder();let buf='';
+    for(;;){const {done,value}=await rd.read();if(done)break;const ch=dec.decode(value,{stream:true});all+=ch;buf+=ch;let k;while((k=buf.indexOf('\n'))>=0){const line=buf.slice(0,k).trim();buf=buf.slice(k+1);if(!line.startsWith('data:'))continue;try{const o=JSON.parse(line.slice(5));const c=(o.candidates||[])[0]||{};((c.content&&c.content.parts)||[]).forEach(p=>{if(!p.thought&&p.text)txt+=p.text});if(c.groundingMetadata)meta=c.groundingMetadata;if(c.finishReason)fin=c.finishReason}catch(e){}}
+     if(txt){got=1;const w=txt.trim().split(/\s+/).length;onStep&&onStep('✍️ الفريق بيكتب… '+w+' كلمة'+(opt.preview!==false?'\n'+txt.slice(-160):''))}}}
+   catch(e){clearInterval(tk);clearTimeout(to);if(e&&e.name==='AbortError')throw new Error('Gemini اتأخر ومكملش الرد. جرّب تاني.');throw new Error('الاتصال اتقطع أثناء الرد. جرّب تاني.')}
+   if(!txt&&all.trim()){try{let o=JSON.parse(all.trim());(Array.isArray(o)?o:[o]).forEach(x=>{const c=(x.candidates||[])[0]||{};((c.content&&c.content.parts)||[]).forEach(p=>{if(!p.thought&&p.text)txt+=p.text});if(c.groundingMetadata)meta=c.groundingMetadata})}catch(e){}}
+   clearInterval(tk);clearTimeout(to);if(!txt.trim()&&fin==='SAFETY')throw new Error('Gemini رفض الطلب ده (محتوى ممنوع عنده). غيّر الصياغة.');
+   j={candidates:[{content:{parts:[{text:txt}]},groundingMetadata:meta}]};if(mi>0){try{const l=models.slice();l.splice(mi,1);l.unshift(model);localStorage.setItem(MK,JSON.stringify({l,t:Date.now()}))}catch(e){}}break}
   clearInterval(tk);clearTimeout(to);
   const jj=await r.json().catch(()=>({}));if(r.ok){j=jj;if(mi>0){try{const l=models.slice();l.splice(mi,1);l.unshift(model);localStorage.setItem(MK,JSON.stringify({l,t:Date.now()}))}catch(e){}}break}
   const m=(jj.error&&jj.error.message)||'';lastErr=nice(r.status,m||('Gemini رد بخطأ '+r.status));
+  if(r.status===400&&gc.thinkingConfig&&/think/i.test(m)){noThink[model]=1;try{localStorage.setItem('hs_gemnothink',JSON.stringify(noThink))}catch(e){}mi--;continue}
   if(useSearch&&r.status===400&&/tool|search|ground/i.test(m)){useSearch=false;mi--;continue}
   if(r.status>=500){if(!opt._retried){opt._retried=1;onStep&&onStep('⏳ Gemini زحمة، بجرب تاني بعد ثانيتين…');await new Promise(z=>setTimeout(z,2000));mi--;continue}opt._retried=0;onStep&&onStep('🔄 الموديل ده زحمة، بجرب موديل تاني…');continue}
   if(r.status===404||r.status===429||(r.status===400&&/not (found|supported)/i.test(m))||(r.status===403&&/billing|paid|free tier/i.test(m))){if(r.status===404){try{localStorage.removeItem(MK)}catch(e){}}continue}
@@ -729,7 +742,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a="a
  if(b.dataset.ask==='copy'){C.copy(C._askAns||'','اتنسخ ✓');return}
  if(b.dataset.ask)return;
  if(!C.gemKey()){C.agentKeyBox();return}const req=(document.getElementById('askIn')||{}).value||'';if(!req.trim()){C.toast('اكتب طلبك الأول');return}
- const box=document.getElementById('askOut');const say=t=>{if(box)box.innerHTML='<div class="m">'+esc(t)+'</div>'};b.disabled=true;
+ const box=document.getElementById('askOut');const say=t=>{if(box)box.innerHTML='<div class="m" style="white-space:pre-wrap">'+esc(t)+'</div>'};b.disabled=true;
  C._lastReq=req;try{pg.st.snap('قبل طلب الإيجنت',true);const r=await C.askAgent(req,say);showAsk(r);
 
   const ta=document.getElementById('askIn');if(ta)ta.value=''}
@@ -757,11 +770,11 @@ C.gemDiag=async function(){const L=[];const k=C.gemKey();L.push('النسخة: '
 C.agentKeyBox=function(){let o=document.getElementById('agKeyBox');if(o)o.remove();o=document.createElement('div');o.id='agKeyBox';o.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
  o.innerHTML=`<div style="background:#0f172a;border:1px solid #10b981;border-radius:16px 16px 0 0;width:100%;padding:12px;color:#fff"><b>🔑 الإيجنت محتاج مفتاح Gemini</b>${C.agentKeyHTML().replace('<details','<details open')}<button class="b" style="width:100%;margin-top:8px" onclick="this.closest('#agKeyBox').remove()">إغلاق</button></div>`;document.body.appendChild(o)};
 C.agentBtn=(label)=>`<div class="c" style="border-color:#10b981"><h3>🤖 فريقك العالمي</h3><div class="m">سيناريست ومخرج ومدير تصوير ومهندس إضاءة وألوان ومونتير ومهندس صوت ومصمم جرافيك وباحث، شغالين كإيجنت واحد. ${C.gemKey()?'':'(محتاج مفتاح Gemini مجاني)'}</div>
- <button class="b g" data-a="agentAll" style="width:100%;font-size:16px;padding:12px">🎬 ${label||'اعمل العمل كله'}</button><div class="m">بيكتب ويقسّم ويملا الستوري بورد لوحده، ويقف عند كل مرحلة تراجعها.</div>${C.askBox()}</div>`;
+ <div style="display:flex;gap:4px;margin:8px 0 4px">${[['fast','⚡ سريع'],['balanced','⚖️ متوازن'],['deep','🧠 دقيق']].map(x=>`<button class="b${C.gemSpeed()===x[0]?' g':''}" data-gs="${x[0]}" style="flex:1;margin:0;padding:6px;font-size:13px">${x[1]}</button>`).join('')}</div><button class="b g" data-a="agentAll" style="width:100%;font-size:16px;padding:12px">🎬 ${label||'اعمل العمل كله'}</button><div class="m">بيكتب ويقسّم ويملا الستوري بورد لوحده، ويقف عند كل مرحلة تراجعها.</div>${C.askBox()}</div>`;
 /* كارت الإيجنت (مشترك) */
 C.agentKeyHTML=function(){const has=!!C.gemKey();return `<details${has?'':' open'} style="margin-top:6px"><summary style="font-size:13px;color:#94a3b8">🔑 مفتاح Gemini ${has?'✓ متحط':'(مطلوب لوضع الإيجنت)'}</summary>
  <div class="m" style="font-size:12px">خده ببلاش من aistudio.google.com/apikey (Get API key). بيتحفظ على الجهاز ده بس، ومش بيدخل في النسخة الاحتياطية. الملفات بتتبعت لـ Google عشان Gemini يشوفها ويسمعها.</div>
- <div class="m" style="font-size:11px">نسخة البرنامج: ${C.VER}</div><div style="display:flex;gap:6px"><input type="password" id="gemKeyIn" placeholder="AIza..." value="${has?'••••••••':''}" style="flex:1;direction:ltr"><button class="b" data-gk="save" style="margin:0">حفظ</button>${has?'<button class="b r" data-gk="del" style="margin:0">🗑️</button>':''}</div></details>`};
-document.addEventListener('click',e=>{const b=e.target.closest('[data-gk]');if(!b)return;if(b.dataset.gk==='del'){C.setGemKey('');C.toast('اتشال المفتاح');C._rerender&&C._rerender();return}
+ <div class="m" style="font-size:11px">نسخة البرنامج: ${C.VER}</div><div style="display:flex;gap:4px;margin:6px 0">${[['fast','⚡ سريع'],['balanced','⚖️ متوازن'],['deep','🧠 دقيق']].map(x=>`<button class="b${C.gemSpeed()===x[0]?' g':''}" data-gs="${x[0]}" style="flex:1;margin:0;padding:6px">${x[1]}</button>`).join('')}</div><div class="m" style="font-size:11px">سريع: رد في ثواني للطلبات العادية. دقيق: بيفكر أكتر، أبطأ وأحسن للسيناريو الكامل والبحث.</div><div style="display:flex;gap:6px"><input type="password" id="gemKeyIn" placeholder="AIza..." value="${has?'••••••••':''}" style="flex:1;direction:ltr"><button class="b" data-gk="save" style="margin:0">حفظ</button>${has?'<button class="b r" data-gk="del" style="margin:0">🗑️</button>':''}</div></details>`};
+document.addEventListener('click',e=>{const g=e.target.closest('[data-gs]');if(g){try{localStorage.setItem('hs_gemspeed',g.dataset.gs)}catch(x){}C.toast('السرعة: '+g.textContent.trim());C._rerender&&C._rerender();return}const b=e.target.closest('[data-gk]');if(!b)return;if(b.dataset.gk==='del'){C.setGemKey('');C.toast('اتشال المفتاح');C._rerender&&C._rerender();return}
  const v=(document.getElementById('gemKeyIn')||{}).value||'';if(!v||/^•+$/.test(v)){C.toast('الصق المفتاح الأول');return}C.setGemKey(v);C.toast('🔑 اتحفظ المفتاح ✓');C._rerender&&C._rerender()});
 })();
