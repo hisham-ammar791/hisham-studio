@@ -28,8 +28,12 @@ CORE.oldStudio=async function(){let a=null,b=null;try{a=JSON.parse(localStorage.
 /* ---------- تخزين مشروع الاستوديو + سجل نسخ ---------- */
 CORE.store=function(ns,def){const K='hs_'+ns,H='hs_hist_'+ns;let P;try{P=Object.assign({},def,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){P=Object.assign({},def)}
  let last='';const api={get:()=>P,
-  save(){try{localStorage.setItem(K,JSON.stringify(P))}catch(e){CORE.toast('⚠️ الحفظ فشل (المساحة مليانة؟)',4000)}},
-  snap(why,force){try{const raw=JSON.stringify(P);if(!force&&raw===last)return;last=raw;let h=JSON.parse(localStorage.getItem(H)||'[]');h.unshift({ts:Date.now(),why:why||'',raw});localStorage.setItem(H,JSON.stringify(h.slice(0,12)))}catch(e){}},
+  save(){const raw=JSON.stringify(P);try{localStorage.setItem(K,raw);return}catch(e){}
+   /* المساحة مليانة: نخفف سجل النسخ القديمة ونجرب تاني */
+   try{Object.keys(localStorage).filter(k=>k.indexOf('hs_hist_')===0).forEach(k=>{let h=[];try{h=JSON.parse(localStorage.getItem(k)||'[]')}catch(x){}localStorage.setItem(k,JSON.stringify(h.slice(0,2)))});localStorage.setItem(K,raw);CORE.toast('⚠️ المساحة قربت تخلص: خففت سجل النسخ القديمة',4000);return}catch(e){}
+   try{Object.keys(localStorage).filter(k=>k.indexOf('hs_hist_')===0||k==='hs_trc').forEach(k=>localStorage.removeItem(k));localStorage.setItem(K,raw);CORE.toast('⚠️ المساحة مليانة: مسحت سجل النسخ عشان أحفظ شغلك. احفظ على Drive',5000);return}catch(e){}
+   CORE.toast('⚠️ الحفظ على الموبايل فشل: المساحة مليانة. احفظ على Drive فورًا وقلّل الصور',6000)},
+  snap(why,force){try{const raw=JSON.stringify(P);if(!force&&raw===last)return;last=raw;let h=JSON.parse(localStorage.getItem(H)||'[]');h.unshift({ts:Date.now(),why:why||'',raw});for(const n of [12,6,3,1]){try{localStorage.setItem(H,JSON.stringify(h.slice(0,n)));break}catch(e){}}}catch(e){}},
   hist(){try{return JSON.parse(localStorage.getItem(H)||'[]')}catch(e){return []}},
   set(o){P=Object.assign({},def,o||{});api.save()},
   reset(){P=JSON.parse(JSON.stringify(def));api.save()},
@@ -121,7 +125,7 @@ C.frameImg=id=>(get('frames',id)||{}).img||'';
 C.castCard=function(P){const s=C.selOf(P);
  const row=(t,x)=>`<div style="display:flex;gap:8px;align-items:center;border-top:1px dashed var(--border);padding:6px 0"><input type="checkbox" data-cc="${t}:${x.id}" ${s[t].includes(x.id)?'checked':''} style="width:22px;height:22px">${x.img?`<img src="${x.img}" style="width:44px;height:44px;object-fit:cover;border-radius:8px">`:'<div style="width:44px;height:44px;border-radius:8px;background:#0b1220;display:flex;align-items:center;justify-content:center">'+T[t][0].split(' ')[0]+'</div>'}<div style="flex:1;min-width:0;font-size:14px"><b>${esc(x.name||'بدون اسم')}</b><div class="m" style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t==='chars'?[x.voice&&'🗣️ '+x.voice,x.dialect&&dn(x.dialect)].filter(Boolean).join(' • ')||x.look:(t==='places'||t==='props')?x.desc:(x.chars||[]).map(id=>(get('chars',id)||{}).name).filter(Boolean).join('، '))}</div></div><button class="b" data-ca="edit:${t}:${x.id}" style="margin:0">✏️</button></div>`;
  return `<div class="c"><h3 id="castCard">👥 الشخصيات والأماكن والأدوات والكادرات</h3><div class="m">علّم اللي في العمل ده. المكتبة مشتركة بين كل الاستوديوهات.</div>
- ${['chars','places','props','frames'].map(t=>`<details ${s[t].length||!C.lib[t].length?'open':''} style="margin-top:8px"><summary style="font-weight:700">${T[t][0]} (${s[t].length}/${C.lib[t].length})</summary>${C.lib[t].map(x=>row(t,x)).join('')}<button class="b" data-ca="add:${t}">➕ ${T[t][1]} جديد</button></details>`).join('')}
+ ${['chars','places','props','frames'].map(t=>`<details ${s[t].length||!C.lib[t].length?'open':''} style="margin-top:8px"><summary style="font-weight:700">${T[t][0]} (${s[t].length}/${C.lib[t].length})</summary>${C.lib[t].map(x=>row(t,x)).join('')}<button class="b" data-ca="add:${t}">➕ ${T[t][1]} ${t==='chars'||t==='props'?'جديدة':'جديد'}</button></details>`).join('')}
  <button class="b" data-ca="import">⬇️ هات من الاستوديو القديم</button></div>`};
 /* المحرر */
 function editor(t,id){const x=id?Object.assign({},get(t,id)):{id:t[0]+Date.now(),name:'',chars:[]};let o=document.getElementById('castEd');if(o)o.remove();o=document.createElement('div');o.id='castEd';
@@ -190,7 +194,7 @@ C.gdConnect=async function(){if(ok())return true;let cid=(cfg().cid||'').trim();
  return new Promise(res=>{const cl=google.accounts.oauth2.initTokenClient({client_id:cid,scope:'https://www.googleapis.com/auth/drive.file',
   callback:t=>{if(t&&t.access_token){GD.tok=t.access_token;GD.exp=Date.now()+(+t.expires_in||3600)*1000;try{sessionStorage.setItem('hs_gd_tok',JSON.stringify(GD))}catch(e){}put({linked:1});res(true)}else res(false)},
   error_callback:()=>{C.toast('ما اتربطش Drive');res(false)}});cl.requestAccessToken({prompt:cfg().linked?'':'consent'})})};
-async function f(url,opt){opt=opt||{};opt.headers=Object.assign({Authorization:'Bearer '+GD.tok},opt.headers||{});const r=await fetch(url,opt);if(r.status===401){GD.tok='';throw new Error('الجلسة انتهت، اربط تاني')}if(!r.ok)throw new Error('Drive '+r.status);return r}
+async function f(url,opt){opt=opt||{};opt.headers=Object.assign({Authorization:'Bearer '+GD.tok},opt.headers||{});const r=await fetch(url,opt);if(r.status===401){GD.tok='';GD.exp=0;try{sessionStorage.removeItem('hs_gd_tok')}catch(e){}throw new Error('الجلسة انتهت، اربط تاني')}if(!r.ok)throw new Error('Drive '+r.status);return r}
 async function folder(){let id=cfg().hsFolder;if(id){try{const j=await (await f(API+'/drive/v3/files/'+id+'?fields=id,trashed')).json();if(!j.trashed)return id}catch(e){if(/اربط/.test(e.message))throw e}}
  const q=encodeURIComponent(`name='${FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);const l=await (await f(API+'/drive/v3/files?q='+q+'&fields=files(id)')).json();
  id=(l.files&&l.files[0]&&l.files[0].id)||(await (await f(API+'/drive/v3/files',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:FOLDER,mimeType:'application/vnd.google-apps.folder'})})).json()).id;put({hsFolder:id});return id}
@@ -201,6 +205,9 @@ C.gdSave=async function(ns,name,data){if(!(await C.gdConnect()))return false;con
  await f(API+'/upload/drive/v3/files'+(ex?'/'+ex.id:'')+'?uploadType=multipart',{method:ex?'PATCH':'POST',headers:{'Content-Type':'multipart/related; boundary='+b},body});return true};
 C.gdLoad=async function(id){return await (await f(API+'/drive/v3/files/'+id+'?alt=media')).json()};
 
+/* الشخصيات والأماكن المختارة بتتحفظ مع العمل على Drive، وبترجع للمكتبة لما تفتحه على جهاز تاني */
+C.packWork=function(P){const d=JSON.parse(JSON.stringify(P)),c=P.cast||{},L={};['chars','places','props','frames'].forEach(k=>{L[k]=(C.lib[k]||[]).filter(x=>(c[k]||[]).includes(x.id))});d._lib=L;return d};
+C.unpackWork=function(d){d=d||{};const L=d._lib;delete d._lib;let n=0;if(L){['chars','places','props','frames'].forEach(k=>{(L[k]||[]).forEach(x=>{if(x&&x.id&&!C.lib[k].some(y=>y.id===x.id)){C.lib[k].push(x);n++}})});if(n)C.libSave()}return d};
 /* شريط العمل */
 C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
  const bar=()=>{let el=document.getElementById('wbar');if(!el){el=document.createElement('div');el.id='wbar';const h=document.querySelector('header');h.parentNode.insertBefore(el,h.nextSibling)}
@@ -213,14 +220,14 @@ C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
  C.workDirty=dirty;
  window.addEventListener('beforeunload',e=>{if(dirty()&&!C._leaving){e.preventDefault();e.returnValue='فيه تعديلات ما اتحفظتش على Drive'}});
  C.leaveOk=async function(){if(!dirty())return true;const k=await ask3s((P().wname||'').trim());if(k==='x')return false;if(k==='save'){const r=await save();if(!r&&!confirm('الحفظ ما نجحش. تكمل برضه؟'))return false}C._leaving=true;return true};
- async function save(silent){const n=(P().wname||'').trim();if(!n){alert('اكتب اسم العمل الأول');return false}try{C.toast('⏳ بحفظ على Drive…',8000);const r=await C.gdSave(ns,n,P());if(r){C.toast('☁️ اتحفظ «'+n+'» على Drive ✓');clean()}return r}catch(e){C.toast('⚠️ '+e.message,4000);return false}}
+ async function save(silent){const n=(P().wname||'').trim();if(!n){alert('اكتب اسم العمل الأول');return false}try{C.toast('⏳ بحفظ على Drive…',8000);const r=await C.gdSave(ns,n,C.packWork(P()));if(r){C.toast('☁️ اتحفظ «'+n+'» على Drive ✓');clean()}return r}catch(e){C.toast('⚠️ '+e.message,4000);return false}}
  async function openBox(){if(!(await C.leaveOk()))return;if(!(await C.gdConnect()))return;let l=[];try{C.toast('⏳ بجيب أعمالك…');l=await C.gdList(ns)}catch(e){C.toast('⚠️ '+e.message);return}
   let ov=document.getElementById('wOpen');if(ov)ov.remove();ov=document.createElement('div');ov.id='wOpen';ov.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
   const items=q=>l.filter(x=>!q||(x.appProperties.name||'').includes(q)).map(x=>`<div style="display:flex;gap:8px;align-items:center;border-top:1px dashed #334155;padding:8px 0"><div style="flex:1"><b>${esc(x.appProperties.name)}</b><div class="m" style="font-size:12px">${new Date(x.modifiedTime).toLocaleString('ar-EG',{dateStyle:'short',timeStyle:'short'})}</div></div><button class="b g" data-o="${x.id}" style="margin:0">افتح</button></div>`).join('')||'<div class="m">مفيش أعمال بالاسم ده.</div>';
   ov.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:80vh;overflow:auto;padding:12px;color:#fff"><b>📂 أعمالك على Drive (${l.length})</b><input id="wQ" placeholder="اكتب اسم العمل…" style="margin-top:8px" value="${esc((P().wname||'').trim())}"><div id="wL">${items((P().wname||'').trim())}</div><button class="b" data-o="x" style="width:100%;margin-top:10px">إغلاق</button></div>`;
   document.body.appendChild(ov);ov.querySelector('#wQ').oninput=e=>{ov.querySelector('#wL').innerHTML=items(e.target.value.trim())};
   ov.onclick=async e=>{const b=e.target.closest('[data-o]');if(e.target===ov||(b&&b.dataset.o==='x')){ov.remove();return}if(!b)return;
-   if(!confirm('تفتح العمل ده؟ الحالي هيتحفظ في سجل النسخ 🕘 الأول.'))return;try{const d=await C.gdLoad(b.dataset.o);st.snap('قبل فتح عمل من Drive',true);st.set(d);clean();ov.remove();bar();render();C.toast('اتفتح ✓')}catch(x){C.toast('⚠️ '+x.message)}}}
+   if(!confirm('تفتح العمل ده؟ الحالي هيتحفظ في سجل النسخ 🕘 الأول.'))return;try{const d=C.unpackWork(await C.gdLoad(b.dataset.o));st.snap('قبل فتح عمل من Drive',true);st.set(d);clean();ov.remove();bar();render();C.toast('اتفتح ✓')}catch(x){C.toast('⚠️ '+x.message)}}}
  function ask3(n){return new Promise(res=>{const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;z-index:99;background:#000c;display:flex;align-items:flex-end';
   ov.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;padding:14px;color:#fff"><b style="font-size:16px">🆕 عمل جديد</b><div class="m" style="margin:6px 0 10px">تعمل إيه في العمل الحالي${n?' «'+esc(n)+'»':''} قبل ما تبدأ؟</div>
   <button class="b g" data-k="save" style="width:100%;margin:0 0 8px">☁️ احفظه على Google Drive وابدأ جديد</button>
@@ -253,22 +260,25 @@ C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
  document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w;if(a==='save')save();if(a==='open')openBox();if(a==='new')nw();if(a==='check')check();if(a==='tools')C.toolsMenu(o,st,render,bar);if(a==='lessons')C.lessonsBox();if(a==='pub'){const t=C.pubPrompt(o.ctx?o.ctx():'');C.copy(t,'اتنسخ أمر حزمة النشر ✓')}});
  bar();
  const qo=new URLSearchParams(location.search).get('open');
- if(qo)setTimeout(async()=>{history.replaceState(null,'',location.pathname);if(!(await C.leaveOk()))return;if(!(await C.gdConnect()))return;try{C.toast('⏳ بفتح العمل…',8000);const d=await C.gdLoad(qo);st.snap('قبل فتح عمل من Drive',true);st.set(d);clean();render();C.toast('اتفتح ✓')}catch(x){C.toast('⚠️ '+x.message,4000)}},300)};
+ if(qo)setTimeout(async()=>{history.replaceState(null,'',location.pathname);if(!(await C.leaveOk()))return;if(!(await C.gdConnect()))return;try{C.toast('⏳ بفتح العمل…',8000);const d=C.unpackWork(await C.gdLoad(qo));st.snap('قبل فتح عمل من Drive',true);st.set(d);clean();render();C.toast('اتفتح ✓')}catch(x){C.toast('⚠️ '+x.message,4000)}},300)};
 })();
 
 /* ================= 🌐 ترجمة تلقائية للإنجليزي ================= */
 (function(){
 const C=window.CORE,TK='hs_trc';let cache={};try{cache=JSON.parse(localStorage.getItem(TK)||'{}')}catch(e){}
 const AR=/[؀-ۿ]/;
-async function g1(q){try{const r=await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q='+encodeURIComponent(q));if(r.ok){const j=await r.json();const t=(j[0]||[]).map(x=>x[0]||'').join('').trim();if(t)return t}}catch(e){}
- try{const r=await fetch('https://api.mymemory.translated.net/get?langpair=ar|en&q='+encodeURIComponent(q.slice(0,480)));const j=await r.json();return (j&&j.responseData&&j.responseData.translatedText)||''}catch(e){return ''}}
+const tf=(u,ms)=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||7000);return fetch(u,{signal:c.signal}).finally(()=>clearTimeout(t))};
+async function g1(q){try{const r=await tf('https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q='+encodeURIComponent(q));if(r.ok){const j=await r.json();const t=(j[0]||[]).map(x=>x[0]||'').join('').trim();if(t)return t}}catch(e){}
+ try{const r=await tf('https://api.mymemory.translated.net/get?langpair=ar|en&q='+encodeURIComponent(q.slice(0,480)));const j=await r.json();return (j&&j.responseData&&j.responseData.translatedText)||''}catch(e){return ''}}
 async function tr(q){q=q.trim();if(!q||!AR.test(q))return q;if(cache[q])return cache[q];const t=await g1(q);if(t){cache[q]=t;try{const k=Object.keys(cache);if(k.length>1500)k.slice(0,500).forEach(x=>delete cache[x]);localStorage.setItem(TK,JSON.stringify(cache))}catch(e){}}return t||null}
 /* الكلام المنطوق يفضل بلغته الأصلية؛ الباقي يترجم */
 const KEEP=/^(الحوار|الكلام المنطوق|الكلمات المغناة في اللقطة|التعليق الصوتي على اللقطة[^:]*)\s*[:：]\s*/;
-C.toEn=async function(txt){const lines=String(txt).split('\n'),out=[];let fail=0;
- for(const l of lines){if(!AR.test(l)){out.push(l);continue}
-  const m=l.match(KEEP);if(m){const lab=await tr(m[1]);out.push((lab||'Spoken line')+' (keep spoken exactly in the original language): "'+l.slice(m[0].length).trim()+'"');continue}
-  const t=await tr(l);if(t)out.push(t);else{out.push(l);fail++}}
+C.toEn=async function(txt){const lines=String(txt).split('\n'),out=new Array(lines.length);let fail=0,next=0;
+ async function one(i){const l=lines[i];if(!AR.test(l)){out[i]=l;return}
+  const m=l.match(KEEP);if(m){const lab=await tr(m[1]);out[i]=(lab||'Spoken line')+' (keep spoken exactly in the original language): "'+l.slice(m[0].length).trim()+'"';return}
+  const t=await tr(l);if(t)out[i]=t;else{out[i]=l;fail++}}
+ const worker=async()=>{while(next<lines.length)await one(next++)};
+ await Promise.all(Array.from({length:Math.min(6,lines.length)},worker));
  return {text:out.join('\n'),fail}};
 C.copyEn=async function(txt,msg){C.toast('⏳ بترجم للإنجليزي…',8000);const r=await C.toEn(txt);if(r.fail)C.toast('⚠️ '+r.fail+' سطر ما اتترجمش (اتأكد من النت)',4000);return r.fail?C.copy(r.text,'اتنسخ (فيه سطور عربي)'):C.copy(r.text,msg||'اتنسخ بالإنجليزي ✓')};
 C.sendEn=async function(txt){C.toast('⏳ بترجم…',8000);const r=await C.toEn(txt);return C.send(r.text)};

@@ -3,9 +3,9 @@
 // - The page itself (index.html) is fetched from the network first, so a new upload appears at once;
 //   if the network is missing or slower than 4 seconds, the stored copy opens instead.
 // - Icons, fonts and other files are served from the cache and refreshed in the background.
-const CACHE = 'hisham-studio-v25';
-const FILES = ['./', 'index.html', 'studio.html', 'song-fix.html', 'song.html', 'ad.html', 'film.html', 'doc.html', 'core.js', 'fieldtools.js', 'manifest.webmanifest', 'icons/film-192.png', 'icons/film-512.png', 'icons/film-180.png', 'icons/ad-192.png', 'icons/ad-512.png', 'icons/ad-180.png', 'icons/song-192.png', 'icons/song-512.png', 'icons/song-180.png', 'icons/doc-192.png', 'icons/doc-512.png', 'icons/doc-180.png', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
-  'apple-touch-icon.png', 'fonts/cairo-arabic.woff2', 'fonts/cairo-latin.woff2', 'fonts/cairo-latin-ext.woff2'];
+const CACHE = 'hisham-studio-v26';
+const FILES = ['./', 'index.html', 'studio.html', 'song-fix.html', 'song.html', 'ad.html', 'film.html', 'doc.html', 'core.js', 'fieldtools.js', 'manifest.webmanifest', 'icons/film-192.png', 'icons/film-512.png', 'icons/film-180.png', 'icons/ad-192.png', 'icons/ad-512.png', 'icons/ad-180.png', 'icons/song-192.png', 'icons/song-512.png', 'icons/song-180.png', 'icons/doc-192.png', 'icons/doc-512.png', 'icons/doc-180.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
+  'apple-touch-icon.png', 'fonts/cairo-arabic.woff2', 'fonts/cairo-latin.woff2', 'fonts/cairo-latin-ext.woff2', 'guide.pdf'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
@@ -25,7 +25,7 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return; // AI, translation & Google go to the network
   const pn = new URL(req.url).pathname;
-  const isPage = req.mode === 'navigate' || /\/(index\.html|studio\.html|song-fix\.html|song\.html|ad\.html|film\.html|doc\.html|core\.js)?$/.test(pn);
+  const isPage = req.mode === 'navigate' || /\/(index\.html|studio\.html|song-fix\.html|song\.html|ad\.html|film\.html|doc\.html|core\.js|fieldtools\.js)?$/.test(pn);
   const pageKey = /\/$/.test(pn) ? 'index.html' : pn.split('/').pop();
 
   if (isPage) {

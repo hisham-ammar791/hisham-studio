@@ -5,7 +5,7 @@ const css=`.ftb{display:flex;gap:6px;justify-content:flex-end;margin:3px 0 6px}
 .ftb button,.ftf button{font-family:inherit;font-size:12px;padding:3px 9px;border-radius:8px;border:1px solid rgba(127,127,127,.45);background:rgba(127,127,127,.14);color:inherit;cursor:pointer;line-height:1.6}
 .ftb button.del,.ftf button.del{border-color:#d62828aa;color:#ff6b6b}
 .ftf{position:absolute;z-index:99999;display:none;gap:5px;background:#1b2233;padding:4px;border-radius:10px;box-shadow:0 3px 12px #0007;color:#fff}
-.fttoast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#1b2233;color:#fff;padding:8px 14px;border-radius:12px;z-index:100000;font-size:14px;display:flex;gap:10px;align-items:center;box-shadow:0 3px 12px #0008}
+.fttoast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#1b2233;color:#fff;padding:8px 14px;border-radius:12px;z-index:100000;font-size:14px;display:flex;gap:10px;align-items:center;box-shadow:0 3px 12px #0008}
 .fttoast button{font-family:inherit;background:#ffd166;color:#111;border:0;border-radius:8px;padding:3px 10px;cursor:pointer}`;
 const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 const OK_TYPES=['','text','search','url','email','tel'];

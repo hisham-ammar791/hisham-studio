@@ -95,7 +95,7 @@ shotEn(i){return `ترجم أمر توليد الفيديو ده للإنجلي�
 
 /* ---------- تحليل اللقطات ---------- */
 const HDR=/^[ \t]*[^\n؀-ۿA-Za-z0-9]{0,8}(?:ال)?(?:لقطة|لقطه|shot)\s*(?:رقم\s*)?[\d٠-٩]+/im;
-const num=x=>+String(x).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d.]/g,'')||0;
+const num=x=>{const m=String(x).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g,'.').match(/\d+(?:\.\d+)?/);return m?+m[0]:0};
 function parseShots(t){const re=new RegExp(HDR.source,'gim'),idx=[];let m;while((m=re.exec(t)))idx.push(m.index);
  return idx.map((s0,k)=>{const blk=t.slice(s0,idx[k+1]||t.length),lines=blk.split('\n').map(l=>l.replace(/\*\*/g,'').trim());
   const head=lines[0].replace(HDR,'').replace(/^[\s:|\-–]+/,''),h=head.split('|').map(x=>x.trim());
@@ -119,6 +119,7 @@ ${singerLine()}${F?'مرجع الكادر المرفق «'+F.name+'»: نفس أ
 الإضاءة: ${s.light}
 ${CORE.lessonsTxt()}ممنوع: أي نصوص أو حروف أو علامات مائية، أو تغيير شكل الشخصيات عن الوصف الثابت، أو أيدي وأصابع مشوهة.`};
 {const _sp=PR.shotP;PR.shotP=i=>{const k=imgNeed(i);return _sp(i)+'\n'+(k.n?'':'صورة البداية المرفقة هي آخر كادر من اللقطة السابقة: كمّل منها بالظبط بنفس الأماكن والإضاءة.\n')+CORE.lessonsTxt()}}
+{const fx=f=>i=>{let t=f(i);if(lookAt(i)){t=t.replace(/(استمر من نفس [^\n]*?)\.?\n/,'$1، مع تطبيق تغيير الشكل المذكور فوق.\n').replace(/ممنوع:[^\n]*/,m=>m.replace(/\.?\s*$/,'')+' (ما عدا التغيير المقصود في الشكل المذكور فوق).')}return t};PR.shotP=fx(PR.shotP);PR.imgP=fx(PR.imgP)}
 /* ---------- العرض ---------- */
 function lookAt(i){const sh=p().shots;if(sh[i]&&(sh[i].look||'').trim())return sh[i].look.trim();for(let j=i-1;j>=0;j--){const x=sh[j];if((x.look||'').trim())return x.lookKeep?x.look.trim():''}return ''}
 const thumb=s=>s.img||CORE.frameImg(s.frame)||'';

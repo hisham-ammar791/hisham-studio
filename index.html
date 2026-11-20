@@ -43,17 +43,18 @@ a.c:active{background:#162036}
 <div class="c wide" style="margin-top:12px"><b>💾 نسخة احتياطية</b><span>كل أعمال الاستوديوهات الجديدة والشخصيات والأماكن والكادرات والدروس في ملف واحد. (الاستوديو القديم له نسخته الخاصة جواه.)</span><br>
 <button id="bkOut" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1d4ed8;color:#fff;font-family:inherit">⬇️ تصدير</button>
 <label style="display:inline-block;margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#fff">⬆️ استرجاع<input type="file" id="bkIn" accept=".json,application/json" hidden></label></div>
+<div class="c wide" style="margin-top:12px"><a href="guide.pdf" style="color:inherit;text-decoration:none"><b>📖 دليل الاستخدام</b><span>شرح مبسّط لكل الأزرار والخطوات (PDF).</span></a></div>
 <div class="ft">داخل الاستوديو: زر 🏠 يرجعك هنا، وزر 🕘 يفتح سجل النسخ.</div>
 <script src="core.js"></script>
 <script>
 const ST=[['film','🎬','أفلام ومسلسلات'],['ad','📣','إعلانات'],['song','🎼','أغاني وكليب'],['doc','🎙️','برامج ووثائقي']];
 const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function dash(){ST.forEach(([ns])=>{const el=document.querySelector('[data-st="'+ns+'"]');if(!el)return;let P={};try{P=JSON.parse(localStorage.getItem('hs_'+ns)||'{}')}catch(e){}
- const sh=P.shots||[],dn=sh.filter(x=>x.done).length,has=(P.wname||P.idea||P.script||P.lyrics||P.topic||sh.length),dirty=localStorage.getItem('hs_dirty_'+ns),ps=CORE.pubStatus(P);
+ const sh=P.shots||[],dn=sh.filter(x=>x.done).length,has=(P.wname||P.idea||P.script||P.lyrics||P.topic||P.bName||P.title||sh.length),dirty=localStorage.getItem('hs_dirty_'+ns),ps=CORE.pubStatus(P);
  if(!has){el.innerHTML='';return}
  const stage=!sh.length?'كتابة':dn<sh.length?'تنفيذ '+dn+'/'+sh.length:ps?ps:'جاهز للنشر';
  el.innerHTML='<div style="margin-top:8px;font-size:12px;background:#0b1220;border-radius:8px;padding:5px 7px;line-height:1.6">📁 '+E(P.wname||'بدون اسم')+'<br><span style="color:#94a3b8">'+stage+'</span>'+(dirty?' <span style="color:#fcd34d">●</span>':'')+'</div>'})}
-dash();
+dash();window.addEventListener('pageshow',dash);document.addEventListener('visibilitychange',()=>{if(!document.hidden)dash()});
 document.getElementById('dashDrive').onclick=async()=>{const box=document.getElementById('dashD');if(!(await CORE.gdConnect()))return;box.innerHTML='<div style="font-size:13px;color:#94a3b8;margin-top:6px">⏳ بجيب أعمالك…</div>';
  try{const all=await Promise.all(ST.map(([ns])=>CORE.gdList(ns).then(l=>l.map(x=>Object.assign(x,{ns})))));const l=all.flat().sort((a,b)=>b.modifiedTime.localeCompare(a.modifiedTime));
   box.innerHTML=`<input id="dashQ" placeholder="دوّر باسم العمل…" style="width:100%;margin-top:8px;padding:8px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#fff;font-family:inherit"><div id="dashR"></div>`;
