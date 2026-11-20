@@ -1,6 +1,6 @@
 /* core.js — القلب المشترك للاستوديوهات الجديدة (صغير وآمن: ما بيلمسش الاستوديو القديم) */
 (function(){
-const CORE=window.CORE={};
+const CORE=window.CORE={};CORE.VER='html72';
 const $=CORE.$=id=>document.getElementById(id);
 CORE.esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 CORE.toast=function(m,ms){let t=$('coreToast');if(!t){t=document.createElement('div');t.id='coreToast';t.style.cssText='pointer-events:none;position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#0f172a;border:1px solid #38bdf8;color:#fff;padding:9px 14px;border-radius:12px;z-index:99;font-size:14px;max-width:90vw;text-align:center';document.body.appendChild(t)}
@@ -693,7 +693,7 @@ C.agentPub=function(getP,save,getCtx){return [{label:'الترندات (بحث �
 /* ===== «اطلب أي حاجة»: الفريق يقرا العمل ويعدّل فيه أو يرد ===== */
 const NOEDIT=['step','sendIdx','sendMode','grid','wname','pub','cast','chkPaste','paste','media','edl','logo','brands','brandSel','agentNote'];
 function slim(P){return JSON.stringify(P,(k,v)=>{if(NOEDIT.includes(k)&&k!=='wname')return undefined;if(typeof v==='string'&&v.startsWith('data:'))return undefined;if(k==='img'||k==='thumb')return undefined;return v}).slice(0,40000)}
-C.agentAsk=async function(req,onStep){const pg=C._page;if(!pg)throw new Error('الصفحة دي مش جاهزة للإيجنت');const P=pg.st.get(),D=pg.def;
+C.askPrompt=function(req){const pg=C._page;if(!pg)throw new Error('الصفحة دي مش جاهزة للإيجنت');const P=pg.st.get(),D=pg.def;
  const fields=Object.keys(D).filter(k=>!NOEDIT.includes(k)&&['string','number','boolean'].includes(typeof D[k]));
  const prompt=`طلب صاحب الشغل:
 ${req}
@@ -711,7 +711,8 @@ ${C.castTxt?C.castTxt(P):''}
 - shotEdits: تعديل لقطات موجودة (i رقم اللقطة من 0).
 - shots: لو هتعيد كتابة اللقطات كلها أو تزود لقطات، حط القايمة الكاملة الجديدة، وإلا null.
 - ما تغيّرش أي حاجة الطلب ما طلبهاش.`;
- const out=await C.gemRun([prompt],onStep,{search:/ابحث|بحث|ترند|مصدر|إحصائ|حقيقي|تاريخ/.test(req)});
+return prompt};
+C.askApply=function(out){const pg=C._page,P=pg.st.get(),D=pg.def;const fields=Object.keys(D).filter(k=>!NOEDIT.includes(k)&&['string','number','boolean'].includes(typeof D[k]));
  const raw=C.between(out);let o=null;if(raw){try{o=JSON.parse(raw.replace(/,\s*([}\]])/g,'$1'))}catch(e){}}
  if(!o)return {answer:out,changed:[]};
  const before=JSON.stringify(P),changed=[];
@@ -720,18 +721,39 @@ ${C.castTxt?C.castTxt(P):''}
   if(Array.isArray(o.shots)&&o.shots.length){const old=P.shots;P.shots=o.shots.map((x,i)=>{const b=Object.assign({dur:4,lyric:'',desc:'',cam:'',move:'',light:'',look:'',img:'',done:false},old[i]?{img:old[i].img,frame:old[i].frame,done:old[i].done,imgMode:old[i].imgMode}:{});F.forEach(f=>{if(x[f]!=null)b[f]=f==='dur'?Math.max(1,Math.min(15,+x[f]||4)):String(x[f])});return b});changed.push(o.shots.length+' لقطة')}
   (o.shotEdits||[]).forEach(e=>{const s=P.shots[+e.i];if(!s)return;F.forEach(f=>{if(e[f]!=null)s[f]=f==='dur'?Math.max(1,Math.min(15,+e[f]||s.dur)):String(e[f])});changed.push('لقطة '+(+e.i+1))})}
  if(changed.length){pg.st.save()}return {answer:(o.answer||'')+(out.includes('المصادر اللي اتبحث فيها')?'\n\n'+out.slice(out.indexOf('المصادر اللي اتبحث فيها')):''),changed,before}};
+C.agentAsk=async function(req,onStep){const prompt=C.askPrompt(req);const out=await C.gemRun([prompt],onStep,{search:/ابحث|بحث|ترند|مصدر|إحصائ|حقيقي|تاريخ/.test(req)});return C.askApply(out)};
 C.askBox=function(){return `<div style="margin-top:10px"><label class="l">💬 اطلب أي حاجة من الفريق</label><textarea id="askIn" rows="2" placeholder="مثال: خلي البطل صعيدي ولهجته قوية، وغيّر إضاءة كل اللقطات لليل بإضاءة نيون زرقا وحمرا، واقترح بوستر للفيلم"></textarea>
  <button class="b bl" data-a="askGo" style="width:100%">🎬 نفّذ</button><div id="askOut"></div></div>`};
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-a="askGo"],[data-ask]');if(!b)return;const pg=C._page;if(!pg)return;
  if(b.dataset.ask==='undo'){if(C._askUndo){pg.st.snap('قبل التراجع',true);pg.st.set(JSON.parse(C._askUndo));C._askUndo=null;pg.render();C.toast('↩️ رجع زي ما كان')}return}
  if(b.dataset.ask==='copy'){C.copy(C._askAns||'','اتنسخ ✓');return}
+ if(b.dataset.ask)return;
  if(!C.gemKey()){C.agentKeyBox();return}const req=(document.getElementById('askIn')||{}).value||'';if(!req.trim()){C.toast('اكتب طلبك الأول');return}
  const box=document.getElementById('askOut');const say=t=>{if(box)box.innerHTML='<div class="m">'+esc(t)+'</div>'};b.disabled=true;
- try{pg.st.snap('قبل طلب الإيجنت',true);const r=await C.askAgent(req,say);C._askUndo=r.before||null;C._askAns=r.answer||'';pg.render();
-  const bx=document.getElementById('askOut');if(bx)bx.innerHTML=`<div class="shot" style="border-color:#10b981">${r.changed.length?'<b>✅ اتعدّل: '+esc(r.changed.join('، '))+'</b>':'<b>💬 رد الفريق</b>'}${r.answer?`<div style="white-space:pre-wrap;font-size:14px;margin-top:6px">${esc(r.answer)}</div>`:''}<div>${r.answer?'<button class="b" data-ask="copy">📋 نسخ</button>':''}${r.changed.length?'<button class="b" data-ask="undo">↩️ تراجع</button>':''}</div></div>`;
+ C._lastReq=req;try{pg.st.snap('قبل طلب الإيجنت',true);const r=await C.askAgent(req,say);showAsk(r);
+
   const ta=document.getElementById('askIn');if(ta)ta.value=''}
- catch(x){say('⚠️ '+x.message)}b.disabled=false});
+ catch(x){const bx=document.getElementById('askOut');if(bx)bx.innerHTML=`<div class="shot" style="border-color:#f59e0b"><b>⚠️ ${esc(x.message)}</b>
+  <div class="m" style="margin-top:6px">حل تاني شغال دايمًا: انسخ الطلب، والصقه في تطبيق Gemini أو ChatGPT أو Claude، وبعدين الصق الرد هنا، والبرنامج هيطبّقه بنفس الطريقة.</div>
+  <button class="b bl" data-ask="man" style="width:100%">📋 انسخ الطلب</button><textarea id="askMan" rows="4" placeholder="الصق الرد هنا"></textarea><button class="b g" data-ask="manApply" style="width:100%">✓ طبّق الرد</button>
+  <button class="b" data-ask="diag" style="width:100%">🔧 افحص الاتصال بـ Gemini</button><div id="askDiag"></div></div>`}b.disabled=false});
 C.askAgent=C.agentAsk;
+function showAsk(r){C._askUndo=r.before||null;C._askAns=r.answer||'';const pg=C._page;pg.render();const bx=document.getElementById('askOut');if(bx)bx.innerHTML=`<div class="shot" style="border-color:#10b981">${r.changed.length?'<b>✅ اتعدّل: '+esc(r.changed.join('، '))+'</b>':'<b>💬 رد الفريق</b>'}${r.answer?`<div style="white-space:pre-wrap;font-size:14px;margin-top:6px">${esc(r.answer)}</div>`:''}<div>${r.answer?'<button class="b" data-ask="copy">📋 نسخ</button>':''}${r.changed.length?'<button class="b" data-ask="undo">↩️ تراجع</button>':''}</div></div>`}
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-ask]');if(!b)return;const a=b.dataset.ask,pg=C._page;if(!pg)return;
+ if(a==='man'){const req=(document.getElementById('askIn')||{}).value||C._lastReq||'';if(!req.trim()){C.toast('اكتب طلبك الأول');return}C._lastReq=req;C.copy(C.CREW+'\n\n'+C.askPrompt(req),'اتنسخ الطلب ✓ الصقه في Gemini');return}
+ if(a==='manApply'){const v=(document.getElementById('askMan')||{}).value||'';if(!v.trim()){C.toast('الصق الرد الأول');return}pg.st.snap('قبل طلب الإيجنت',true);showAsk(C.askApply(v));return}
+ if(a==='diag'){const box=document.getElementById('askDiag');box.innerHTML='<div class="m">⏳ بفحص…</div>';box.innerHTML=await C.gemDiag();return}});
+/* فحص الاتصال: بيوري كل موديل رد بإيه بالظبط */
+C.gemDiag=async function(){const L=[];const k=C.gemKey();L.push('النسخة: '+C.VER+' • المفتاح: '+(k?k.slice(0,6)+'…'+k.slice(-4)+' ('+k.length+' حرف)':'مش متحط'));
+ if(!k)return '<div class="m">'+L.join('<br>')+'</div>';let models=[];
+ try{const r=await fetch(BASE+'/models?pageSize=200&key='+encodeURIComponent(k));const j=await r.json().catch(()=>({}));if(!r.ok){L.push('❌ قايمة الموديلات: '+r.status+' '+esc(((j.error||{}).message||'').slice(0,140)));return '<div class="m" style="direction:rtl">'+L.join('<br>')+'</div>'}
+  models=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')&&/flash/i.test(m.name)&&!/tts|image|live|audio|embed|exp|8b/i.test(m.name)).map(m=>m.name);L.push('✓ الموديلات المتاحة: '+models.length)}catch(e){L.push('❌ مفيش اتصال بجوجل: '+esc(e.message));return '<div class="m">'+L.join('<br>')+'</div>'}
+ try{localStorage.removeItem(MK)}catch(e){}
+ for(const m of models.slice(0,6)){const ac=new AbortController(),to=setTimeout(()=>ac.abort(),25000),t0=Date.now();
+  try{const r=await fetch(BASE+'/'+m+':generateContent?key='+encodeURIComponent(k),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:'رد بكلمة واحدة: تمام'}]}]}),signal:ac.signal});clearTimeout(to);const j=await r.json().catch(()=>({}));
+   L.push((r.ok?'✅ ':'❌ ')+m.replace('models/','')+' — '+(r.ok?'شغال ('+((Date.now()-t0)/1000).toFixed(1)+' ث)':r.status+' '+esc(((j.error||{}).message||'').slice(0,120))))}
+  catch(e){clearTimeout(to);L.push('❌ '+m.replace('models/','')+' — '+(e.name==='AbortError'?'اتأخر أكتر من 25 ثانية':esc(e.message)))}}
+ return '<div class="m" style="direction:ltr;text-align:left;white-space:pre-wrap;font-size:12px">'+L.join('\n')+'</div><div class="m">ابعت صورة من النتيجة دي.</div>'};
 C.agentKeyBox=function(){let o=document.getElementById('agKeyBox');if(o)o.remove();o=document.createElement('div');o.id='agKeyBox';o.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
  o.innerHTML=`<div style="background:#0f172a;border:1px solid #10b981;border-radius:16px 16px 0 0;width:100%;padding:12px;color:#fff"><b>🔑 الإيجنت محتاج مفتاح Gemini</b>${C.agentKeyHTML().replace('<details','<details open')}<button class="b" style="width:100%;margin-top:8px" onclick="this.closest('#agKeyBox').remove()">إغلاق</button></div>`;document.body.appendChild(o)};
 C.agentBtn=(label)=>`<div class="c" style="border-color:#10b981"><h3>🤖 فريقك العالمي</h3><div class="m">سيناريست ومخرج ومدير تصوير ومهندس إضاءة وألوان ومونتير ومهندس صوت ومصمم جرافيك وباحث، شغالين كإيجنت واحد. ${C.gemKey()?'':'(محتاج مفتاح Gemini مجاني)'}</div>
@@ -739,7 +761,7 @@ C.agentBtn=(label)=>`<div class="c" style="border-color:#10b981"><h3>🤖 فري
 /* كارت الإيجنت (مشترك) */
 C.agentKeyHTML=function(){const has=!!C.gemKey();return `<details${has?'':' open'} style="margin-top:6px"><summary style="font-size:13px;color:#94a3b8">🔑 مفتاح Gemini ${has?'✓ متحط':'(مطلوب لوضع الإيجنت)'}</summary>
  <div class="m" style="font-size:12px">خده ببلاش من aistudio.google.com/apikey (Get API key). بيتحفظ على الجهاز ده بس، ومش بيدخل في النسخة الاحتياطية. الملفات بتتبعت لـ Google عشان Gemini يشوفها ويسمعها.</div>
- <div style="display:flex;gap:6px"><input type="password" id="gemKeyIn" placeholder="AIza..." value="${has?'••••••••':''}" style="flex:1;direction:ltr"><button class="b" data-gk="save" style="margin:0">حفظ</button>${has?'<button class="b r" data-gk="del" style="margin:0">🗑️</button>':''}</div></details>`};
+ <div class="m" style="font-size:11px">نسخة البرنامج: ${C.VER}</div><div style="display:flex;gap:6px"><input type="password" id="gemKeyIn" placeholder="AIza..." value="${has?'••••••••':''}" style="flex:1;direction:ltr"><button class="b" data-gk="save" style="margin:0">حفظ</button>${has?'<button class="b r" data-gk="del" style="margin:0">🗑️</button>':''}</div></details>`};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-gk]');if(!b)return;if(b.dataset.gk==='del'){C.setGemKey('');C.toast('اتشال المفتاح');C._rerender&&C._rerender();return}
  const v=(document.getElementById('gemKeyIn')||{}).value||'';if(!v||/^•+$/.test(v)){C.toast('الصق المفتاح الأول');return}C.setGemKey(v);C.toast('🔑 اتحفظ المفتاح ✓');C._rerender&&C._rerender()});
 })();
