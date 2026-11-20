@@ -620,7 +620,9 @@ C.gemRun=async function(parts,onStep,opt){opt=opt||{};if(!C.gemKey())throw new E
  const models=await C.gemModels();let j=null,lastErr='',model='',useSearch=!!opt.search;
  for(let mi=0;mi<models.length&&!j;mi++){model=models[mi];onStep&&onStep('🤖 الفريق بيشتغل… ('+model.replace('models/','')+')');
   const body=Object.assign({systemInstruction:{parts:[{text:(opt.sys===false?'':C.CREW||'')+(opt.sysExtra?'\n'+opt.sysExtra:'')}]},contents:(opt.history||[]).map(h=>({role:h.role,parts:[{text:h.text}]})).concat([{role:'user',parts:P}]),generationConfig:{temperature:opt.temp==null?.6:opt.temp,maxOutputTokens:16384}},useSearch?{tools:[{google_search:{}}]}:{});
-  let r;try{r=await fetch(BASE+'/'+model+':generateContent?key='+encodeURIComponent(C.gemKey()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}catch(e){throw new Error('مفيش نت أو Gemini مش بيرد')}
+  const ac=new AbortController(),t0=Date.now(),lim=opt.timeout||180000,tk=setInterval(()=>{const sec=Math.round((Date.now()-t0)/1000);onStep&&onStep('🤖 الفريق بيفكر ويشتغل… '+sec+' ثانية ('+model.replace('models/','')+')'+(sec>25?' — الطلبات الكبيرة بتاخد لحد دقيقتين':''))},1000),to=setTimeout(()=>ac.abort(),lim);
+  let r;try{r=await fetch(BASE+'/'+model+':generateContent?key='+encodeURIComponent(C.gemKey()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ac.signal})}catch(e){clearInterval(tk);clearTimeout(to);if(e&&e.name==='AbortError')throw new Error('Gemini اتأخر أكتر من '+Math.round(lim/60000)+' دقايق ومردّش. جرّب تاني، أو قسّم الطلب لحاجة أصغر.');throw new Error('مفيش نت أو Gemini مش بيرد')}
+  clearInterval(tk);clearTimeout(to);
   const jj=await r.json().catch(()=>({}));if(r.ok){j=jj;break}
   const m=(jj.error&&jj.error.message)||'';lastErr=nice(r.status,m||('Gemini رد بخطأ '+r.status));
   if(useSearch&&r.status===400&&/tool|search|ground/i.test(m)){useSearch=false;mi--;continue}
