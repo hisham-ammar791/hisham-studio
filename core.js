@@ -602,7 +602,7 @@ C.dupWork=async function(o,st,render){if(C.leaveOk&&!(await C.leaveOk()))return;
 /* ================= 🤖 وضع الإيجنت: Gemini API بمفتاحك (اختياري) ================= */
 (function(){
 const C=window.CORE,esc=C.esc,KK='hs_gemkey',MK='hs_gemmodel',BASE='https://generativelanguage.googleapis.com/v1beta';
-C.gemKey=()=>(localStorage.getItem(KK)||'').trim();
+C.gemKey=()=>{let k=(localStorage.getItem(KK)||'').trim();if(!k){const o=(localStorage.getItem('studio5s_v2_key')||'').trim();if(/^AIza/.test(o)){k=o;try{localStorage.setItem(KK,o)}catch(e){}}}return k};
 C.setGemKey=k=>{try{if(k)localStorage.setItem(KK,k.trim());else localStorage.removeItem(KK);localStorage.removeItem(MK)}catch(e){}};
 /* بيختار أحدث موديل Flash متاح للمفتاح ده، عشان أسماء الموديلات بتتغير */
 C.gemModels=async function(){try{const c=JSON.parse(localStorage.getItem(MK)||'null');if(c&&Date.now()-c.t<864e5&&Array.isArray(c.l))return c.l}catch(e){}
