@@ -37,6 +37,7 @@ a.c:active{background:#162036}
  <a class="c on" href="song.html"><div class="i">🎼</div><b>أغاني وكليب</b><span>كلمات، Suno، كليب أو صورة متحركة.</span><div class="st" data-st="song"></div></a>
  <a class="c on" href="doc.html"><div class="i">🎙️</div><b>برامج ووثائقي وشرح</b><span>بحث بمصادر، بودكاست، وايت بورد وخرائط.</span><div class="st" data-st="doc"></div></a>
  <a class="c on" href="song-fix.html"><div class="i">🎵</div><b>مُصلّح الأغنية</b><span>استبدال الجزء الغلط في أغنية Suno.</span></a>
+ <a class="c on" href="montage.html"><div class="i">🎞️</div><b>استوديو المونتاج</b><span>ارفع لقطاتك، اكتب اللي عايزه، والفريق يعمل المونتاج والتلوين والصوت.</span><div class="st" data-st="montage"></div></a>
  <a class="c on" href="studio.html"><div class="i">🧰</div><b>الاستوديو الكامل (القديم)</b><span>الأدوات المتقدمة وشغلك القديم.</span></a>
 </div>
 <div class="c wide" style="margin-top:12px" id="dash"><b>☁️ أعمالك على Drive</b><span>كل الأعمال المحفوظة من كل الاستوديوهات، دوّر بالاسم وافتح على طول.</span><button id="dashDrive" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1d4ed8;color:#fff;font-family:inherit">☁️ اعرض أعمالي</button><div id="dashD"></div></div>
@@ -47,10 +48,11 @@ a.c:active{background:#162036}
 <div class="ft">داخل الاستوديو: زر 🏠 يرجعك هنا، وزر 🕘 يفتح سجل النسخ.</div>
 <script src="core.js"></script>
 <script>
-const ST=[['film','🎬','أفلام ومسلسلات'],['ad','📣','إعلانات'],['song','🎼','أغاني وكليب'],['doc','🎙️','برامج ووثائقي']];
+const ST=[['film','🎬','أفلام ومسلسلات'],['ad','📣','إعلانات'],['song','🎼','أغاني وكليب'],['doc','🎙️','برامج ووثائقي'],['montage','🎞️','مونتاج']];
 const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function dash(){ST.forEach(([ns])=>{const el=document.querySelector('[data-st="'+ns+'"]');if(!el)return;let P={};try{P=JSON.parse(localStorage.getItem('hs_'+ns)||'{}')}catch(e){}
+function dash(){ST.forEach(async([ns])=>{const el=document.querySelector('[data-st="'+ns+'"]');if(!el)return;let P={};try{P=JSON.parse(localStorage.getItem('hs_'+ns)||(await CORE.restoreBig('hs_'+ns))||'{}')}catch(e){}
  const sh=P.shots||[],dn=sh.filter(x=>x.done).length,has=(P.wname||P.idea||P.script||P.lyrics||P.topic||P.bName||P.title||sh.length),dirty=localStorage.getItem('hs_dirty_'+ns),ps=CORE.pubStatus(P);
+ if(ns==='montage'){const md=P.media||[];if(!md.length&&!P.wname&&!P.brief){el.innerHTML='';return}el.innerHTML='<div style="margin-top:8px;font-size:12px;background:#0b1220;border-radius:8px;padding:5px 7px;line-height:1.6">📁 '+E(P.wname||'بدون اسم')+'<br><span style="color:#94a3b8">'+(P.edl?'جاهز للتصدير • '+P.edl.clips.length+' لقطة':md.length+' ملف')+'</span>'+(dirty?' <span style="color:#fcd34d">●</span>':'')+'</div>';return}
  if(!has){el.innerHTML='';return}
  const stage=!sh.length?'كتابة':dn<sh.length?'تنفيذ '+dn+'/'+sh.length:ps?ps:'جاهز للنشر';
  el.innerHTML='<div style="margin-top:8px;font-size:12px;background:#0b1220;border-radius:8px;padding:5px 7px;line-height:1.6">📁 '+E(P.wname||'بدون اسم')+'<br><span style="color:#94a3b8">'+stage+'</span>'+(dirty?' <span style="color:#fcd34d">●</span>':'')+'</div>'})}
@@ -61,11 +63,12 @@ document.getElementById('dashDrive').onclick=async()=>{const box=document.getEle
   const show=q=>{document.getElementById('dashR').innerHTML=l.filter(x=>!q||(x.appProperties.name||'').includes(q)).map(x=>{const s=ST.find(y=>y[0]===x.ns);return `<a href="${x.ns}.html?open=${x.id}" style="display:flex;gap:10px;align-items:center;border-top:1px dashed #1f2a44;padding:8px 0;color:inherit;text-decoration:none"><span>${s[1]}</span><div style="flex:1"><b style="font-size:14px">${E(x.appProperties.name)}</b><div style="font-size:12px;color:#94a3b8">${s[2]} • ${new Date(x.modifiedTime).toLocaleString('ar-EG',{dateStyle:'short',timeStyle:'short'})}</div></div><span style="color:#38bdf8;font-size:13px">افتح</span></a>`}).join('')||'<div style="font-size:13px;color:#94a3b8;margin-top:6px">مفيش أعمال.</div>'};
   show('');document.getElementById('dashQ').oninput=e=>show(e.target.value.trim())}catch(e){box.innerHTML='<div style="color:#fca5a5;font-size:13px">⚠️ '+E(e.message)+'</div>'}};
 document.getElementById('bkOut').onclick=async()=>{const d={type:'hisham-studios-backup',v:1,at:new Date().toISOString(),keys:{}};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^hs_(?!trc|dirty)/.test(k))d.keys[k]=localStorage.getItem(k)}
+ for(const k of await CORE.idb.keys()){if(/^hs_(?!trc|dirty)/.test(k)&&!(k in d.keys)){const r=await CORE.idb.get(k);if(r&&r.raw)d.keys[k]=r.raw}}
  const name='استوديو-نسخة-'+new Date().toISOString().slice(0,10)+'.json',f=new File([JSON.stringify(d)],name,{type:'application/json'});
  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==='AbortError')return}
  const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=name;a.click()};
 document.getElementById('bkIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(d.type!=='hisham-studios-backup')throw 0;
- if(!confirm('استرجاع النسخة؟ هتستبدل الأعمال الحالية في الاستوديوهات الجديدة ('+Object.keys(d.keys).length+' عنصر).'))return;Object.entries(d.keys).forEach(([k,v])=>{try{localStorage.setItem(k,v)}catch(x){}});alert('اترجعت ✓');location.reload()}catch(x){alert('الملف ده مش نسخة احتياطية للاستوديو')}};
+ if(!confirm('استرجاع النسخة؟ هتستبدل الأعمال الحالية في الاستوديوهات الجديدة ('+Object.keys(d.keys).length+' عنصر).'))return;Object.entries(d.keys).forEach(([k,v])=>{if(/^hs_(film|ad|song|doc|montage|lib)$/.test(k))CORE.persist(k,v);else try{localStorage.setItem(k,v)}catch(x){}});alert('اترجعت ✓');location.reload()}catch(x){alert('الملف ده مش نسخة احتياطية للاستوديو')}};
 </script>
 <script>if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}</script>
 <script src="fieldtools.js"></script>

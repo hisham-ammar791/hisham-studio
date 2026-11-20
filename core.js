@@ -6,6 +6,20 @@ CORE.esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 CORE.toast=function(m,ms){let t=$('coreToast');if(!t){t=document.createElement('div');t.id='coreToast';t.style.cssText='position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#0f172a;border:1px solid #38bdf8;color:#fff;padding:9px 14px;border-radius:12px;z-index:99;font-size:14px;max-width:90vw;text-align:center';document.body.appendChild(t)}
  t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',ms||2200)};
 
+/* ---------- مخزن كبير (IndexedDB) احتياطي للمشروع والمكتبة والصور ---------- */
+CORE.idb=(function(){let dbp=null;const db=()=>dbp||(dbp=new Promise((r,j)=>{try{const q=indexedDB.open('hs_db',1);q.onupgradeneeded=()=>{q.result.createObjectStore('kv')};q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error)}catch(e){j(e)}}));
+ const tx=(m,f)=>db().then(d=>new Promise((r,j)=>{const t=d.transaction('kv',m),s=t.objectStore('kv'),q=f(s);t.oncomplete=()=>r(q&&q.result);t.onerror=()=>j(t.error)}));
+ return {get:k=>tx('readonly',s=>s.get(k)).catch(()=>undefined),set:(k,v)=>tx('readwrite',s=>s.put(v,k)).catch(()=>{}),del:k=>tx('readwrite',s=>s.delete(k)).catch(()=>{}),keys:()=>tx('readonly',s=>s.getAllKeys()).catch(()=>[])}})();
+CORE.lsTs=k=>+(localStorage.getItem('hs_ts~'+k)||0);
+/* بيكتب في localStorage، ونسخة دايمًا في المخزن الكبير؛ لو localStorage اتملا بيكمل على الكبير بس */
+CORE.persist=function(k,raw,onFull){const ts=Date.now();CORE.idb.set(k,{ts,raw});
+ try{localStorage.setItem(k,raw);localStorage.setItem('hs_ts~'+k,ts);return 'ls'}catch(e){}
+ if(onFull){try{onFull();localStorage.setItem(k,raw);localStorage.setItem('hs_ts~'+k,ts);return 'ls'}catch(e){}}
+ try{localStorage.removeItem(k);localStorage.setItem('hs_ts~'+k,ts)}catch(e){}
+ if(!CORE._bigNote){CORE._bigNote=1;CORE.toast('📦 الشغل كبير: اتحفظ في المخزن الكبير على الموبايل ✓',4000)}return 'idb'};
+/* لو النسخة في المخزن الكبير أحدث من localStorage بيرجعها */
+CORE.restoreBig=async function(k){const r=await CORE.idb.get(k);if(!r||!r.raw)return null;const has=localStorage.getItem(k)!=null;if(has&&r.ts<=CORE.lsTs(k))return null;return r.raw};
+
 /* ---------- نسخ ومشاركة ---------- */
 CORE.copy=async function(txt,msg){let ok=false;try{await navigator.clipboard.writeText(txt);ok=true}catch(e){}
  if(!ok){try{const a=document.createElement('textarea');a.value=txt;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();ok=document.execCommand('copy');a.remove()}catch(e){}}
@@ -28,17 +42,15 @@ CORE.oldStudio=async function(){let a=null,b=null;try{a=JSON.parse(localStorage.
 /* ---------- تخزين مشروع الاستوديو + سجل نسخ ---------- */
 CORE.store=function(ns,def){const K='hs_'+ns,H='hs_hist_'+ns;let P;try{P=Object.assign({},def,JSON.parse(localStorage.getItem(K)||'{}'))}catch(e){P=Object.assign({},def)}
  let last='';const api={get:()=>P,
-  save(){const raw=JSON.stringify(P);try{localStorage.setItem(K,raw);return}catch(e){}
-   /* المساحة مليانة: نخفف سجل النسخ القديمة ونجرب تاني */
-   try{Object.keys(localStorage).filter(k=>k.indexOf('hs_hist_')===0).forEach(k=>{let h=[];try{h=JSON.parse(localStorage.getItem(k)||'[]')}catch(x){}localStorage.setItem(k,JSON.stringify(h.slice(0,2)))});localStorage.setItem(K,raw);CORE.toast('⚠️ المساحة قربت تخلص: خففت سجل النسخ القديمة',4000);return}catch(e){}
-   try{Object.keys(localStorage).filter(k=>k.indexOf('hs_hist_')===0||k==='hs_trc').forEach(k=>localStorage.removeItem(k));localStorage.setItem(K,raw);CORE.toast('⚠️ المساحة مليانة: مسحت سجل النسخ عشان أحفظ شغلك. احفظ على Drive',5000);return}catch(e){}
-   CORE.toast('⚠️ الحفظ على الموبايل فشل: المساحة مليانة. احفظ على Drive فورًا وقلّل الصور',6000)},
+  save(){const raw=JSON.stringify(P);CORE.persist(K,raw,()=>{Object.keys(localStorage).filter(k=>k.indexOf('hs_hist_')===0).forEach(k=>{let h=[];try{h=JSON.parse(localStorage.getItem(k)||'[]')}catch(x){}try{localStorage.setItem(k,JSON.stringify(h.slice(0,2)))}catch(x){localStorage.removeItem(k)}})})},
   snap(why,force){try{const raw=JSON.stringify(P);if(!force&&raw===last)return;last=raw;let h=JSON.parse(localStorage.getItem(H)||'[]');h.unshift({ts:Date.now(),why:why||'',raw});for(const n of [12,6,3,1]){try{localStorage.setItem(H,JSON.stringify(h.slice(0,n)));break}catch(e){}}}catch(e){}},
   hist(){try{return JSON.parse(localStorage.getItem(H)||'[]')}catch(e){return []}},
   set(o){P=Object.assign({},def,o||{});api.save()},
   reset(){P=JSON.parse(JSON.stringify(def));api.save()},
   restore(ts){const x=api.hist().find(h=>h.ts==ts);if(!x)return false;api.snap('قبل الاسترجاع',true);P=Object.assign({},def,JSON.parse(x.raw));api.save();return true}};
- setInterval(()=>api.snap('تلقائي'),300000);return api};
+ setInterval(()=>api.snap('تلقائي'),300000);
+ CORE.restoreBig(K).then(raw=>{if(!raw)return;try{P=Object.assign({},def,JSON.parse(raw));window.dispatchEvent(new CustomEvent('hs-store',{detail:ns}))}catch(e){}});
+ return api};
 
 /* ---------- تقسيم الأمر لأجزاء حسب المدة ---------- */
 CORE.partsN=(sec,sel)=>(!sel||sel==='auto')?Math.max(1,Math.ceil((+sec||30)/45)):Math.max(1,+sel||1);
@@ -99,7 +111,8 @@ const ANGLES=[['front','من الأمام'],['q34','ثلاثة أرباع'],['si
 C.DIALECTS=DIALECTS;C.ANGLES=ANGLES;
 function load(){try{return Object.assign({chars:[],places:[],props:[],frames:[]},JSON.parse(localStorage.getItem(LK)||'{}'))}catch(e){return {chars:[],places:[],props:[],frames:[]}}}
 C.lib=load();
-C.libSave=function(){try{localStorage.setItem(LK,JSON.stringify(C.lib));return true}catch(e){C.toast('⚠️ المساحة مليانة: صغّر الصور أو امسح القديم',4000);return false}};
+C.restoreBig(LK).then(raw=>{if(!raw)return;try{C.lib=Object.assign({chars:[],places:[],props:[],frames:[]},JSON.parse(raw));C._castR&&C._castR()}catch(e){}});
+C.libSave=function(){C.persist(LK,JSON.stringify(C.lib));return true};
 C.libImport=async function(force){const o=await C.oldStudio();let n=0;
  (o.chars||[]).forEach(c=>{if(c.vo||!c.name)return;if(C.lib.chars.some(x=>x.oid===c.id||x.name===c.name))return;C.lib.chars.push({id:'c'+Date.now()+n,oid:c.id,name:c.name,look:c.ar||'',voice:c.voiceAr||'',dialect:'',tone:c.toneAr||'',img:c.img||''});n++});
  (o.places||[]).forEach(p=>{if(!p.name||C.lib.places.some(x=>x.name===p.name))return;C.lib.places.push({id:'p'+Date.now()+n,name:p.name,desc:p.ar||'',img:p.img||''});n++});
@@ -218,6 +231,8 @@ C.work=function(o){const {ns,st,render}=o,P=()=>st.get();
  const sv0=st.save;st.save=function(){sv0.apply(st,arguments);if(!localStorage.getItem(DK)){try{localStorage.setItem(DK,'1')}catch(e){}bar()}};
  const clean=()=>{try{localStorage.removeItem(DK)}catch(e){}bar()};
  C.workDirty=dirty;
+ C._rerender=render;
+ window.addEventListener('hs-store',e=>{if(e.detail===ns){render();bar()}});
  window.addEventListener('beforeunload',e=>{if(dirty()&&!C._leaving){e.preventDefault();e.returnValue='فيه تعديلات ما اتحفظتش على Drive'}});
  C.leaveOk=async function(){if(!dirty())return true;const k=await ask3s((P().wname||'').trim());if(k==='x')return false;if(k==='save'){const r=await save();if(!r&&!confirm('الحفظ ما نجحش. تكمل برضه؟'))return false}C._leaving=true;return true};
  async function save(silent){const n=(P().wname||'').trim();if(!n){alert('اكتب اسم العمل الأول');return false}try{C.toast('⏳ بحفظ على Drive…',8000);const r=await C.gdSave(ns,n,C.packWork(P()));if(r){C.toast('☁️ اتحفظ «'+n+'» على Drive ✓');clean()}return r}catch(e){C.toast('⚠️ '+e.message,4000);return false}}
@@ -349,11 +364,12 @@ C.toolsMenu=function(o,st,render,bar){const ctx=()=>(o.ctx?o.ctx():'')||'(لسه
  ${(o.presets||[]).length?`<div class="m" style="margin-top:8px">🎯 وصفات جاهزة (بتملا الاختيارات، وتعدّل اللي يعجبك):</div><div style="display:flex;flex-wrap:wrap;gap:6px">${o.presets.map((p,i)=>`<button class="b g" data-p="${i}" style="margin:0">${esc(p.name)}</button>`).join('')}</div>`:''}
  <div class="m" style="margin-top:10px">أوامر (بتتنسخ وتلصقها في التطبيق اللي تختاره):</div>
  ${it('hooks','🪝 اقترح 10 هوكات','من بنك الهوكات اللي نجحت معاك')}${it('test3','⏱️ اختبار الـ3 ثواني الأولى','حكم واحد: يشد ولا لأ')}${it('comp','🏆 وضع المسابقات','تقييم لجنة تحكيم + قايمة التسليم')}${it('multi','♻️ عمل واحد = 10 مخرجات','ريلز، كاروسيل، بوستات، تيزر…')}${it('plan','🗓️ خطة محتوى 30 يوم','لصفحة تختارها')}${it('en','🌍 نسخة إنجليزية للعالمية','بنفس النبرة مع تغيير الأمثلة المحلية')}${it('refs','📋 المراجع المطلوبة','شخصيات وأماكن وكادرات وزوايا: الموجود والناقص')}${it('dur','⏱️ اقترح المدة','للعمل ولكل مشهد، والقرار ليك')}${it('pub','📢 حزمة النشر','عنوان وكابشن وهاشتاجات لكل منصة')}
+ <div style="display:flex;gap:6px;margin-top:10px"><button class="b g" data-x="script" style="flex:1;margin:0">📄 العمل كامل (نسخ/طباعة)</button><button class="b g" data-x="dup" style="flex:1;margin:0">📑 كرّر العمل</button></div>
  <div style="display:flex;gap:6px;margin-top:10px"><button class="b" data-x="hookbank" style="flex:1;margin:0">🪝 بنك الهوكات (${C.hooks().length})</button><button class="b" data-x="lessons" style="flex:1;margin:0">📚 الدروس (${C.lessons().length})</button></div>
  <button class="b" data-x="x" style="width:100%;margin-top:10px">إغلاق</button></div>`;
  document.body.appendChild(ov);
  ov.onclick=e=>{const b=e.target.closest('[data-t],[data-p],[data-x]');if(e.target===ov){ov.remove();return}if(!b)return;
-  if(b.dataset.x==='x'){ov.remove();return}if(b.dataset.x==='lessons'){ov.remove();C.lessonsBox();return}if(b.dataset.x==='hookbank'){ov.remove();C.hookBank();return}
+  if(b.dataset.x==='x'){ov.remove();return}if(b.dataset.x==='lessons'){ov.remove();C.lessonsBox();return}if(b.dataset.x==='script'){ov.remove();C.scriptBox(st.get(),'');return}if(b.dataset.x==='dup'){ov.remove();C.dupWork(o,st,render);return}if(b.dataset.x==='hookbank'){ov.remove();C.hookBank();return}
   if(b.dataset.p!==undefined){const p=o.presets[+b.dataset.p];if(!confirm('تطبّق وصفة «'+p.name+'»؟ هتغيّر الاختيارات بس (النوع والشكل والمدة…)، والكتابة بتفضل.'))return;st.snap('قبل وصفة',true);Object.assign(st.get(),JSON.parse(JSON.stringify(p.set)));st.save();ov.remove();bar();render();C.toast('🎯 اتطبقت «'+p.name+'»');return}
   let k=b.dataset.t,send=k.endsWith('!');if(send)k=k.slice(0,-1);let t;
   if(k==='pub')t=C.pubPrompt(ctx());else if(k==='refs')t=C.refsPrompt(ctx());else if(k==='dur')t=C.durPrompt(ctx());else if(k==='plan'){const pg=(prompt('اسم الصفحة اللي هتعمل لها الخطة:',localStorage.getItem('hs_lastpage')||'')||'').trim();if(!pg)return;try{localStorage.setItem('hs_lastpage',pg)}catch(x){}t=P_.plan(ctx(),pg)}else t=P_[k](ctx());
@@ -461,3 +477,64 @@ C.refsPrompt=ctx=>{const L=C.lib;return `أنت مخرج ومدير فني وم�
 مراجع الكادر الموجودة: ${L.frames.map(x=>x.name).join('، ')||'مفيش'}
 الناتج: جدول «المطلوب | موجود ✓ / ناقص ✗ | أمر الصورة بالإنجليزي للناقص».\n\nالعمل:\n${ctx}`};
 C.durPrompt=ctx=>`أنت مخرج ومونتير محترف. اقرا العمل ده واقترح المدة المناسبة ليه (للعمل كله ولكل مشهد)، بناءً على كمية الحوار (حوالي 2.5 كلمة في الثانية)، والأحداث، وإيقاع النوع، والمنصة. ارجع بـ: المدة المقترحة بالثواني، والحد الأدنى والأقصى، وجدول المشاهد بالمدد، وأي جزء ممكن يتقص لو عايز أقصر. القرار النهائي بتاعي.\n\nالعمل:\n${ctx}`;})();
+
+/* ================= 🎯 قوالب حسب التطبيق + فحص الستوري بورد + السيناريو كامل + كرّر العمل ================= */
+(function(){
+const C=window.CORE,esc=C.esc,TK='hs_target';
+C.VTARGETS=[['flow','Google Flow (Veo)',8],['kling','Kling',10],['higgs','Higgsfield',10],['grok','Grok Imagine',15],['any','تطبيق تاني',15]];
+C.ITARGETS=[['any','أي مولّد صور'],['gemini','Nano Banana (Gemini)'],['mj','Midjourney'],['grok','Grok Imagine (صور)'],['higgs','Higgsfield (Soul)']];
+C.target=()=>{try{return Object.assign({v:'flow',i:'any'},JSON.parse(localStorage.getItem(TK)||'{}'))}catch(e){return {v:'flow',i:'any'}}};
+C.setTarget=(k,v)=>{const t=C.target();t[k]=v;try{localStorage.setItem(TK,JSON.stringify(t))}catch(e){}};
+C.vt=()=>C.VTARGETS.find(x=>x[0]===C.target().v)||C.VTARGETS[0];
+C.targetName=()=>C.vt()[1].replace(/ \(.*/,'');
+const NEG=/^ممنوع:\s*/m;
+function splitNeg(t){const m=t.match(/^ممنوع:[^\n]*$/m);if(!m)return [t,''];return [t.replace(m[0]+'\n','').replace(m[0],''),m[0].replace(NEG,'')]}
+/* أمر الفيديو */
+C.fitVideo=function(t,s){const v=C.target().v;
+ if(v==='kling'){const [a,n]=splitNeg(t);return a+(n?'\n\nNegative prompt: '+n:'')}
+ if(v==='higgs')return t+'\nالكاميرا بتتحرك بالحركة المكتوبة فوق، والأمر بيوصف اللي بيحصل أثناءها.';
+ if(v==='grok')return t+'\nحركة واحدة واضحة. اوصف الصوت والمؤثرات والجو مع الحركة. حافظ تمامًا على شكل الشخصيات ولبسهم والمكان زي صورة البداية.';
+ return t};
+/* نصيحة للمستخدم (بتظهر على الشاشة، مش جوه الأمر) */
+C.targetHint=function(){const v=C.target().v,i=C.target().i;const V={flow:'Flow: كل لقطة لحد 8 ثواني، والحوار والصوت جوه نفس اللقطة.',kling:'Kling: صورة البداية في خانة الإطار الأول، والمدة 5 أو 10 ث. السطر الأخير «Negative prompt» انقله للخانة بتاعته.',higgs:'Higgsfield: اختار من قايمة حركة الكاميرا أقرب حركة للمكتوبة في الأمر.',grok:'Grok Imagine: لقطة لحد 15 ث بصوت متزامن. ارفع صورة البداية والصق الأمر.',any:''}[v]||'';
+ const I={mj:'Midjourney: الأمر جاهز بالمقاس وممنوعاته في الآخر.',gemini:'Nano Banana: ارفع صور الشخصيات والمكان مع الأمر عشان الشكل يثبت.',grok:'',higgs:'Higgsfield Soul: اختار Soul ID للشخصية لو عندك.',any:''}[i]||'';return [V,I].filter(Boolean).join(' • ')};
+C.fitImage=function(t,aspect){const v=C.target().i;
+ if(v==='mj'){const [a]=splitNeg(t);return a.replace(/^Generate ONE still image:[^\n]*\n/,'').trim()+'\n--ar '+(aspect||'9:16')+' --style raw --no text, watermark, letters, deformed hands'}
+ return t};
+/* لف أوامر الصفحة */
+C.wrapPR=function(PR,getP){const sv=PR.shotP,si=PR.imgP,se=PR.shotEn;
+ if(sv)PR.shotP=i=>C.fitVideo(sv(i),getP().shots[i]);
+ if(si)PR.imgP=i=>C.fitImage(si(i),getP().aspect);
+ if(se)PR.shotEn=i=>se(i).replace(/Google Flow/g,C.targetName())};
+/* شريط فحص الستوري بورد + اختيار التطبيق */
+C.boardBar=function(P){const sh=P.shots||[];if(!sh.length)return '';const T=sh.reduce((a,s)=>a+(+s.dur||0),0),want=+P.sec||0,max=C.vt()[2];
+ const miss=[],long=[];sh.forEach((s,i)=>{const n=[];if(!(s.desc||'').trim())n.push('المشهد');if(!(s.cam||'').trim())n.push('الكاميرا');if(!(s.light||'').trim())n.push('الإضاءة');if(n.length)miss.push((i+1)+' ('+n.join('، ')+')');if((+s.dur||0)>max)long.push(i+1)});
+ const pc=want?Math.min(100,Math.round(T/want*100)):100,col=!want||Math.abs(T-want)<=Math.max(3,want*.1)?'#22c55e':T<want?'#f59e0b':'#ef4444';
+ const sel=(k,L)=>`<select data-tg="${k}" style="margin:0">${L.map(x=>`<option value="${x[0]}"${x[0]===C.target()[k]?' selected':''}>${x[1]}</option>`).join('')}</select>`;
+ return `<div style="margin:8px 0"><div style="display:flex;justify-content:space-between;font-size:13px"><span>⏱️ ${T} ث${want?' من '+want:''}</span><span style="color:${col}">${want?(T<want?'ناقص '+(want-T)+' ث':T>want?'زيادة '+(T-want)+' ث':'مظبوط ✓'):''}</span></div>
+ <div style="height:8px;background:#1e293b;border-radius:6px;overflow:hidden;margin-top:3px"><div style="height:100%;width:${pc}%;background:${col}"></div></div>
+ ${miss.length?`<div class="m" style="color:#fcd34d;margin-top:4px">⚠️ لقطات ناقصة: ${miss.slice(0,8).join(' • ')}${miss.length>8?' …':''}</div>`:''}${long.length?`<div class="m" style="color:#fca5a5;margin-top:4px">✂️ لقطات أطول من ${max} ث (حد ${esc(C.targetName())}): ${long.join('، ')}</div>`:''}
+ ${C.targetHint()?`<div class="m" style="margin-top:4px">💡 ${esc(C.targetHint())}</div>`:''}<div class="row" style="margin-top:6px"><div><label class="l">🎯 تطبيق الفيديو</label>${sel('v',C.VTARGETS)}</div><div><label class="l">🖼️ تطبيق الصور</label>${sel('i',C.ITARGETS)}</div></div></div>`};
+document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.tg;if(!k)return;C.setTarget(k,e.target.value);C.toast('🎯 الأوامر هتتظبط على '+e.target.selectedOptions[0].text);C._rerender&&C._rerender()});
+/* السيناريو كامل */
+C.fullScript=function(P,title){const L=[];const n=(P.wname||title||'عمل').trim();L.push('# '+n,'');
+ const blocks=[['الفكرة',P.idea],['الموضوع',P.topic],['البحث',P.research],['السيناريو / النص',P.script],['كلمات الأغنية',P.lyrics]];
+ blocks.forEach(([h,v])=>{if((v||'').trim())L.push('## '+h,v.trim(),'')});
+ const c=C.castTxt?C.castTxt(P):'';if(c.trim())L.push('## الشخصيات والأماكن',c.trim(),'');
+ const sh=P.shots||[];if(sh.length){L.push('## الستوري بورد ('+sh.length+' لقطة • '+sh.reduce((a,s)=>a+(+s.dur||0),0)+' ثانية)','');
+  sh.forEach((s,i)=>{L.push('لقطة '+(i+1)+' | '+(s.dur||'?')+' ث'+(s.lyric?' | '+s.lyric:''));[['المشهد',s.desc],['الكاميرا',s.cam],['الحركة',s.move],['الإضاءة',s.light],['تغيير الشكل',s.look]].forEach(([k,v])=>{if((v||'').trim())L.push(k+': '+v.trim())});L.push('')})}
+ return L.join('\n')};
+C.scriptBox=function(P,title){const t=C.fullScript(P,title);let o=document.getElementById('fsBox');if(o)o.remove();o=document.createElement('div');o.id='fsBox';o.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
+ o.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;max-height:90vh;overflow:auto;padding:12px;color:#fff"><b>📄 العمل كامل</b><textarea readonly rows="14" style="margin-top:8px;font-size:13px">${esc(t)}</textarea>
+ <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="b g" data-f="copy" style="flex:1">📋 نسخ</button><button class="b bl" data-f="file" style="flex:1">📤 ملف نصي</button><button class="b" data-f="print" style="flex:1">🖨️ طباعة / PDF</button></div><button class="b" data-f="x" style="width:100%;margin-top:8px">إغلاق</button></div>`;
+ document.body.appendChild(o);o.onclick=async e=>{const b=e.target.closest('[data-f]');if(e.target===o||(b&&b.dataset.f==='x')){o.remove();return}if(!b)return;const a=b.dataset.f;
+  if(a==='copy')C.copy(t,'اتنسخ العمل كامل ✓');
+  if(a==='file'){const name=((P.wname||title||'عمل').trim()||'عمل')+'.txt',f=new File([t],name,{type:'text/plain'});try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(x){if(x&&x.name==='AbortError')return}const a2=document.createElement('a');a2.href=URL.createObjectURL(f);a2.download=name;a2.click()}
+  if(a==='print'){const w=window.open('','_blank');if(!w){C.toast('افتح النوافذ المنبثقة للطباعة');return}w.document.write('<html dir="rtl" lang="ar"><head><meta charset="utf-8"><title>'+esc(P.wname||'العمل')+'</title><style>body{font-family:Cairo,Tahoma,sans-serif;line-height:1.9;padding:24px;white-space:pre-wrap;font-size:14px}</style></head><body>'+esc(t).replace(/^# (.*)$/gm,'<h1>$1</h1>').replace(/^## (.*)$/gm,'<h2>$1</h2>')+'</body></html>');w.document.close();setTimeout(()=>w.print(),400)}}};
+/* كرّر العمل: نفس الإعدادات والشخصيات، والمحتوى فاضي */
+const CONTENT=['idea','script','paste','shots','lyrics','topic','research','chkPaste','epSum','sendIdx','sendMode','pub','wname','grid','title','paste2','cover'];
+C.dupWork=async function(o,st,render){if(C.leaveOk&&!(await C.leaveOk()))return;const P=st.get(),old=(P.wname||'').trim();
+ const name=(prompt('اسم العمل الجديد (نفس الإعدادات والشخصيات):',old?old+' 2':'')||'').trim();if(!name)return;
+ st.snap('قبل تكرار العمل',true);const n=JSON.parse(JSON.stringify(P));CONTENT.forEach(k=>{if(k in o.def)n[k]=JSON.parse(JSON.stringify(o.def[k]));else delete n[k]});n.wname=name;n.step=0;
+ st.set(n);C._wbar&&C._wbar();render();window.scrollTo(0,0);C.toast('📑 عمل جديد «'+name+'» بنفس الإعدادات ✓')};
+})();

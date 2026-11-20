@@ -120,6 +120,7 @@ ${singerLine()}${F?'مرجع الكادر المرفق «'+F.name+'»: نفس أ
 ${CORE.lessonsTxt()}ممنوع: أي نصوص أو حروف أو علامات مائية، أو تغيير شكل الشخصيات عن الوصف الثابت، أو أيدي وأصابع مشوهة.`};
 {const _sp=PR.shotP;PR.shotP=i=>{const k=imgNeed(i);return _sp(i)+'\n'+(k.n?'':'صورة البداية المرفقة هي آخر كادر من اللقطة السابقة: كمّل منها بالظبط بنفس الأماكن والإضاءة.\n')+CORE.lessonsTxt()}}
 {const fx=f=>i=>{let t=f(i);if(lookAt(i)){t=t.replace(/(استمر من نفس [^\n]*?)\.?\n/,'$1، مع تطبيق تغيير الشكل المذكور فوق.\n').replace(/ممنوع:[^\n]*/,m=>m.replace(/\.?\s*$/,'')+' (ما عدا التغيير المقصود في الشكل المذكور فوق).')}return t};PR.shotP=fx(PR.shotP);PR.imgP=fx(PR.imgP)}
+CORE.wrapPR(PR,p);
 /* ---------- العرض ---------- */
 function lookAt(i){const sh=p().shots;if(sh[i]&&(sh[i].look||'').trim())return sh[i].look.trim();for(let j=i-1;j>=0;j--){const x=sh[j];if((x.look||'').trim())return x.lookKeep?x.look.trim():''}return ''}
 const thumb=s=>s.img||CORE.frameImg(s.frame)||'';
@@ -171,7 +172,7 @@ function shotCard(s,i){const P=p();return `<div class="shot${s.done?' done':''}"
  ${imgBadge(i)}<label class="l">صورة البداية</label><select data-si="${i}" data-sf="imgMode"><option value="">تلقائي</option><option value="new"${s.imgMode==='new'?' selected':''}>صورة جديدة</option><option value="last"${s.imgMode==='last'?' selected':''}>آخر كادر من اللي قبلها</option></select>${pair('imgP:'+i,'أمر صورة البداية (إنجليزي)')}${pair('shotP:'+i,'أمر الفيديو (إنجليزي)')}<button class="b" data-a="shotAr" data-i="${i}">🇪🇬 نسخة عربي</button><button class="b" data-a="lesson" data-i="${i}">📚 سجّل غلطة</button></div>`}
 function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
  if(P.sendMode&&P.shots.length){const i=Math.min(P.sendIdx,P.shots.length-1),s=P.shots[i];
-  return `<div class="c"><div class="hd"><b>▶ وضع الإرسال لـ Flow: لقطة ${i+1} من ${P.shots.length}</b><button class="b" data-a="exitSend" style="margin:0">خروج</button></div>
+  return `<div class="c"><div class="hd"><b>▶ وضع الإرسال لـ ${esc(CORE.targetName())}: لقطة ${i+1} من ${P.shots.length}</b><button class="b" data-a="exitSend" style="margin:0">خروج</button></div>
   <div class="m">1) صورة البداية  2) انسخ أمر الفيديو  3) تمت ✓</div>${imgBadge(i)}
   ${(s.img||CORE.frameImg(s.frame))?`<img src="${s.img||CORE.frameImg(s.frame)}" style="max-width:100%;border-radius:10px;margin-top:8px">`:'<div class="m">مفيش صورة بداية للقطة دي (ارفعها أو اختار مرجع كادر).</div>'}
   <button class="b bl" data-a="shareImg" data-i="${i}" style="width:100%">📤 شارك الصورة</button>
@@ -181,7 +182,7 @@ function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
  return `<div class="c"><h3>📥 رد الذكاء الاصطناعي</h3><textarea data-f="paste" rows="6" placeholder="الصق الرد هنا (لقطة 1 | ...). أي طول، وبيتحفظ لوحده">${esc(P.paste)}</textarea>
  <button class="b g" data-a="parse">✂️ حوّل الرد إلى لقطات${P.shots.length?' (يستبدل)':''}</button>${P.shots.length?`<button class="b bl" data-a="append">➕ كمّل بعد لقطة ${P.shots.length}</button>`:''}</div>
  ${P.shots.length?`<div class="c"><div class="hd"><b>${P.shots.length} لقطة • ${T} ثانية${P.sec&&Math.abs(T-P.sec)>Math.max(5,P.sec*.15)?` <span style="color:#fcd34d">(المدة المطلوبة ${P.sec})</span>`:''}</b></div>
- <button class="b g" data-a="send">▶ ابدأ وضع الإرسال لـ Flow</button><button class="b" data-a="grid">${P.grid?'📋 عرض التفاصيل':'🔲 عرض شبكة'}</button>${pair('teamBoard','راجع الستوري بورد بالفريق')}</div>`:'<div class="c m">لسه مفيش لقطات.</div>'}
+ ${CORE.boardBar(P)}<button class="b g" data-a="send">▶ ابدأ وضع الإرسال لـ ${esc(CORE.targetName())}</button><button class="b" data-a="grid">${P.grid?'📋 عرض التفاصيل':'🔲 عرض شبكة'}</button>${pair('teamBoard','راجع الستوري بورد بالفريق')}</div>`:'<div class="c m">لسه مفيش لقطات.</div>'}
  ${P.shots.length?(P.grid?gridHTML():insBtn(-1)+P.shots.map((s,i)=>`<div id="shot${i}">`+shotCard(s,i)+'</div>'+insBtn(i)).join('')):''}${P.shots.length?CORE.pubCard(P):''}`}
 function render(){const P=p();const STEPS=P.kind==='video'?STEPS_V:STEPS_O;if(P.step>=STEPS.length)P.step=0;document.getElementById('nav').innerHTML=STEPS.map((t,k)=>`<button class="b${k===P.step?' g':''}" data-a="go" data-i="${k}">${t}</button>`).join('');
  document.getElementById('app').innerHTML=CORE.stage(P,STEPS,[s0,s1,s2][P.step]())}
