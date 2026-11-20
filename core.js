@@ -475,6 +475,7 @@ C.pubCard=function(P){const u=pub(P);
  <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${PLATS.map(([k,n])=>`<button class="b${u.plats.includes(k)?' g':''}" data-pp="${k}" style="margin:0">${n}</button>`).join('')}</div>
  <div class="shot"><b>🔥 1) اعرف الترند الأول</b><div class="m">الأمر ده لتطبيق بيدوّر على النت دلوقتي: <b>Grok</b> (الأقوى في ترندات X)، أو <b>Gemini</b>، أو <b>Perplexity</b>، أو ChatGPT بالبحث. بيرجع لك الترندات والهاشتاجات المنتشرة الأسبوع ده، والمناسبة لشغلك بس.</div>
   <div class="row"><div><label class="l">البلد</label><input data-pu-country value="${esc(u.country||'مصر')}"></div></div>
+  <button class="b g" data-pu="trAg" style="width:100%">🤖 هات الترندات دلوقتي بالإيجنت (بحث جوجل)</button>
   <div class="pair"><button class="b bl" data-pu="tr">📋 أمر الترندات</button><button class="b" data-pu="tr!">📤</button></div>
   <textarea data-pu-tr rows="${u.trends?3:4}" placeholder="الصق رد الترندات هنا، وهيدخل في حزمة النشر لوحده">${esc(u.trends||'')}</textarea>${u.trends?'<div class="m" style="color:#86efac">✓ الترندات هتدخل في أمر حزمة النشر</div>':''}</div>
  <div class="m" style="margin-top:8px"><b>2) حزمة النشر</b></div>
@@ -493,6 +494,7 @@ C.bindPub=function(getP,save,render,getCtx){
  document.addEventListener('click',e=>{const b=e.target.closest('[data-pp],[data-pu],[data-pc]');if(!b)return;const P=getP(),u=pub(P);
   if(b.dataset.pp){const k=b.dataset.pp;u.plats=u.plats.includes(k)?u.plats.filter(x=>x!==k):u.plats.concat(k);save();render();return}
   if(b.dataset.pu){let k=b.dataset.pu;if(k==='parse'){if(!u.raw.trim()){alert('الصق الرد الأول');return}const r=C.pubParse(u.raw);if(!r.items.length&&!r.plan){alert('مش لاقي علامات «=== منصة: ... ===». استخدم أمر حزمة النشر من هنا.');return}Object.assign(u,r);u.posted={};save();render();C.toast('📢 '+r.items.length+' منصة جاهزة ✓');return}
+   if(k==='trAg'){if(!C.gemKey()){C.agentKeyBox();return}C.toast('🔎 الإيجنت بيدوّر على الترندات…',8000);C.gemRun([C.trendsPrompt(P,getCtx())],null,{search:true}).then(out=>{u.trends=out;save();render();C.toast('🔥 الترندات وصلت ✓')}).catch(e=>C.toast('⚠️ '+e.message,5000));return}
    const send=k.endsWith('!');if(send)k=k.slice(0,-1);const t=k==='tr'?C.trendsPrompt(P,getCtx()):C.pubPack(P,getCtx());send?C.send(t):C.copy(t,k==='tr'?'اتنسخ أمر الترندات ✓ ابعته لـ Grok أو Gemini':'اتنسخ أمر حزمة النشر ✓');return}
   const [k,i]=b.dataset.pc.split(':'),it=u.items[+i]||{};
   if(k==='done'){u.posted[i]=!u.posted[i];save();render();return}
@@ -599,7 +601,7 @@ C.dupWork=async function(o,st,render){if(C.leaveOk&&!(await C.leaveOk()))return;
 
 /* ================= 🤖 وضع الإيجنت: Gemini API بمفتاحك (اختياري) ================= */
 (function(){
-const C=window.CORE,KK='hs_gemkey',MK='hs_gemmodel',BASE='https://generativelanguage.googleapis.com/v1beta';
+const C=window.CORE,esc=C.esc,KK='hs_gemkey',MK='hs_gemmodel',BASE='https://generativelanguage.googleapis.com/v1beta';
 C.gemKey=()=>(localStorage.getItem(KK)||'').trim();
 C.setGemKey=k=>{try{if(k)localStorage.setItem(KK,k.trim());else localStorage.removeItem(KK);localStorage.removeItem(MK)}catch(e){}};
 /* بيختار أحدث موديل Flash متاح للمفتاح ده، عشان أسماء الموديلات بتتغير */
@@ -610,13 +612,60 @@ C.gemModel=async function(){try{const c=JSON.parse(localStorage.getItem(MK)||'nu
  const m=(L[0]&&L[0].name)||'models/gemini-2.5-flash';try{localStorage.setItem(MK,JSON.stringify({m,t:Date.now()}))}catch(e){}return m};
 C.b64=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(blob)});
 /* parts: نص أو {blob} أو {b64,mime} */
-C.gemRun=async function(parts,onStep){if(!C.gemKey())throw new Error('حط مفتاح Gemini الأول');onStep&&onStep('🤖 بختار الموديل…');const model=await C.gemModel();const P=[];let size=0;
+C.gemRun=async function(parts,onStep,opt){opt=opt||{};if(!C.gemKey())throw new Error('حط مفتاح Gemini الأول');onStep&&onStep('🤖 بختار الموديل…');const model=await C.gemModel();const P=[];let size=0;
  for(const x of parts){if(typeof x==='string')P.push({text:x});else if(x.blob){const d=await C.b64(x.blob);size+=d.length;P.push({inline_data:{mime_type:x.blob.type||x.mime||'application/octet-stream',data:d}})}else if(x.b64){size+=x.b64.length;P.push({inline_data:{mime_type:x.mime,data:x.b64}})}}
  if(size>95e6)throw new Error('الملفات كبيرة أوي على الإيجنت (أكتر من 95 ميجا). قصّر الأغنية أو قلل الفيديوهات');
  onStep&&onStep('🤖 الفريق بيشتغل… ('+model.replace('models/','')+')');
- const r=await fetch(BASE+'/'+model+':generateContent?key='+encodeURIComponent(C.gemKey()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:P}],generationConfig:{temperature:.6,maxOutputTokens:16384}})});
+ const r=await fetch(BASE+'/'+model+':generateContent?key='+encodeURIComponent(C.gemKey()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({contents:(opt.history||[]).map(h=>({role:h.role,parts:[{text:h.text}]})).concat([{role:'user',parts:P}]),generationConfig:{temperature:opt.temp==null?.6:opt.temp,maxOutputTokens:16384}},opt.search?{tools:[{google_search:{}}]}:{}))});
  const j=await r.json().catch(()=>({}));if(!r.ok){if(r.status===404){try{localStorage.removeItem(MK)}catch(e){}}throw new Error((j.error&&j.error.message)||('Gemini رد بخطأ '+r.status))}
- const t=((j.candidates||[])[0]||{}).content;const out=t&&t.parts?t.parts.map(p=>p.text||'').join(''):'';if(!out.trim())throw new Error('Gemini ما ردّش (ممكن المحتوى اتمنع أو الحد المجاني خلص)');return out};
+ const cand=(j.candidates||[])[0]||{},t=cand.content;let out=t&&t.parts?t.parts.filter(p=>!p.thought).map(p=>p.text||'').join(''):'';if(!out.trim())throw new Error('Gemini ما ردّش (ممكن المحتوى اتمنع أو الحد المجاني خلص)');
+ const G=cand.groundingMetadata&&cand.groundingMetadata.groundingChunks;if(opt.search&&G&&G.length){const seen={};const L=G.map(g=>g.web).filter(w=>w&&w.uri&&!seen[w.uri]&&(seen[w.uri]=1)).slice(0,12);if(L.length)out+='\n\nالمصادر اللي اتبحث فيها:\n'+L.map(w=>'- '+(w.title||'')+': '+w.uri).join('\n')}
+ return out};
+/* بيطلّع النسخة النهائية من بين ===بداية=== و===نهاية=== لو موجودة */
+C.between=t=>{const m=String(t||'').match(/===\s*بداية\s*===([\s\S]*?)===\s*نهاية\s*===/);return m?m[1].trim():null};
+const MARK='\n\nمهم للبرنامج: اكتب الناتج النهائي المطلوب بس بين السطرين ===بداية=== و===نهاية===، وأي شرح أو ملاحظات قبلهم.';
+C.AGMARK=MARK;
+/* ===== محرك «اعمل العمل كله»: خطوات بنقط مراجعة ===== */
+C.agentFlow=function(o){if(!C.gemKey()){C.agentKeyBox();return}let ov=document.getElementById('agFlow');if(ov)ov.remove();ov=document.createElement('div');ov.id='agFlow';ov.style.cssText='position:fixed;inset:0;z-index:97;background:#000c;display:flex;align-items:flex-end';
+ const S=o.steps.map(x=>Object.assign({st:'wait'},x));let cur=-1,out='',auto=false,busy=false,stopped=false,hist=[];
+ const draw=(note)=>{const s=S[cur]||{};ov.innerHTML=`<div style="background:#0f172a;border:1px solid #10b981;border-radius:16px 16px 0 0;width:100%;max-height:92vh;overflow:auto;padding:12px;color:#fff">
+  <div style="display:flex;align-items:center;gap:8px"><b style="flex:1;font-size:16px">🤖 ${esc(o.title||'الإيجنت')}</b><button class="b" data-ag="close" style="margin:0">✕</button></div>
+  <div style="display:flex;flex-wrap:wrap;gap:4px;margin:8px 0">${S.map((x,i)=>`<span class="tag" style="font-size:12px;${i===cur?'background:#10b981;color:#04130d':''}">${x.st==='done'?'✓':x.st==='skip'?'—':i===cur&&busy?'⏳':''} ${esc(x.label)}</span>`).join('')}</div>
+  <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="agAuto" ${auto?'checked':''} style="width:auto"> كمّل لوحدك من غير ما تقف عند كل مرحلة</label>
+  <div class="m" id="agNote" style="margin:8px 0;white-space:pre-wrap">${esc(note||'')}</div>
+  ${!busy&&cur>=0&&cur<S.length&&out?`<div class="m">${esc(s.gateLabel||'النتيجة (تقدر تعدّل فيها قبل ما تكمّل):')}</div><textarea id="agOut" rows="12" style="font-size:14px">${esc(out)}</textarea>
+   <input id="agWish" placeholder="عايز يتغير إيه؟ (اختياري، لو هتطلب تاني)" style="margin-top:6px">
+   <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="b g" data-ag="ok" style="flex:2">✓ تمام، كمّل</button><button class="b" data-ag="redo" style="flex:1">🔁 اعمل تاني</button><button class="b" data-ag="copy" style="flex:1">📋 نسخ</button><button class="b r" data-ag="stop" style="flex:1">⏹ وقف هنا</button></div>`:''}
+  ${cur>=S.length?`<button class="b g" data-ag="close" style="width:100%">🎉 خلص — اقفل وشوف الشغل</button>`:''}</div>`};
+ document.body.appendChild(ov);
+ const run=async(wish)=>{if(stopped)return;const s=S[cur];if(!s){draw('✅ الإيجنت خلص كل المراحل. الشغل كله اتحط في الصفحة، وتقدر تعدّل أي حاجة.');o.onDone&&o.onDone();return}
+  if(s.skip&&s.skip()){s.st='skip';cur++;return run()}
+  busy=true;draw('⏳ '+s.label+'…');
+  try{let res='';if(s.loop){res=await s.loop({say:t=>draw('⏳ '+t),gem:(p,op)=>C.gemRun(p,null,op),wish})}
+   else{let pr=await s.build(wish);if(!pr){busy=false;stopped=true;draw('⏹ وقف: '+(s.need||'ناقص حاجة في الصفحة'));return}
+    if(wish)pr=(Array.isArray(pr)?pr:[pr]).concat(['\n\nتعديل مطلوب على النسخة اللي فاتت: '+wish]);
+    res=await C.gemRun(Array.isArray(pr)?pr:[pr],t=>draw(t),{search:!!s.search})}
+   out=s.pick?s.pick(res):(C.between(res)||res);busy=false;const pre=C.between(res)?res.split(/===\s*بداية/)[0].trim().slice(0,2500):'';
+   if(auto||!s.gate){await accept();return}draw((s.hint?s.hint+'\n\n':'')+pre)}
+  catch(e){busy=false;draw('⚠️ '+e.message+'\n\nتقدر تضغط «اعمل تاني».');out=out||' '}};
+ const accept=async()=>{const s=S[cur];const v=(document.getElementById('agOut')||{}).value;if(v!=null&&!auto)out=v;try{s.apply&&await s.apply(out)}catch(e){draw('⚠️ '+e.message);return}s.st='done';cur++;out='';o.render&&o.render();run()};
+ ov.onclick=async e=>{const b=e.target.closest('[data-ag]');if(e.target.id==='agAuto'){auto=e.target.checked;if(auto&&!busy&&out)accept();return}if(!b||busy)return;const a=b.dataset.ag;
+  if(a==='close'){ov.remove();o.render&&o.render();return}if(a==='stop'){stopped=true;ov.remove();o.render&&o.render();C.toast('⏹ الإيجنت وقف، واللي اتعمل اتحفظ');return}
+  if(a==='copy'){C.copy((document.getElementById('agOut')||{}).value||out,'اتنسخ ✓');return}
+  if(a==='ok'){accept();return}if(a==='redo'){const w=(document.getElementById('agWish')||{}).value||'';run(w.trim())}};
+ cur=0;draw('');run()};
+/* خطوة اللقطات: كل الأجزاء في محادثة واحدة */
+C.agentShots=function(PR,getP,applyParse,label){return {label:label||'تقسيم اللقطات والستوري بورد',gate:true,gateLabel:'اللقطات (عدّل لو حابب، وبعدين كمّل):',hint:'دي اللقطات اللي هتتحط في الستوري بورد.',
+ loop:async({say,gem,wish})=>{const P=getP(),n=C.partsN(P.sec,P.parts),hist=[],all=[];P.shots=[];
+  for(let k=0;k<n;k++){say('بكتب اللقطات'+(n>1?' — الجزء '+(k+1)+' من '+n:'')+'…');let pr=PR.shots(k);if(!pr)throw new Error('ناقص النص قبل التقسيم');if(wish&&k===0)pr+='\n\nملاحظة مهمة: '+wish;
+   const r=await gem([pr],{history:hist});hist.push({role:'user',text:pr},{role:'model',text:r});all.push(r);P.paste=r;applyParse(k>0)}
+  return all.join('\n\n')},pick:x=>x,apply:out=>{const P=getP();P.paste=out;applyParse(false)}}};
+/* خطوات الترند والنشر */
+C.agentPub=function(getP,save,getCtx){return [{label:'الترندات (بحث جوجل)',search:true,gate:true,gateLabel:'الترندات والهاشتاجات المنتشرة دلوقتي:',build:()=>C.trendsPrompt(getP(),getCtx()),pick:x=>x,apply:out=>{const P=getP();P.pub=P.pub||{};P.pub.trends=out;save()}},
+ {label:'حزمة النشر',gate:true,gateLabel:'خطة النشر والكابشن والهاشتاجات لكل منصة:',build:()=>C.pubPack(getP(),getCtx()),pick:x=>x,apply:out=>{const P=getP();const r=C.pubParse(out);P.pub=Object.assign(P.pub||{},{raw:out},r.items.length?r:{});P.pub.posted={};save()}}]};
+C.agentKeyBox=function(){let o=document.getElementById('agKeyBox');if(o)o.remove();o=document.createElement('div');o.id='agKeyBox';o.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
+ o.innerHTML=`<div style="background:#0f172a;border:1px solid #10b981;border-radius:16px 16px 0 0;width:100%;padding:12px;color:#fff"><b>🔑 الإيجنت محتاج مفتاح Gemini</b>${C.agentKeyHTML().replace('<details','<details open')}<button class="b" style="width:100%;margin-top:8px" onclick="this.closest('#agKeyBox').remove()">إغلاق</button></div>`;document.body.appendChild(o)};
+C.agentBtn=(label)=>`<div class="c" style="border-color:#10b981"><button class="b g" data-a="agentAll" style="width:100%;font-size:16px;padding:12px">🤖 ${label||'اعمل العمل كله بالإيجنت'}</button><div class="m">بيكتب ويقسّم ويملا الستوري بورد لوحده، ويقف عند كل مرحلة تراجعها وتعدّل فيها. ${C.gemKey()?'':'(محتاج مفتاح Gemini مجاني)'}</div></div>`;
 /* كارت الإيجنت (مشترك) */
 C.agentKeyHTML=function(){const has=!!C.gemKey();return `<details${has?'':' open'} style="margin-top:6px"><summary style="font-size:13px;color:#94a3b8">🔑 مفتاح Gemini ${has?'✓ متحط':'(مطلوب لوضع الإيجنت)'}</summary>
  <div class="m" style="font-size:12px">خده ببلاش من aistudio.google.com/apikey (Get API key). بيتحفظ على الجهاز ده بس، ومش بيدخل في النسخة الاحتياطية. الملفات بتتبعت لـ Google عشان Gemini يشوفها ويسمعها.</div>

@@ -153,7 +153,7 @@ function s0(){const P=p();return `<div class="c"><h3>📣 نوع الإعلان<
  <label class="l" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-chk="health" ${P.health?'checked':''} style="width:auto"> منتج صحي أو دواء أو مكمل (يطبّق قواعد الإعلان الصحي)</label>
  <button class="b" data-a="saveBrand">💾 احفظ البراند</button>${P.brandSel!==''?`<button class="b r" data-a="delBrand">🗑️</button>`:''}</div>
  `+CORE.castCard(P)+`<div class="c"><h3>🌍 أفكار عالمية من نفس النوع</h3><div class="m">بحث عن أنجح إعلانات العالم من نفس نوع إعلانك وفئته: فكرتها وهوكها وليه نجحت، وإزاي تستلهمها لمنتجك. ابعت الأمر لتطبيق بيدوّر على النت (Gemini أو Perplexity أو ChatGPT بالبحث أو Grok).</div>
- ${pair('world','أمر الإلهام العالمي')}<textarea data-f="inspo" rows="${P.inspo?5:3}" placeholder="الصق الرد هنا، أو احتفظ بالفكرة اللي عجبتك بس">${esc(P.inspo)}</textarea>
+ <button class="b g" data-a="worldAg" style="width:100%">🤖 هات الإلهام بالإيجنت (بحث جوجل)</button>${pair('world','أمر الإلهام العالمي')}<textarea data-f="inspo" rows="${P.inspo?5:3}" placeholder="الصق الرد هنا، أو احتفظ بالفكرة اللي عجبتك بس">${esc(P.inspo)}</textarea>
  <label class="l" style="display:flex;gap:8px;align-items:center"><input type="checkbox" data-chk="useInspo" ${P.useInspo?'checked':''} style="width:auto"> استخدم الإلهام ده في أمر كتابة الإعلان</label></div>
  <div class="c"><h3>✍️ الفكرة والأسلوب</h3>
  <label class="l">الفكرة أو الزاوية (اختياري، الذكاء يقترح لو فاضية)</label><textarea data-f="idea" rows="3">${esc(P.idea)}</textarea>
@@ -202,7 +202,7 @@ function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
  ${CORE.boardBar(P)}<button class="b g" data-a="send">▶ ابدأ وضع الإرسال لـ ${esc(CORE.targetName())}</button><button class="b" data-a="grid">${P.grid?'📋 عرض التفاصيل':'🔲 عرض شبكة'}</button>${pair('teamBoard','راجع الستوري بورد بالفريق')}</div>`:'<div class="c m">لسه مفيش لقطات.</div>'}
  ${P.shots.length?(P.grid?gridHTML():insBtn(-1)+P.shots.map((s,i)=>`<div id="shot${i}">`+shotCard(s,i)+'</div>'+insBtn(i)).join('')):''}${P.shots.length?CORE.pubCard(P):''}`}
 function render(){const P=p();const STEPS=P.kind==='video'?STEPS_V:STEPS_O;if(P.step>=STEPS.length)P.step=0;document.getElementById('nav').innerHTML=STEPS.map((t,k)=>`<button class="b${k===P.step?' g':''}" data-a="go" data-i="${k}">${t}</button>`).join('');
- document.getElementById('app').innerHTML=CORE.stage(P,STEPS,[s0,s1,s2][P.step]())}
+ document.getElementById('app').innerHTML=CORE.stage(P,STEPS,(P.step===0?CORE.agentBtn():'')+[s0,s1,s2][P.step]())}
 
 /* ---------- التفاعل ---------- */
 function shrink(file){return new Promise(r=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const k=Math.min(1,720/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);r(c.toDataURL('image/jpeg',.8))};im.onerror=()=>r('');im.src=u})}
@@ -219,6 +219,8 @@ document.addEventListener('change',async e=>{const t=e.target,P=p();
  if(t.dataset.f&&t.tagName==='SELECT'){P[t.dataset.f]=t.value;st.save();if(t.dataset.f==='brandSel'&&t.value!==''){Object.assign(P,P.brands[+t.value]);st.save()}if(['voice','genre','visual','parts','brandSel'].includes(t.dataset.f))render();return}
  if(t.dataset.img!==undefined&&t.files[0]){const d=await shrink(t.files[0]);if(d){P.shots[+t.dataset.img].img=d;st.save();render()}else toast('الصورة ما اتقرتش')}});
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;let a=b.dataset.a;const P=p(),i=+b.dataset.i;
+ if(a==='agentAll'){startAgent();return}
+ if(a==='worldAg'){if(!CORE.gemKey()){CORE.agentKeyBox();return}const t=PR.world();if(!t)return;toast('🔎 الإيجنت بيدوّر على أنجح إعلانات العالم…',9000);CORE.gemRun([t],null,{search:true}).then(o=>{p().inspo=o;p().useInspo=true;st.save();render();toast('🌍 الإلهام وصل ✓')}).catch(x=>toast('⚠️ '+x.message,5000));return}
  if(a==='castGo'){P.step=0;P.sendMode=false;st.save();render();setTimeout(()=>{const e=document.getElementById('castCard');e&&e.scrollIntoView({block:'start'})},60);return}
  if(a==='home'){CORE.leaveOk().then(ok=>{if(ok)location.href='./'});return}
  if(a==='ins'){st.snap('قبل إضافة لقطة',true);P.shots.splice(i+1,0,{dur:4,lyric:'',desc:'',cam:'',move:'',light:'',look:'',img:'',done:false});st.save();render();setTimeout(()=>{const e=document.getElementById('shot'+(i+1));if(e){e.scrollIntoView({block:'center'});const t=e.querySelector('[data-sf=desc]');t&&t.focus()}},50);return}
@@ -248,6 +250,13 @@ document.addEventListener('pointerup',()=>{if(!drag)return;const {from,to}=drag;
 document.addEventListener('click',e=>{if(e.target.closest('[data-gh]'))return;const t=e.target.closest('.gt');if(!t)return;const P=p(),i=+t.dataset.gi;P.grid=false;st.save();render();setTimeout(()=>{const x=document.getElementById('shot'+i);x&&x.scrollIntoView({block:'start'})},50)});})();
 CORE.bindCast(p,()=>st.save(),render);
 const shotsTxt=()=>p().shots.map((s,i)=>`لقطة ${i+1} | ${s.dur} | ${s.lyric||'بدون'}\nالمشهد: ${s.desc||''}\nالكاميرا: ${s.cam||''}\nالحركة: ${s.move||''}\nالإضاءة: ${s.light||''}${s.look?'\nتغيير الشكل: '+s.look:''}`).join('\n\n');
+function startAgent(){CORE.agentFlow({title:'اعمل الإعلان كله',render,steps:[
+ {label:'إلهام عالمي (بحث جوجل)',search:true,gate:true,gateLabel:'إعلانات عالمية من نفس النوع وأفكار مستوحاة لمنتجك:',skip:()=>!!p().inspo.trim(),build:()=>PR.world(),pick:x=>x,apply:o=>{p().inspo=o;p().useInspo=true;st.save()}},
+ {label:'كتابة الإعلان',gate:true,need:'اكتب اسم المنتج أو الفكرة',build:()=>{const t=PR.write();return t&&t+CORE.AGMARK},apply:o=>{p().script=o;st.save()}},
+ {label:'مراجعة الفريق'+(p().health?' والقواعد الصحية':''),gate:true,build:()=>{const t=PR.team();return t&&t+CORE.AGMARK},apply:o=>{p().script=o;st.save()}},
+ Object.assign(CORE.agentShots(PR,p,applyParse),{skip:()=>p().kind!=='video'}),
+ ...CORE.agentPub(p,()=>st.save(),()=>MCTX()+'\n'+shotsTxt().slice(0,2500))],
+ onDone:()=>{const P=p();P.step=P.kind==='video'?2:1;st.save();render();window.scrollTo(0,0)}})}
 CORE.work({presets:[{"name": "💊 إعلان صيدلية كوميدي — فيديو 3D", "set": {"kind": "video", "genre": "comedy", "satire": "light", "voice": "sales", "visual": "3d", "sec": 30, "aspect": "9:16", "health": true, "platform": "all"}}, {"name": "🩺 بوست توعية صحية", "set": {"kind": "post", "genre": "edu", "satire": "light", "voice": "friend", "aspect": "4:5", "health": true, "platform": "fb"}}, {"name": "📻 إعلان صوتي راديو", "set": {"kind": "audio", "genre": "comedy", "satire": "light", "voice": "sales", "sec": 30, "platform": "radio"}}, {"name": "🏷️ بوستر عرض وخصم", "set": {"kind": "poster", "genre": "real", "satire": "none", "voice": "sales", "visual": "cine", "aspect": "4:5"}}, {"name": "✨ إعلان براند فاخر — سينمائي", "set": {"kind": "video", "genre": "drama", "satire": "none", "voice": "doc", "visual": "cine", "sec": 20, "aspect": "9:16", "health": false}}],ctx:()=>MCTX()+'\n'+shotsTxt().slice(0,2500),ns:'ad',st,def:DEF,render,check:{team:CORE.TEAM.ad,
  text:()=>{const P=p(),a=(P.script||'').trim(),b=shotsTxt();return (a?'[الإعلان]\n'+a+'\n\n':'')+(b?'[اللقطات]\n'+b:'')},
  apply:v=>{const P=p(),i=v.search(new RegExp(HDR.source,'im')),head=(i>0?v.slice(0,i):(i<0?v:'')).replace(/\[(?:الإعلان|اللقطات)\]/g,'').trim(),sh=i>=0?parseShots(v.slice(i)):[];

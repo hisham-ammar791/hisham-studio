@@ -167,7 +167,7 @@ function s2(){const P=p(),T=P.shots.reduce((a,s)=>a+(+s.dur||0),0);
  ${CORE.boardBar(P)}<button class="b g" data-a="send">▶ ابدأ وضع الإرسال لـ ${esc(CORE.targetName())}</button><button class="b" data-a="grid">${P.grid?'📋 عرض التفاصيل':'🔲 عرض شبكة'}</button>${pair('teamBoard','راجع الستوري بورد بالفريق')}</div>`:'<div class="c m">لسه مفيش لقطات.</div>'}
  ${P.shots.length?(P.grid?gridHTML():insBtn(-1)+P.shots.map((s,i)=>`<div id="shot${i}">`+shotCard(s,i)+'</div>'+insBtn(i)).join('')):''}${P.shots.length?CORE.pubCard(P):''}`}
 function render(){const P=p();document.getElementById('nav').innerHTML=STEPS.map((t,k)=>`<button class="b${k===P.step?' g':''}" data-a="go" data-i="${k}">${t}</button>`).join('');
- document.getElementById('app').innerHTML=CORE.stage(P,STEPS,[s0,s1,s2][P.step]())}
+ document.getElementById('app').innerHTML=CORE.stage(P,STEPS,(P.step===0?CORE.agentBtn():'')+[s0,s1,s2][P.step]())}
 
 /* ---------- التفاعل ---------- */
 function shrink(file){return new Promise(r=>{const im=new Image(),u=URL.createObjectURL(file);im.onload=()=>{const k=Math.min(1,720/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);r(c.toDataURL('image/jpeg',.8))};im.onerror=()=>r('');im.src=u})}
@@ -183,6 +183,7 @@ document.addEventListener('change',async e=>{const t=e.target,P=p();
  if(t.dataset.f&&t.tagName==='SELECT'){P[t.dataset.f]=t.value;st.save();if(['voice','genre','visual','parts'].includes(t.dataset.f))render();return}
  if(t.dataset.img!==undefined&&t.files[0]){const d=await shrink(t.files[0]);if(d){P.shots[+t.dataset.img].img=d;st.save();render()}else toast('الصورة ما اتقرتش')}});
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;let a=b.dataset.a;const P=p(),i=+b.dataset.i;
+ if(a==='agentAll'){startAgent();return}
  if(a==='castGo'){P.step=1;P.sendMode=false;st.save();render();setTimeout(()=>{const e=document.getElementById('castCard');e&&e.scrollIntoView({block:'start'})},60);return}
  if(a==='home'){CORE.leaveOk().then(ok=>{if(ok)location.href='./'});return}
  if(a==='ins'){st.snap('قبل إضافة لقطة',true);P.shots.splice(i+1,0,{dur:4,lyric:'',desc:'',cam:'',move:'',light:'',look:'',img:'',done:false});st.save();render();setTimeout(()=>{const e=document.getElementById('shot'+(i+1));if(e){e.scrollIntoView({block:'center'});const t=e.querySelector('[data-sf=desc]');t&&t.focus()}},50);return}
@@ -211,6 +212,15 @@ document.addEventListener('pointerup',()=>{if(!drag)return;const {from,to}=drag;
 document.addEventListener('click',e=>{if(e.target.closest('[data-gh]'))return;const t=e.target.closest('.gt');if(!t)return;const P=p(),i=+t.dataset.gi;P.grid=false;st.save();render();setTimeout(()=>{const x=document.getElementById('shot'+i);x&&x.scrollIntoView({block:'start'})},50)});})();
 CORE.bindCast(p,()=>st.save(),render);
 const shotsTxt=()=>p().shots.map((s,i)=>`لقطة ${i+1} | ${s.dur} | ${s.lyric||'بدون'}\nالمشهد: ${s.desc||''}\nالكاميرا: ${s.cam||''}\nالحركة: ${s.move||''}\nالإضاءة: ${s.light||''}${s.look?'\nتغيير الشكل: '+s.look:''}`).join('\n\n');
+function startAgent(){CORE.agentFlow({title:'اعمل الحلقة كلها',render,steps:[
+ {label:'الموضوع',gate:true,gateLabel:'الموضوع اللي هنشتغل عليه:',skip:()=>!!p().topic.trim(),build:()=>PR.ideas()+'\n\nوفي الآخر اكتب أقوى موضوع (العنوان والهوك) بين ===بداية=== و===نهاية===.',apply:o=>{p().topic=o;st.save()}},
+ {label:'البحث العميق (بحث جوجل)',search:true,gate:true,gateLabel:'البحث بمصادره:',build:()=>PR.research(),pick:x=>x,apply:o=>{p().research=o;st.save()}},
+ {label:'تدقيق المعلومات',search:true,gate:true,gateLabel:'البحث بعد التدقيق (✅ مؤكد / ⚠️ مشكوك):',build:()=>PR.verify(),pick:x=>x,apply:o=>{p().research=o;st.save()}},
+ {label:'كتابة النص',gate:true,build:()=>{const t=PR.write();return t&&t+CORE.AGMARK},apply:o=>{p().script=o;st.save()}},
+ {label:'مراجعة الفريق',gate:true,build:()=>{const t=PR.team();return t&&t+CORE.AGMARK},apply:o=>{p().script=o;st.save()}},
+ CORE.agentShots(PR,p,applyParse),
+ ...CORE.agentPub(p,()=>st.save(),()=>MCTX()+'\n'+shotsTxt().slice(0,2500))],
+ onDone:()=>{p().step=2;st.save();render();window.scrollTo(0,0)}})}
 CORE.work({presets:[{"name": "🕵️ حلقة غموض (خفايا)", "set": {"form": "doc", "genre": "mystery", "voice": "detective", "lang": "simple", "satire": "light", "sec": 180, "visual": "doc", "els": ["narr", "archive", "maps", "text", "recon"]}}, {"name": "🩺 شرح توعية صحية — وايت بورد", "set": {"form": "explainer", "genre": "edu", "voice": "friend", "lang": "eg", "satire": "light", "sec": 90, "visual": "white", "els": ["narr", "white", "text"]}}, {"name": "🎙️ بودكاست حواري", "set": {"form": "podcast", "genre": "real", "voice": "friend", "lang": "eg", "satire": "light", "sec": 600, "visual": "real", "els": ["host", "guests", "text"]}}, {"name": "🏛️ وثائقي تاريخي — سينمائي", "set": {"form": "doc", "genre": "history", "voice": "doc", "lang": "fusha", "satire": "none", "sec": 300, "visual": "cine", "els": ["narr", "archive", "maps", "recon", "text"]}}, {"name": "🗺️ شرح بخرائط متحركة", "set": {"form": "explainer", "genre": "history", "voice": "storyteller", "lang": "simple", "satire": "light", "sec": 120, "visual": "maps", "els": ["narr", "maps", "graphics", "text"]}}],ctx:()=>MCTX()+'\n'+shotsTxt().slice(0,2500),ns:'doc',st,def:DEF,render,check:{team:TEAM_DOC,
  text:()=>{const P=p(),a=(P.script||'').trim(),b=shotsTxt();return (a?'[النص]\n'+a+'\n\n':'')+(b?'[اللقطات]\n'+b:'')},
  apply:v=>{const P=p(),i=v.search(new RegExp(HDR.source,'im')),head=(i>0?v.slice(0,i):(i<0?v:'')).replace(/\[(?:النص|اللقطات)\]/g,'').trim(),sh=i>=0?parseShots(v.slice(i)):[];
