@@ -472,6 +472,7 @@ function s1(){const P=p();return `<div class="c"><h3>✍️ اكتب اللي ع
  ${P.subs?`<label class="l">نص التعليق الصوتي أو الحوار (اختياري، للترجمة)</label><textarea data-f="transcript" rows="3">${esc(P.transcript)}</textarea>`:''}
  <div class="row"><div><label class="l">خط الكلام</label><select data-f="font">${opts(FONTS.map(f=>[f[0],f[1]]),P.font)}</select></div><div><label class="l">الجودة</label><select data-f="quality">${opts([['720','HD 720 (أسرع للموبايل)'],['1080','Full HD 1080 (للاب)']],P.quality)}</select></div></div>
  <div style="font-family:'${fontOf(P.font)[2]}';font-size:24px;margin-top:6px;text-align:center">نموذج الخط Sample 123</div>
+ <button class="b" data-a="fontsAll" style="width:100%">⬇️ نزّل كل الخطوط (مرة واحدة وانت على النت)</button><div class="m" id="fontsMsg">${localStorage.getItem('hs_fonts_ok')?'✓ الخطوط متنزلة وبتشتغل من غير نت':''}</div>
  <label class="l">📐 القالب (اختياري: الفريق هيلتزم بيه)</label><select data-f="tpl">${opts([['','الفريق يختار']].concat(TPLS.map(t=>[t[0],t[1]])),P.tpl)}</select>
  <div style="border:1px solid #10b981;border-radius:12px;padding:10px;margin-top:10px"><b>🤖 الإيجنت: اكتب ونفّذ</b><div class="m">بيشوف فريمات الفيديوهات ويسمع الموسيقى والتعليق، ويعمل المونتاج كامل لوحده، من غير نسخ ولصق.</div>
  <button class="b g" data-a="agent" style="width:100%">🤖 نفّذ المونتاج بالإيجنت</button><label style="display:flex;gap:6px;align-items:center;font-size:13px;margin-top:6px"><input type="checkbox" data-c="agentExport" ${P.agentExport?'checked':''} style="width:auto">وبعدها صدّر الفيديو على طول</label><div class="m" id="agMsg"></div>${CORE.agentKeyHTML()}</div>
@@ -569,6 +570,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='tapStart'){tapStart();return}if(a==='tapHit'){tapHit();return}if(a==='tapBack'){tapBack();return}if(a==='tapEnd'){tapEnd();return}
  if(a==='lrcApply'){const r=parseLRC(document.getElementById('lrcIn').value);if(!r.length){alert('مش لاقي سطور بالشكل [00:12.40] نص');return}st.snap('قبل توقيت الكلام',true);P.lt=r;st.save();render();toast('✓ اتوقّت '+r.length+' سطر');return}
  if(a==='lyEDL'){if(P.edl&&!confirm('هيستبدل خطة المونتاج الحالية (القديمة في 🕘). تكمل؟'))return;lyricEDL();return}
+ if(a==='fontsAll'){const m=document.getElementById('fontsMsg');if(!navigator.onLine){m.textContent='⚠️ لازم تكون متصل بالنت';return}m.textContent='⏳ بنزّل '+FONTS.length+' خط…';let ok=0;for(const f of FONTS){try{const r=await document.fonts.load(f[3]+' 40px "'+f[2]+'"','نص Aa');if(r&&r.length)ok++}catch(x){}m.textContent='⏳ اتنزل '+ok+' من '+FONTS.length}m.textContent=ok>=FONTS.length-1?'✓ اتنزلت '+ok+' خط، وبقت بتشتغل من غير نت':'⚠️ اتنزل '+ok+' بس من '+FONTS.length+'. جرّب تاني والنت شغال';if(ok>=FONTS.length-1)try{localStorage.setItem('hs_fonts_ok','1')}catch(x){}render();return}
  if(a==='agent'){agentRun('plan');return}if(a==='agentEdit'){agentRun('edit');return}
  if(a==='xPro'){exportPro('pro');return}if(a==='xCap'){exportPro('cap');return}
  if(a==='sk'){const E=P.edl;if(!E||RUN)return;const tot=edlDur(E);renderAt(Math.max(0,Math.min(tot-1/FPS,Math.round(SCRUB.t*FPS+ +b.dataset.d)/FPS)));return}
