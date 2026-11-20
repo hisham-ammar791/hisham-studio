@@ -154,7 +154,7 @@ canvas{width:100%;height:150px;background:#0b0d11;border-radius:8px;border:1px s
   <label style="display:flex;gap:6px;align-items:center;color:var(--txt)"><input type="checkbox" id="cTrim" checked> قص السكوت الزيادة في الأول والآخر</label>
   <label style="display:flex;gap:6px;align-items:center;color:var(--txt)"><input type="checkbox" id="cHum" checked> شيل الهمهمة والزنّة الواطية</label>
   <div class="row" style="margin-top:8px">
-    <button class="pri" id="bMaster">✨ اعمل الماستر</button>
+    <button class="pri" id="bMaster">✨ اعمل الميكس والماستر</button>
     <button id="bAB">🔁 بتسمع دلوقتي: قبل</button>
   </div>
   <p class="note">«قبل / بعد» بيبدّل وانت بتسمع من نفس المكان، عشان تقارن بودنك.</p>
@@ -186,6 +186,7 @@ canvas{width:100%;height:150px;background:#0b0d11;border-radius:8px;border:1px s
   <div class="msg" id="m5"></div>
 </div>
 
+<script src="core.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 let ctx=null,SR=48000;
@@ -397,7 +398,7 @@ function limiter(L,R,ceil){const n=L.length,la=Math.max(2,Math.floor(SR*0.004)),
 function peakDb(L,R){let p=0;for(let i=0;i<L.length;i++){const v=Math.max(Math.abs(L[i]),Math.abs(R[i]));if(v>p)p=v;}return 20*Math.log10(p+1e-9);}
 async function runMaster(){if(!voc){msg('m6','حمّل الأغنية الأول.',true);return;}stop();msg('m6','⏳ مهندس الصوت شغال… (ممكن ياخد نص دقيقة على الموبايل)');
   await new Promise(r=>setTimeout(r,60));
-  try{let[L,R]=mixdown();const before=await lufs(L,R),pkB=peakDb(L,R);
+  try{let[L,R]=await mixStems(t=>msg('m6','⏳ '+t));msg('m6','⏳ مهندس الماستر شغال…');const before=await lufs(L,R),pkB=peakDb(L,R);
     let a=0,b=L.length;if($('cTrim').checked){const th=0.003,mx=i=>Math.max(Math.abs(L[i]),Math.abs(R[i]));
       while(a<b&&mx(a)<th)a++;while(b>a&&mx(b-1)<th)b--;a=Math.max(0,a-Math.floor(SR*0.05));b=Math.min(L.length,b+Math.floor(SR*0.4));}
     mastOff=a/SR;const n=b-a,oc=new(window.OfflineAudioContext||window.webkitOfflineAudioContext)(2,n,SR),buf=oc.createBuffer(2,n,SR);
@@ -420,6 +421,127 @@ async function runMaster(){if(!voc){msg('m6','حمّل الأغنية الأول
     msg('m6','✔ الماستر جاهز وبتسمع دلوقتي «بعد». العلوّ: '+before.toFixed(1)+' ← '+after.toFixed(1)+' LUFS · أعلى قمة: '+pkA.toFixed(1)+' dB'+(mastInfo.red<-6?' · ⚠️ الليميتر ضاغط كتير، نزّل العلوّ النهائي شوية':'')+'. دوس «تشغيل» وقارن بـ «قبل / بعد».');
     if(mastInfo.before>-10)msg('m6',$('m6').textContent+' (الأغنية الأصلية كانت عالية جدًا أصلًا.)');
   }catch(e){msg('m6','حصلت مشكلة أثناء الماستر (غالبًا الذاكرة). جرّب تقفل التطبيقات التانية وتعيد.',true);}}
+// ================= 🎛️ استوديو المكساج + إزالة الضوضاء + النقاء =================
+const MXS=[// [id, label, min, max, step, default, unit, group]
+ ['xVden','🧹 إزالة الضوضاء والوش',0,100,1,30,'%','v'],['xVcla','✨ النقاء والوضوح',0,100,1,40,'%','v'],['xVwarm','دفا الصوت',-6,6,.5,1,'dB','v'],['xVmud','شيل الزحمة (250Hz)',0,8,.5,2,'dB','v'],['xVdes','تهدية السين',0,10,.5,3,'dB','v'],
+ ['xVcmp','ضغط الصوت (ثبات العلوّ)',0,100,1,45,'%','v'],['xVrev','ريفيرب (مساحة)',0,100,1,18,'%','v'],['xVdly','صدى (Delay)',0,100,1,8,'%','v'],['xVvol','علوّ الغنا',-12,12,.5,0,'dB','v'],['xVpan','يمين/شمال',-100,100,5,0,'','v'],
+ ['xMden','🧹 إزالة ضوضاء الموسيقى',0,100,1,0,'%','m'],['xMvol','علوّ الموسيقى',-12,12,.5,-1,'dB','m'],['xMcut','قص الباص الزيادة',20,200,5,30,'Hz','m'],['xMcarve','مساحة للصوت في الموسيقى',0,6,.5,2,'dB','m'],['xMduck','الموسيقى تنزل تحت الغنا',0,100,1,25,'%','m'],['xMwide','عرض الستيريو',0,200,5,115,'%','m']];
+const MIXP={pop:{xVden:25,xVcla:55,xVwarm:0,xVmud:2.5,xVdes:3.5,xVcmp:60,xVrev:16,xVdly:10,xVvol:1,xMvol:-1.5,xMcarve:2.5,xMduck:25,xMwide:125},
+ shaabi:{xVden:20,xVcla:50,xVwarm:1.5,xVmud:2,xVdes:3,xVcmp:70,xVrev:12,xVdly:14,xVvol:1.5,xMvol:-1,xMcarve:2,xMduck:30,xMwide:120},
+ ballad:{xVden:30,xVcla:40,xVwarm:2,xVmud:2,xVdes:3,xVcmp:40,xVrev:30,xVdly:12,xVvol:.5,xMvol:-2,xMcarve:2,xMduck:20,xMwide:130},
+ rap:{xVden:25,xVcla:60,xVwarm:0,xVmud:3,xVdes:4,xVcmp:70,xVrev:8,xVdly:6,xVvol:2,xMvol:-1,xMcarve:3,xMduck:35,xMwide:110},
+ voice:{xVden:55,xVcla:55,xVwarm:1,xVmud:3,xVdes:4,xVcmp:60,xVrev:0,xVdly:0,xVvol:0,xMvol:-8,xMcarve:3,xMduck:60,xMwide:100},
+ clean:{xVden:70,xVcla:45,xVwarm:0,xVmud:2,xVdes:2,xVcmp:30,xVrev:0,xVdly:0,xVvol:0,xMvol:-1,xMcarve:0,xMduck:0,xMwide:100}};
+(function(){const host=[...document.querySelectorAll('.card')].find(c=>/مهندس الصوت: الماستر/.test(c.textContent));if(!host)return;
+ const row=d=>`<div class="sl"><label>${d[1]}</label><span id="v_${d[0]}"></span></div><div class="sl"><input type="range" id="${d[0]}" min="${d[2]}" max="${d[3]}" step="${d[4]}" value="${d[5]}"><span></span></div>`;
+ const c=document.createElement('div');c.className='card';c.id='mixCard';
+ c.innerHTML=`<h2><span class="n">🎛️</span>استوديو المكساج: إزالة الضوضاء والنقاء</h2>
+ <p class="note">زي مهندس الميكس: بينضّف الصوت من الوش والضوضاء، ويوضّح الكلام، ويحط كل حاجة في مكانها. الغنا في قناة لوحده والموسيقى في قناة لوحدها، والموسيقى بتنزل شوية تحت الغنا وبتسيب له مساحة. لو رفعت الأغنية كاملة من غير موسيقى منفصلة، الإزالة والنقاء بيشتغلوا على الأغنية كلها.</p>
+ <label style="display:flex;gap:6px;align-items:center;color:var(--txt)"><input type="checkbox" id="cMix" checked> فعّل المكساج قبل الماستر</label>
+ <label>قالب ميكس</label><select id="sMixP" class="num" style="width:100%;text-align:right;direction:rtl"><option value="">— اختار —</option><option value="pop">بوب / حماسي</option><option value="shaabi">شعبي / مهرجان</option><option value="ballad">هادي / رومانسي</option><option value="rap">راب / كلام سريع</option><option value="voice">تعليق صوتي / بودكاست</option><option value="clean">تنضيف تسجيل بس</option></select>
+ <h2 style="font-size:15px;margin-top:10px">🎤 قناة الغنا</h2>${MXS.filter(d=>d[7]==='v').map(row).join('')}
+ <label style="display:flex;gap:6px;align-items:center;color:var(--txt)"><input type="checkbox" id="cNsel"> خد «بصمة الضوضاء» من الجزء المحدد في خطوة 2 (حدد حتة فيها وش بس من غير غنا)</label>
+ <h2 style="font-size:15px;margin-top:10px">🎹 قناة الموسيقى</h2>${MXS.filter(d=>d[7]==='m').map(row).join('')}
+ <div class="row" style="margin-top:8px"><button class="pri" id="bMixListen">🎧 اسمع الميكس (بعد)</button><button id="bMixClean">🧹 اسمع الضوضاء اللي اتشالت</button></div>
+ <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
+ <div style="border:1px solid var(--acc);border-radius:10px;padding:10px"><h2 style="font-size:15px;margin:0 0 6px">🤖 الإيجنت: اكتب اللي عايزه وهو ينفذ</h2><p class="note">بيسمع الأغنية، ويظبط الميكس والماستر، وينفذهم لوحده. مثال: «الصوت فيه وش ومش واضح، عايزه نضيف وقريب، والموسيقى توطى تحتي، وحماسي للتيك توك».</p>
+ <textarea id="tAgent" rows="3" style="width:100%;background:#0b0d11;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit"></textarea>
+ <button class="pri" id="bAgent" style="width:100%">🤖 نفّذ الميكس والماستر بالإيجنت</button><div id="agKey"></div></div>
+ <hr style="border:0;border-top:1px solid var(--line);margin:12px 0">
+ <h2 style="font-size:15px">🤖 مهندس ميكس عالمي بالذكاء الاصطناعي (نسخ ولصق)</h2><p class="note">ابعت الأغنية لـ Gemini مع الأمر، هيسمعها ويرجّع إعدادات الميكس والماستر. الصق الرد هنا وكل الأزرار هتتظبط لوحدها.</p>
+ <div class="row"><button id="bMixAI">📤 ابعت الأغنية + أمر الميكس</button><button id="bMixAIc">📋 انسخ الأمر بس</button></div>
+ <textarea id="tMixAI" rows="3" placeholder="الصق رد جيميناي هنا" style="width:100%;background:#0b0d11;color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;margin-top:6px"></textarea><button id="bMixApply">✓ طبّق الإعدادات</button>
+ <div class="msg" id="mMix"></div>`;
+ host.parentNode.insertBefore(c,host);
+ const lb=()=>MXS.forEach(d=>{const v=+$(d[0]).value;$('v_'+d[0]).textContent=(d[6]==='dB'&&v>0?'+':'')+v+(d[6]?' '+d[6]:'')});
+ MXS.forEach(d=>$(d[0]).oninput=()=>{lb();mastVer=-1});lb();
+ $('sMixP').onchange=()=>{const p=MIXP[$('sMixP').value];if(!p)return;Object.entries(p).forEach(([k,v])=>{if($(k))$(k).value=v});lb();mastVer=-1;msg('mMix','🎛️ اتطبق القالب. دوس «اسمع الميكس» أو «اعمل الماستر».')};
+ window._mixLbl=lb})();
+const mv=id=>+$(id).value;
+/* --- FFT --- */
+function fftPlan(N){const rev=new Uint32Array(N),b=Math.log2(N);for(let i=0;i<N;i++){let r=0;for(let j=0;j<b;j++)r=(r<<1)|((i>>j)&1);rev[i]=r}const cs=new Float32Array(N/2),sn=new Float32Array(N/2);for(let i=0;i<N/2;i++){cs[i]=Math.cos(2*Math.PI*i/N);sn[i]=-Math.sin(2*Math.PI*i/N)}return {N,rev,cs,sn}}
+function fft(P,re,im,inv){const N=P.N,rev=P.rev;for(let i=0;i<N;i++){const j=rev[i];if(j>i){let t=re[i];re[i]=re[j];re[j]=t;t=im[i];im[i]=im[j];im[j]=t}}
+ for(let size=2;size<=N;size<<=1){const h=size>>1,st=N/size;for(let i=0;i<N;i+=size){for(let j=0,k=0;j<h;j++,k+=st){const c=P.cs[k],s=inv?-P.sn[k]:P.sn[k],a=i+j,b=a+h,tr=re[b]*c-im[b]*s,ti=re[b]*s+im[b]*c;re[b]=re[a]-tr;im[b]=im[a]-ti;re[a]+=tr;im[a]+=ti}}}
+ if(inv)for(let i=0;i<N;i++){re[i]/=N;im[i]/=N}}
+/* --- إزالة الضوضاء (Spectral gating) --- */
+async function denoise(chs,amount,prof,onProg){if(amount<=0)return chs;const N=2048,H=512,P=fftPlan(N),win=new Float32Array(N);for(let i=0;i<N;i++)win[i]=.5-.5*Math.cos(2*Math.PI*i/N);
+ const n=chs[0].length,B=N/2+1,re=new Float32Array(N),im=new Float32Array(N),k=amount/100,alpha=1+2.2*k,floor=dbl(-(6+20*k));
+ /* بصمة الضوضاء */
+ let noise=prof;if(!noise){const mid=new Float32Array(n);for(let i=0;i<n;i++)mid[i]=(chs[0][i]+chs[1][i])*.5;const fr=[];for(let p=0;p+N<=n;p+=N*2){let e=0;for(let i=0;i<N;i++)e+=mid[p+i]*mid[p+i];if(e>1e-7)fr.push([e,p])}
+  fr.sort((a,b)=>a[0]-b[0]);const pick=fr.slice(0,Math.max(3,Math.floor(fr.length*.1)));noise=new Float32Array(B);
+  for(const [,p] of pick){for(let i=0;i<N;i++){re[i]=mid[p+i]*win[i];im[i]=0}fft(P,re,im,false);for(let b=0;b<B;b++)noise[b]+=Math.hypot(re[b],im[b])/pick.length}}
+ const out=[];for(let c=0;c<2;c++){const x=chs[c],y=new Float32Array(n),prev=new Float32Array(B).fill(1),g=new Float32Array(B);let cnt=0;
+  for(let p=-N+H;p<n;p+=H){for(let i=0;i<N;i++){const j=p+i;re[i]=(j>=0&&j<n?x[j]:0)*win[i];im[i]=0}fft(P,re,im,false);
+   for(let b=0;b<B;b++){const m=Math.hypot(re[b],im[b]),nn=noise[b]*alpha;let gg=m>1e-12?Math.max(0,(m*m-nn*nn)/(m*m)):0;gg=Math.sqrt(gg);gg=Math.max(floor,gg);gg=Math.max(gg,prev[b]*.55);g[b]=gg}
+   for(let b=1;b<B-1;b++)prev[b]=(g[b-1]+2*g[b]+g[b+1])/4;prev[0]=g[0];prev[B-1]=g[B-1];
+   for(let b=0;b<B;b++){re[b]*=prev[b];im[b]*=prev[b];if(b>0&&b<N/2){re[N-b]=re[b];im[N-b]=-im[b]}}fft(P,re,im,true);
+   for(let i=0;i<N;i++){const j=p+i;if(j>=0&&j<n)y[j]+=re[i]*win[i]/1.5}
+   if(++cnt%400===0){onProg&&onProg((c+Math.max(0,p)/n)/2);await new Promise(r=>setTimeout(r,0))}}
+  out.push(y)}return out}
+function noiseProfileFromSel(chs){if(!$('cNsel').checked||!(sel.e-sel.s>0.3))return null;const N=2048,P=fftPlan(N),win=new Float32Array(N),re=new Float32Array(N),im=new Float32Array(N),B=N/2+1,nz=new Float32Array(B);for(let i=0;i<N;i++)win[i]=.5-.5*Math.cos(2*Math.PI*i/N);
+ const a=Math.floor(sel.s*SR),b=Math.floor(sel.e*SR);let k=0;for(let p=a;p+N<=b;p+=N/2){for(let i=0;i<N;i++){re[i]=(chs[0][p+i]+chs[1][p+i])*.5*win[i];im[i]=0}fft(P,re,im,false);for(let q=0;q<B;q++)nz[q]+=Math.hypot(re[q],im[q]);k++}if(!k)return null;for(let q=0;q<B;q++)nz[q]/=k;return nz}
+/* --- سلسلة القناة --- */
+async function chain(chs,kind){const n=chs[0].length,oc=new(window.OfflineAudioContext||window.webkitOfflineAudioContext)(2,n+Math.floor(SR*(kind==='v'?2.5:0)),SR),buf=oc.createBuffer(2,n,SR);buf.getChannelData(0).set(chs[0]);buf.getChannelData(1).set(chs[1]);
+ const src=oc.createBufferSource();src.buffer=buf;let node=src;const F=(type,f,q,gn)=>{const x=oc.createBiquadFilter();x.type=type;x.frequency.value=f;if(q!=null)x.Q.value=q;if(gn!=null)x.gain.value=gn;node.connect(x);node=x};
+ const out=oc.createGain();out.connect(oc.destination);
+ if(kind==='v'){const full=!inst;F('highpass',full?30:85,.7);F('peaking',280,1.1,-mv('xVmud'));F('lowshelf',180,null,mv('xVwarm'));F('peaking',3400,.9,mv('xVcla')/100*4);F('peaking',6800,2.4,-mv('xVdes'));F('highshelf',11500,null,mv('xVcla')/100*3);
+  const k=mv('xVcmp')/100,cp=oc.createDynamicsCompressor();cp.threshold.value=-10-24*k;cp.ratio.value=1.5+4.5*k;cp.knee.value=6;cp.attack.value=.006;cp.release.value=.16;node.connect(cp);
+  const vol=oc.createGain();vol.gain.value=dbl(mv('xVvol'));const pan=oc.createStereoPanner?oc.createStereoPanner():null;cp.connect(vol);if(pan){pan.pan.value=full?0:mv('xVpan')/100;vol.connect(pan);pan.connect(out)}else vol.connect(out);
+  /* نقاء: هارمونيكس خفيفة للترددات العالية */
+  const cl=mv('xVcla')/100;if(cl>0){const hp=oc.createBiquadFilter();hp.type='highpass';hp.frequency.value=3200;const ws=oc.createWaveShaper(),cu=new Float32Array(2048);for(let i=0;i<2048;i++){const x=i/1023.5-1;cu[i]=Math.tanh(2.5*x)}ws.curve=cu;const eg=oc.createGain();eg.gain.value=.12*cl;vol.connect(hp);hp.connect(ws);ws.connect(eg);eg.connect(out)}
+  if(!full){const rv=mv('xVrev')/100;if(rv>0){const cv=oc.createConvolver();cv.buffer=makeIR(oc,1.8);const pre=oc.createDelay(.1);pre.delayTime.value=.02;const hp=oc.createBiquadFilter();hp.type='highpass';hp.frequency.value=300;const rg=oc.createGain();rg.gain.value=.55*rv;vol.connect(pre);pre.connect(hp);hp.connect(cv);cv.connect(rg);rg.connect(out)}
+   const dl=mv('xVdly')/100;if(dl>0){const d=oc.createDelay(1.5);d.delayTime.value=.32;const fb=oc.createGain();fb.gain.value=.32;const lp=oc.createBiquadFilter();lp.type='lowpass';lp.frequency.value=4500;const dg=oc.createGain();dg.gain.value=.35*dl;vol.connect(d);d.connect(lp);lp.connect(fb);fb.connect(d);lp.connect(dg);dg.connect(out)}}}
+ else{F('highpass',mv('xMcut'),.7);F('peaking',3000,.8,-mv('xMcarve'));const vol=oc.createGain();vol.gain.value=dbl(mv('xMvol'));node.connect(vol);vol.connect(out)}
+ src.start();const r=await oc.startRendering();return [r.getChannelData(0).slice(0,n),r.getChannelData(1).slice(0,n)]}
+function widen(chs,w){if(Math.abs(w-1)<.01)return chs;const [L,R]=chs;for(let i=0;i<L.length;i++){const m=(L[i]+R[i])*.5,s=(L[i]-R[i])*.5*w;L[i]=m+s;R[i]=m-s}return chs}
+function duck(mus,vox,amt){if(amt<=0)return;const n=Math.min(mus[0].length,vox[0].length),at=Math.exp(-1/(SR*.01)),rl=Math.exp(-1/(SR*.25)),maxRed=1-dbl(-8*amt);let env=0;
+ let pk=0;for(let i=0;i<n;i+=64){const v=Math.abs(vox[0][i])+Math.abs(vox[1][i]);if(v>pk)pk=v}const thr=Math.max(1e-4,pk*.12);
+ for(let i=0;i<n;i++){const v=(Math.abs(vox[0][i])+Math.abs(vox[1][i]))*.5;env=v>env?at*env+(1-at)*v:rl*env+(1-rl)*v;const g=1-maxRed*Math.min(1,env/thr);mus[0][i]*=g;mus[1][i]*=g}}
+let mixCache=null;
+async function mixStems(prog){if(!$('cMix')||!$('cMix').checked)return mixdown();const key=ver+'|'+MXS.map(d=>$(d[0]).value).join(',')+'|'+$('cNsel').checked+'|'+sel.s+'-'+sel.e;if(mixCache&&mixCache.key===key)return [mixCache.L.slice(),mixCache.R.slice()];
+ const P=x=>{prog&&prog(x)};let v=voc?[voc[0].slice(),voc[1].slice()]:null,m=inst?[inst[0].slice(),inst[1].slice()]:null;
+ if(v){P('🧹 بشيل الضوضاء من الغنا…');v=await denoise(v,mv('xVden'),noiseProfileFromSel(v),f=>P('🧹 بشيل الضوضاء من الغنا… '+Math.round(f*100)+'%'));P('🎤 بظبط قناة الغنا…');v=await chain(v,'v')}
+ if(m){if(mv('xMden')>0){P('🧹 بشيل ضوضاء الموسيقى…');m=await denoise(m,mv('xMden'),null)}P('🎹 بظبط قناة الموسيقى…');m=await chain(m,'m');widen(m,mv('xMwide')/100);if(v)duck(m,v,mv('xMduck')/100)}
+ const n=Math.max(v?v[0].length:0,m?m[0].length:0),L=new Float32Array(n),R=new Float32Array(n);[v,m].forEach(s=>{if(!s)return;for(let i=0;i<s[0].length;i++){L[i]+=s[0][i];R[i]+=s[1][i]}});
+ mixCache={key,L:L.slice(),R:R.slice(),clean:v&&mv('xVden')>0};return [L,R]}
+function playBuf(chs,label){stop();AC();const b=ctx.createBuffer(2,chs[0].length,SR);b.getChannelData(0).set(chs[0]);b.getChannelData(1).set(chs[1]);const s=ctx.createBufferSource();s.buffer=b;s.connect(ctx.destination);const at=Math.min(cursor||0,Math.max(0,chs[0].length/SR-1));s.start(ctx.currentTime+.05,at);playing={srcs:[s],from:at,to:chs[0].length/SR,t0:ctx.currentTime+.05-0,main:false};msg('mMix','▶ '+label+' (دوس «إيقاف» من فوق عشان توقف)')}
+$('bMixListen').onclick=async()=>{if(!voc&&!inst){msg('mMix','حمّل الأغنية الأول.',true);return}try{const r=await mixStems(t=>msg('mMix','⏳ '+t));playBuf(r,'بتسمع الميكس')}catch(e){msg('mMix','حصلت مشكلة (غالبًا الذاكرة). جرّب جزء أقصر أو اقفل التطبيقات التانية.',true)}};
+$('bMixClean').onclick=async()=>{if(!voc){msg('mMix','حمّل الغنا الأول.',true);return}if(mv('xVden')<=0){msg('mMix','ارفع «إزالة الضوضاء» الأول.',true);return}msg('mMix','⏳ بحسب الضوضاء…');const v=[voc[0].slice(),voc[1].slice()],c=await denoise(v,mv('xVden'),noiseProfileFromSel(v));const d=[new Float32Array(v[0].length),new Float32Array(v[0].length)];for(let ch=0;ch<2;ch++)for(let i=0;i<d[0].length;i++)d[ch][i]=voc[ch][i]-c[ch][i];playBuf(d,'بتسمع اللي اتشال بس (لو سامع غنا كتير هنا، نزّل الإزالة)')};
+function mixPrompt(){const ly=($('tLyr')&&$('tLyr').value.trim())||'';return `أنت مهندس ميكس وماستر عالمي (اشتغلت على أغاني مصرية وعربية وعالمية)، ومعاك منتج موسيقي. اسمع الأغنية المرفقة كويس${inst?' (ومرفق الغنا والموسيقى منفصلين لو قدرت)':''}، وحدد بدقة: الضوضاء والوش، والزحمة في الترددات، ووضوح الكلام، والسين، وتوازن الغنا مع الموسيقى، والمساحة (الريفيرب والصدى)، والعلوّ النهائي.
+
+بعدين اكتب إعدادات ميكس وماستر احترافية بالأرقام للبرنامج، كـ JSON صحيح بين ===بداية=== و===نهاية=== بالشكل ده بالظبط:
+{"voc":{"denoise":30,"clarity":40,"warmth":1,"mud":2,"deess":3,"comp":45,"reverb":18,"delay":8,"vol":0,"pan":0},
+ "mus":{"denoise":0,"vol":-1,"lowcut":30,"carve":2,"duck":25,"width":115},
+ "master":{"preset":"natural","low":0,"mid":1,"air":1.5,"sss":2,"comp":35,"lufs":-14,"fadeIn":0.3,"fadeOut":4}}
+الحدود: denoise و clarity و comp و reverb و delay و duck من 0 لـ 100. warmth من -6 لـ 6. mud من 0 لـ 8. deess من 0 لـ 10. vol من -12 لـ 12. pan من -100 لـ 100. lowcut من 20 لـ 200. carve من 0 لـ 6. width من 0 لـ 200. preset = natural | pop | soft | shaabi. low و mid و air من -6 لـ 6. sss من 0 لـ 8. lufs من -18 لـ -8.
+قبل الـ JSON اكتب في 6 سطور: أهم مشاكل الصوت اللي سمعتها بالثانية، وإيه اللي هتعمله.
+${ly?'\nكلمات الأغنية:\n'+ly:''}`}
+$('bMixAIc').onclick=async()=>{if(await copyTxt(mixPrompt()))msg('mMix','📋 اتنسخ الأمر. ابعته لـ Gemini مع ملف الأغنية.');else msg('mMix','النسخ ما اشتغلش.',true)};
+$('bMixAI').onclick=async()=>{const t=mixPrompt();await copyTxt(t);try{const r=await mixStems(),b=wavBlob(r),f=new File([b],'song-for-mix.wav',{type:'audio/wav'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:t});return}}catch(e){}msg('mMix','📋 اتنسخ الأمر. ارفع ملف الأغنية في Gemini والصق الأمر.')};
+$('bMixApply').onclick=()=>applyMixJSON($('tMixAI').value);
+function applyMixJSON(v){const m=v.match(/===\s*بداية\s*===([\s\S]*?)===\s*نهاية\s*===/);if(m)v=m[1];const a=v.indexOf('{'),b=v.lastIndexOf('}');let o=null;try{o=JSON.parse(v.slice(a,b+1).replace(/,\s*([}\]])/g,'$1'))}catch(e){}
+ if(!o){msg('mMix','مش لاقي إعدادات سليمة في الرد.',true);return false}const set=(id,x)=>{if(x==null||!$(id))return;const el=$(id);el.value=Math.max(+el.min,Math.min(+el.max,+x))};const V=o.voc||{},M=o.mus||{},S=o.master||{};
+ set('xVden',V.denoise);set('xVcla',V.clarity);set('xVwarm',V.warmth);set('xVmud',V.mud);set('xVdes',V.deess);set('xVcmp',V.comp);set('xVrev',V.reverb);set('xVdly',V.delay);set('xVvol',V.vol);set('xVpan',V.pan);
+ set('xMden',M.denoise);set('xMvol',M.vol);set('xMcut',M.lowcut);set('xMcarve',M.carve);set('xMduck',M.duck);set('xMwide',M.width);
+ if(S.preset&&PRESETS[S.preset]){$('sPreset').value=S.preset;applyPreset()}set('rLow',S.low);set('rMid',S.mid);set('rAir',S.air);set('rSss',S.sss);set('rComp',S.comp);set('rLufs',S.lufs);set('rFin',S.fadeIn);set('rFout',S.fadeOut);
+ window._mixLbl();mlbl();mastVer=-1;msg('mMix','✓ اتطبقت إعدادات مهندس الميكس. دوس «✨ اعمل الميكس والماستر» في الخطوة اللي جاية.');return true}
+
+
+/* 🤖 الإيجنت للميكس */
+function agKey(){const el=$('agKey');if(el&&window.CORE)el.innerHTML=CORE.agentKeyHTML().replace(/class="b r"/g,'').replace(/class="b"/g,'')}
+if(window.CORE){CORE._rerender=agKey;agKey()}
+$('bAgent').onclick=async()=>{if(!window.CORE)return;if(!voc&&!inst){msg('mMix','حمّل الأغنية الأول.',true);return}if(!CORE.gemKey()){msg('mMix','حط مفتاح Gemini الأول (تحت الزرار).',true);return}
+ const wish=$('tAgent').value.trim();const say=t=>msg('mMix',t);
+ try{const parts=[];const fv=$('fVoc').files[0],fi=$('fInst').files[0];
+  if(fv&&fv.size<45e6&&!take){parts.push(inst?'ملف الغنا:':'الأغنية:');parts.push({blob:fv})}else if(voc){say('⏳ بجهز الصوت…');parts.push(inst?'ملف الغنا:':'الأغنية:');parts.push({blob:wavBlob([voc[0],voc[1]])})}
+  if(inst){if(fi&&fi.size<45e6){parts.push('ملف الموسيقى:');parts.push({blob:fi})}else{parts.push('ملف الموسيقى:');parts.push({blob:wavBlob([inst[0],inst[1]])})}}
+  parts.push(mixPrompt()+(wish?'\n\nطلب صاحب الأغنية (نفّذه بالظبط وبأعلى احترافية):\n'+wish:''));
+  const out=await CORE.gemRun(parts,say);if(!applyMixJSON(out)){$('tMixAI').value=out;return}
+  const note=out.split(/===\s*بداية/)[0].trim();$('tMixAI').value=out;
+  say('✅ الإيجنت ظبط الإعدادات. بعمل الميكس والماستر…');await runMaster();
+  msg('mMix','✅ خلص. اسمع «بعد» وقارن بـ «قبل»، وصدّر من خطوة 6.\n\n📝 '+note.slice(0,700))}
+ catch(x){msg('mMix','⚠️ '+x.message,true)}};
+
 function abLbl(){$('bAB').textContent='🔁 بتسمع دلوقتي: '+(abMode==='after'?'بعد ✨':'قبل');}
 $('bMaster').onclick=runMaster;
 $('bAB').onclick=()=>{if(!mastOk()){msg('m6',mast?'عدّلت في الأغنية بعد الماستر. دوس «اعمل الماستر» تاني.':'دوس «اعمل الماستر» الأول.',true);return;}

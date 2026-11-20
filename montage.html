@@ -50,7 +50,7 @@ textarea{resize:vertical}
 <script>
 const {esc,toast}=CORE;
 const STEPS=['① المواد','② الطلب','③ المونتاج'];
-const DEF={step:0,lyrics:'',lt:[],logo:null,quality:'720',tpl:'',font:'tajawal',subFont:'cairo',subStyle:'box',media:[],brief:'',aspect:'9:16',sec:30,pace:'mid',genre:'comedy',grade:'cinematic',platform:'reels',subs:true,transcript:'',storyNs:'',story:'',paste:'',edl:null,editReq:'',bpm:0,beats:[]};
+const DEF={step:0,agentExport:false,agentNote:'',lyrics:'',lt:[],logo:null,quality:'720',tpl:'',font:'tajawal',subFont:'cairo',subStyle:'box',media:[],brief:'',aspect:'9:16',sec:30,pace:'mid',genre:'comedy',grade:'cinematic',platform:'reels',subs:true,transcript:'',storyNs:'',story:'',paste:'',edl:null,editReq:'',bpm:0,beats:[]};
 const st=CORE.store('montage',DEF);const p=()=>st.get();
 const ASPECTS=[['9:16','9:16 عمودي (ريلز وتيك توك)'],['16:9','16:9 أفقي (يوتيوب)'],['1:1','1:1 مربع'],['4:5','4:5 بوست']];
 const PACES=[['slow','هادي ومؤثر'],['mid','متوسط'],['fast','سريع ومشدود'],['beat','على إيقاع الموسيقى']];
@@ -223,6 +223,25 @@ function lyricEDL(){const P=p(),L=P.lt||[],vis=P.media.filter(m=>m.kind!=='audio
  const last=L[L.length-1],tail=mus?Math.min(4,mus.dur-last.t1):0;if(tail>.5)C.push(mk(vis[k++%vis.length],tail,{transition:'crossfade',zoom:'out'}));
  P.edl={aspect:P.aspect,fadeIn:0,fadeOut:1,subMode:'karaoke',clips:C,music:mus?{src:mus.tag,from:0,start:0,volume:1,fadeIn:0,fadeOut:1.5,duck:false}:null,voice:null,subtitles:L.map(x=>({t0:x.t0,t1:x.t1,text:x.text})),subFont:P.subFont,subStyle:'outline',logo:P.logo?defLogo():null,vignette:.2,bars:false};
  st.snap('قبل توزيع على الكلام',true);P.step=2;st.save();render();window.scrollTo(0,0);toast('🎤 كل لقطة على سطرها بالظبط ✓')}
+
+
+/* ---------- 🤖 الإيجنت: يشوف الفيديوهات ويسمع الموسيقى ويعمل المونتاج لوحده ---------- */
+async function framesOf(m,max){const u=await urlOf(m.id);if(!u)return [];const out=[];
+ if(m.kind==='image'){const im=new Image();im.src=u;await im.decode().catch(()=>{});const c=document.createElement('canvas'),k=512/Math.max(im.width,im.height);c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);return [{t:0,b64:c.toDataURL('image/jpeg',.7).split(',')[1]}]}
+ const v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.src=u;await new Promise(r=>{v.onloadeddata=r;v.onerror=r;setTimeout(r,6000)});
+ const n=Math.min(max,Math.max(2,Math.ceil(m.dur/1.5))),c=document.createElement('canvas'),k=384/Math.max(v.videoWidth||384,v.videoHeight||384);c.width=(v.videoWidth||384)*k;c.height=(v.videoHeight||384)*k;const g=c.getContext('2d');
+ for(let i=0;i<n;i++){const t=+(Math.min(m.dur-.05,(i+.5)*m.dur/n)).toFixed(2);await new Promise(r=>{v.onseeked=r;v.currentTime=t;setTimeout(r,3000)});g.drawImage(v,0,0,c.width,c.height);out.push({t,b64:c.toDataURL('image/jpeg',.65).split(',')[1]})}
+ v.removeAttribute('src');v.load();return out}
+async function agentRun(mode){const P=p();const prompt=mode==='edit'?PR.edit():PR.plan();if(!prompt)return;if(!CORE.gemKey()){alert('حط مفتاح Gemini الأول (تحت زر الإيجنت)، أو استخدم «انسخ الأمر» العادي.');return}
+ const st0=document.getElementById('agMsg');const say=t=>{if(st0)st0.textContent=t;toast(t,4000)};
+ try{const parts=['أنت مرفق لك فريمات من كل فيديو (مكتوب قبل كل فريم رمز الملف ووقته بالثانية)، والصوت المرفق (الموسيقى أو التعليق). اتفرج واسمع كويس قبل ما تقرر القطع.'];let fn=0;
+  const vis=P.media.filter(m=>m.kind!=='audio'),per=Math.max(3,Math.min(10,Math.floor(80/Math.max(1,vis.length))));
+  for(const m of vis){say('👀 بجهز فريمات '+m.tag+'…');for(const f of await framesOf(m,per)){parts.push(m.tag+' عند '+f.t+' ث:');parts.push({b64:f.b64,mime:'image/jpeg'});fn++}}
+  for(const a of P.media.filter(m=>m.kind==='audio')){const b=await blobOf(a.id);if(b&&b.size<40e6){parts.push('ملف الصوت '+a.tag+' ('+CORE.pick(ROLES,a.role)[1]+'):');parts.push({blob:b})}}
+  parts.push(prompt);const out=await CORE.gemRun(parts,say);const e=parseEDL(out);if(!e||!e.clips.length){P.paste=out;st.save();render();alert('الفريق رد بس من غير خطة سليمة. الرد اتحط في «رد الفريق»، جرّب «نفّذ الخطة» أو اطلب تاني.');return}
+  st.snap(mode==='edit'?'قبل تعديل الإيجنت':'قبل خطة الإيجنت',true);P.edl=e;P.agentNote=out.split(/===\s*بداية/)[0].trim().slice(0,1500);if(mode==='edit')P.editReq='';P.step=2;st.save();render();window.scrollTo(0,0);say('✅ الإيجنت عمل المونتاج: '+e.clips.length+' لقطة ('+fn+' فريم اتشافوا)');
+  if(P.agentExport){setTimeout(()=>{if(window.MediaRecorder)play(true)},600)}}
+ catch(x){say('⚠️ '+x.message)}}
 
 /* ---------- قوالب جاهزة ---------- */
 const TPLS=[['story','📖 حكاية بالترتيب','اللقطات بالترتيب بذوبان ناعم وترجمة'],['hook','🪝 هوك + حكاية + دعوة','أقوى لقطة الأول بكلام يشد، الحكاية بسرعة، وكارت «تابعنا» في الآخر'],['ad','📣 إعلان منتج 15 ث','كارت اسم المنتج، 3 مميزات سريعة، وكارت «اطلب دلوقتي»'],['ba','🔁 قبل وبعد','كل لقطتين: «قبل» ثم مسح لـ «بعد»'],['beat','🥁 على الإيقاع','قطع على نبضات الموسيقى وفلاشات في اللحظات القوية'],['top','🏆 أفضل 5 (عدّ تنازلي)','كارت رقم قبل كل لقطة'],['cine','🎬 سينمائي','كارت عنوان، زووم بطيء، مرور بالأسود، شريطين سينما'],['doc','🎙️ وثائقي / شرح','صور بحركة كين بيرنز وكلام تعريفي تحت في صندوق'],['meme','😂 كوميدي ميمز','قطع سريع، زووم مفاجئ، كلام كبير فوق بخط عريض']];
@@ -454,7 +473,9 @@ function s1(){const P=p();return `<div class="c"><h3>✍️ اكتب اللي ع
  <div class="row"><div><label class="l">خط الكلام</label><select data-f="font">${opts(FONTS.map(f=>[f[0],f[1]]),P.font)}</select></div><div><label class="l">الجودة</label><select data-f="quality">${opts([['720','HD 720 (أسرع للموبايل)'],['1080','Full HD 1080 (للاب)']],P.quality)}</select></div></div>
  <div style="font-family:'${fontOf(P.font)[2]}';font-size:24px;margin-top:6px;text-align:center">نموذج الخط Sample 123</div>
  <label class="l">📐 القالب (اختياري: الفريق هيلتزم بيه)</label><select data-f="tpl">${opts([['','الفريق يختار']].concat(TPLS.map(t=>[t[0],t[1]])),P.tpl)}</select>
- ${pair('plan','أمر خطة المونتاج للفريق')}<div class="m">💡 أحسن نتيجة: ابعت الأمر لـ Gemini وارفق الفيديوهات معاه عشان يتفرج عليها.</div></div>
+ <div style="border:1px solid #10b981;border-radius:12px;padding:10px;margin-top:10px"><b>🤖 الإيجنت: اكتب ونفّذ</b><div class="m">بيشوف فريمات الفيديوهات ويسمع الموسيقى والتعليق، ويعمل المونتاج كامل لوحده، من غير نسخ ولصق.</div>
+ <button class="b g" data-a="agent" style="width:100%">🤖 نفّذ المونتاج بالإيجنت</button><label style="display:flex;gap:6px;align-items:center;font-size:13px;margin-top:6px"><input type="checkbox" data-c="agentExport" ${P.agentExport?'checked':''} style="width:auto">وبعدها صدّر الفيديو على طول</label><div class="m" id="agMsg"></div>${CORE.agentKeyHTML()}</div>
+ <div class="m" style="margin-top:10px">أو بالطريقة العادية:</div>${pair('plan','أمر خطة المونتاج للفريق')}<div class="m">💡 ابعت الأمر لـ Gemini وارفق الفيديوهات معاه عشان يتفرج عليها.</div></div>
  <div class="c"><h3>📐 قوالب جاهزة (تتنفذ فورًا من غير ذكاء)</h3><div class="m">اختار قالب، وبعدين عدّل الكلام والمدد في التايملاين.</div>${TPLS.map(t=>`<button class="b" data-a="tpl" data-k="${t[0]}" style="width:100%;text-align:right"><b>${t[1]}</b><div style="font-size:12px;color:var(--muted)">${t[2]}</div></button>`).join('')}</div>
  <div class="c"><h3>📥 رد الفريق</h3><textarea data-f="paste" rows="6" placeholder="الصق الرد هنا (فيه ===بداية=== و===نهاية===)">${esc(P.paste)}</textarea><button class="b g" data-a="parse" style="width:100%">✂️ نفّذ الخطة</button></div>`}
 function kfHTML(c,i){const K=c.kf||[];return `<details${K.length?' open':''} style="margin-top:8px"><summary style="font-size:13px;color:#cbd5e1">🎯 كي فريم (${K.length}) — حركة وتكبير ولف وشفافية وإضاءة بالفريم</summary>
@@ -475,7 +496,7 @@ function audCard(k,label){const P=p(),E=P.edl,a=E[k],aud=P.media.filter(m=>m.kin
  ${a?`<div class="row"><div><label class="l">يبدأ في الفيديو (ث)</label><input type="number" step="0.1" data-au="${k}" data-k="start" value="${a.start}"></div><div><label class="l">من الملف (ث)</label><input type="number" step="0.1" data-au="${k}" data-k="from" value="${a.from}"></div><div><label class="l">الصوت</label><input type="number" step="0.05" data-au="${k}" data-k="volume" value="${a.volume}"></div></div>
  <div class="row"><div><label class="l">دخول ناعم</label><input type="number" step="0.1" data-au="${k}" data-k="fadeIn" value="${a.fadeIn}"></div><div><label class="l">خروج ناعم</label><input type="number" step="0.1" data-au="${k}" data-k="fadeOut" value="${a.fadeOut}"></div></div>${k==='music'?`<label style="display:flex;gap:6px;align-items:center;font-size:13px;margin-top:6px"><input type="checkbox" data-au="${k}" data-k="duck" ${a.duck?'checked':''} style="width:auto">تنزل تحت التعليق تلقائي</label>`:''}`:''}</div>`}
 function s2(){const P=p(),E=P.edl;if(!E)return `<div class="c m">لسه مفيش خطة مونتاج. ارجع لـ ② واعمل الأمر، أو اضغط «⚡ مونتاج سريع».</div>`;const T=timeline(E),tot=edlDur(E);
- return `<div class="c"><div class="hd"><b>🎞️ ${E.clips.length} لقطة • ${fmt(tot)} ث</b><span class="tag">${E.aspect}</span></div>
+ return `${P.agentNote?`<details class="c"><summary><b>📝 ملاحظات الفريق</b></summary><div class="m" style="white-space:pre-wrap;color:#e2e8f0">${esc(P.agentNote)}</div></details>`:''}<div class="c"><div class="hd"><b>🎞️ ${E.clips.length} لقطة • ${fmt(tot)} ث</b><span class="tag">${E.aspect}</span></div>
  <canvas id="cv" width="${sizeOf(E)[0]}" height="${sizeOf(E)[1]}"></canvas><div class="bar"><div id="prog"></div></div><div class="m" id="stat" style="text-align:center"></div>
  <input type="range" id="scrub" min="0" max="${tot.toFixed(3)}" step="${(1/FPS).toFixed(4)}" value="${Math.min(SCRUB.t,tot)}" style="padding:0;margin-top:6px" data-nt>
  <div class="m" id="scrubT" style="text-align:center;direction:rtl"></div>
@@ -485,7 +506,7 @@ function s2(){const P=p(),E=P.edl;if(!E)return `<div class="c m">لسه مفيش
  <div class="c"><h3>📤 كمّل في برنامج مونتاج</h3><div class="m">لو عايز تلوين وصوت بمستوى السينما، صدّر التايملاين وكمّل هناك.</div>
  <button class="b bl" data-a="xPro" style="width:100%">🎬 DaVinci Resolve / Premiere (تايملاين XML + ترجمة SRT)</button><div class="m">في DaVinci: File ← Import ← Timeline، واختار الملف، وبعدين وجّهه لفولدر الفيديوهات. في Premiere: File ← Import. الملاحظات (السرعة والتلوين والكلام) بتظهر كماركرز على التايملاين.</div>
  <button class="b" data-a="xCap" style="width:100%">✂️ CapCut (ترجمة SRT + قايمة قطع بالتوقيت)</button><div class="m">CapCut ما بيقبلش ملف تايملاين من برة. استورد الفيديو اللي صدّرته أو اللقطات، وحط الترجمة من: Text ← Captions ← Import، وامشي على قايمة القطع.</div></div>
- <div class="c"><h3>🗣️ عايز تعدّل إيه؟</h3><textarea data-f="editReq" rows="3" placeholder="مثال: البداية بطيئة، قصّر أول لقطتين، وخلي الألوان أدفى، والموسيقى أعلى في الآخر">${esc(P.editReq)}</textarea>${pair('edit','أمر التعديل للفريق')}${pair('review','مراجعة اللجنة العالمية')}<div class="m">الصق الرد في «رد الفريق» في خطوة ② واضغط نفّذ.</div></div>
+ <div class="c"><h3>🗣️ عايز تعدّل إيه؟</h3><textarea data-f="editReq" rows="3" placeholder="مثال: البداية بطيئة، قصّر أول لقطتين، وخلي الألوان أدفى، والموسيقى أعلى في الآخر">${esc(P.editReq)}</textarea><button class="b g" data-a="agentEdit" style="width:100%">🤖 نفّذ التعديل بالإيجنت</button><div class="m" id="agMsg"></div>${pair('edit','أمر التعديل للفريق')}${pair('review','مراجعة اللجنة العالمية')}<div class="m">الصق الرد في «رد الفريق» في خطوة ② واضغط نفّذ.</div></div>
  <div class="c"><h3>✂️ التايملاين</h3>${E.clips.map((c,i)=>segCard(c,i,T)).join('')}<div style="display:flex;gap:6px"><button class="b" data-a="sadd" style="flex:1">➕ لقطة في الآخر</button><button class="b" data-a="cadd" style="flex:1">🟪 كارت عنوان في الآخر</button></div></div>
  <div class="c"><h3>🎚️ الصوت</h3>${audCard('music','🎵 الموسيقى')}${audCard('voice','🎙️ التعليق الصوتي')}</div>
  <div class="c"><h3>🎨 الشكل العام</h3><div class="row mini"><div><label class="l">التظليل حوالين الكادر</label><input type="number" step="0.05" data-e="vignette" value="${E.vignette}"></div><div><label class="l">المقاس</label><select data-e="aspect">${opts(ASPECTS,E.aspect)}</select></div></div>
@@ -548,6 +569,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='tapStart'){tapStart();return}if(a==='tapHit'){tapHit();return}if(a==='tapBack'){tapBack();return}if(a==='tapEnd'){tapEnd();return}
  if(a==='lrcApply'){const r=parseLRC(document.getElementById('lrcIn').value);if(!r.length){alert('مش لاقي سطور بالشكل [00:12.40] نص');return}st.snap('قبل توقيت الكلام',true);P.lt=r;st.save();render();toast('✓ اتوقّت '+r.length+' سطر');return}
  if(a==='lyEDL'){if(P.edl&&!confirm('هيستبدل خطة المونتاج الحالية (القديمة في 🕘). تكمل؟'))return;lyricEDL();return}
+ if(a==='agent'){agentRun('plan');return}if(a==='agentEdit'){agentRun('edit');return}
  if(a==='xPro'){exportPro('pro');return}if(a==='xCap'){exportPro('cap');return}
  if(a==='sk'){const E=P.edl;if(!E||RUN)return;const tot=edlDur(E);renderAt(Math.max(0,Math.min(tot-1/FPS,Math.round(SCRUB.t*FPS+ +b.dataset.d)/FPS)));return}
  if(a==='toClip'){const k=clipAt(SCRUB.t);const el=document.getElementById('seg'+k);if(el)el.scrollIntoView({block:'start'});return}
@@ -567,7 +589,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
 CORE.work({presets:[{name:'😂 ريل كوميدي سريع',set:{pace:'fast',genre:'comedy',grade:'warm',platform:'reels',aspect:'9:16',sec:30}},{name:'🎬 سينمائي مؤثر',set:{pace:'slow',genre:'drama',grade:'cinematic',platform:'film',aspect:'16:9',sec:60}},{name:'📣 إعلان 15 ثانية',set:{pace:'fast',grade:'vivid',platform:'ad',aspect:'9:16',sec:15}},{name:'🎵 كليب على الإيقاع',set:{pace:'beat',grade:'cinematic',platform:'reels',aspect:'9:16',sec:45}},{name:'👻 رعب',set:{pace:'slow',genre:'horror',grade:'night',platform:'reels',aspect:'9:16',sec:45}}],
  ctx:()=>'مونتاج: '+(p().brief||'')+'\n'+mediaTxt(),ns:'montage',st,def:DEF,render,
  check:{team:TEAM,text:()=>{const P=p();return P.edl?'الطلب: '+P.brief+'\nالمواد:\n'+mediaTxt()+'\n\nخطة المونتاج (JSON):\n'+edlTxt():''},apply:v=>{const e=parseEDL(v);if(!e||!e.clips.length){alert('مش لاقي خطة سليمة في الرد');return false}p().edl=e;st.save();return e.clips.length+' لقطة'}}});
-CORE.bindPub(p,()=>st.save(),render,()=>{const P=p();return 'فيديو مونتاج: '+(P.brief||'')+'\n'+(P.lyrics?'كلام الأغنية:\n'+P.lyrics.slice(0,800)+'\n':'')+mediaTxt()});
+CORE._rerender=render;CORE.bindPub(p,()=>st.save(),render,()=>{const P=p();return 'فيديو مونتاج: '+(P.brief||'')+'\n'+(P.lyrics?'كلام الأغنية:\n'+P.lyrics.slice(0,800)+'\n':'')+mediaTxt()});
 st.snap('عند الفتح');render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>

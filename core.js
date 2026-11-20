@@ -224,7 +224,7 @@ C.gdUpload=async function(name,blob,props,parentId){const meta={name,parents:[pa
 C.gdFind=async function(q){const l=await (await f(API+'/drive/v3/files?q='+encodeURIComponent(q+' and trashed=false')+'&orderBy=modifiedTime desc&pageSize=50&fields=files(id,name,modifiedTime,size,appProperties)')).json();return l.files||[]};
 C.gdBlob=async function(id){return await (await f(API+'/drive/v3/files/'+id+'?alt=media')).blob()};
 C.backupCollect=async function(){const d={type:'hisham-studios-backup',v:2,at:new Date().toISOString(),device:/Android|iPhone|Mobile/i.test(navigator.userAgent)?'موبايل':'لاب/كمبيوتر',keys:{}};
- for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^hs_(?!trc|dirty|ts~)/.test(k))d.keys[k]=localStorage.getItem(k)}
+ for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^hs_(?!trc|dirty|ts~|gemkey|gemmodel)/.test(k))d.keys[k]=localStorage.getItem(k)}
  for(const k of await C.idb.keys()){if(/^hs_(?!trc|dirty|media_)/.test(k)&&!(k in d.keys)){const r=await C.idb.get(k);if(r&&r.raw)d.keys[k]=r.raw}}
  try{const g=JSON.parse(localStorage.getItem(GDK)||'{}');d.keys[GDK]=JSON.stringify({cid:g.cid})}catch(e){}
  return d};
@@ -595,4 +595,32 @@ C.dupWork=async function(o,st,render){if(C.leaveOk&&!(await C.leaveOk()))return;
  const name=(prompt('اسم العمل الجديد (نفس الإعدادات والشخصيات):',old?old+' 2':'')||'').trim();if(!name)return;
  st.snap('قبل تكرار العمل',true);const n=JSON.parse(JSON.stringify(P));CONTENT.forEach(k=>{if(k in o.def)n[k]=JSON.parse(JSON.stringify(o.def[k]));else delete n[k]});n.wname=name;n.step=0;
  st.set(n);C._wbar&&C._wbar();render();window.scrollTo(0,0);C.toast('📑 عمل جديد «'+name+'» بنفس الإعدادات ✓')};
+})();
+
+/* ================= 🤖 وضع الإيجنت: Gemini API بمفتاحك (اختياري) ================= */
+(function(){
+const C=window.CORE,KK='hs_gemkey',MK='hs_gemmodel',BASE='https://generativelanguage.googleapis.com/v1beta';
+C.gemKey=()=>(localStorage.getItem(KK)||'').trim();
+C.setGemKey=k=>{try{if(k)localStorage.setItem(KK,k.trim());else localStorage.removeItem(KK);localStorage.removeItem(MK)}catch(e){}};
+/* بيختار أحدث موديل Flash متاح للمفتاح ده، عشان أسماء الموديلات بتتغير */
+C.gemModel=async function(){try{const c=JSON.parse(localStorage.getItem(MK)||'null');if(c&&Date.now()-c.t<864e5)return c.m}catch(e){}
+ const r=await fetch(BASE+'/models?pageSize=200&key='+encodeURIComponent(C.gemKey()));if(!r.ok)throw new Error(r.status===400||r.status===403?'المفتاح مش صحيح أو مش مفعّل':'Gemini رد بخطأ '+r.status);
+ const L=((await r.json()).models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')&&/flash/i.test(m.name)&&!/lite|tts|image|live|audio|embed|exp|8b/i.test(m.name));
+ const ver=n=>{const x=n.match(/(\d+(?:\.\d+)?)/);return x?+x[1]:0};L.sort((a,b)=>(ver(b.name)-ver(a.name))||((/preview/.test(a.name)?1:0)-(/preview/.test(b.name)?1:0)));
+ const m=(L[0]&&L[0].name)||'models/gemini-2.5-flash';try{localStorage.setItem(MK,JSON.stringify({m,t:Date.now()}))}catch(e){}return m};
+C.b64=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(blob)});
+/* parts: نص أو {blob} أو {b64,mime} */
+C.gemRun=async function(parts,onStep){if(!C.gemKey())throw new Error('حط مفتاح Gemini الأول');onStep&&onStep('🤖 بختار الموديل…');const model=await C.gemModel();const P=[];let size=0;
+ for(const x of parts){if(typeof x==='string')P.push({text:x});else if(x.blob){const d=await C.b64(x.blob);size+=d.length;P.push({inline_data:{mime_type:x.blob.type||x.mime||'application/octet-stream',data:d}})}else if(x.b64){size+=x.b64.length;P.push({inline_data:{mime_type:x.mime,data:x.b64}})}}
+ if(size>95e6)throw new Error('الملفات كبيرة أوي على الإيجنت (أكتر من 95 ميجا). قصّر الأغنية أو قلل الفيديوهات');
+ onStep&&onStep('🤖 الفريق بيشتغل… ('+model.replace('models/','')+')');
+ const r=await fetch(BASE+'/'+model+':generateContent?key='+encodeURIComponent(C.gemKey()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:P}],generationConfig:{temperature:.6,maxOutputTokens:16384}})});
+ const j=await r.json().catch(()=>({}));if(!r.ok){if(r.status===404){try{localStorage.removeItem(MK)}catch(e){}}throw new Error((j.error&&j.error.message)||('Gemini رد بخطأ '+r.status))}
+ const t=((j.candidates||[])[0]||{}).content;const out=t&&t.parts?t.parts.map(p=>p.text||'').join(''):'';if(!out.trim())throw new Error('Gemini ما ردّش (ممكن المحتوى اتمنع أو الحد المجاني خلص)');return out};
+/* كارت الإيجنت (مشترك) */
+C.agentKeyHTML=function(){const has=!!C.gemKey();return `<details${has?'':' open'} style="margin-top:6px"><summary style="font-size:13px;color:#94a3b8">🔑 مفتاح Gemini ${has?'✓ متحط':'(مطلوب لوضع الإيجنت)'}</summary>
+ <div class="m" style="font-size:12px">خده ببلاش من aistudio.google.com/apikey (Get API key). بيتحفظ على الجهاز ده بس، ومش بيدخل في النسخة الاحتياطية. الملفات بتتبعت لـ Google عشان Gemini يشوفها ويسمعها.</div>
+ <div style="display:flex;gap:6px"><input type="password" id="gemKeyIn" placeholder="AIza..." value="${has?'••••••••':''}" style="flex:1;direction:ltr"><button class="b" data-gk="save" style="margin:0">حفظ</button>${has?'<button class="b r" data-gk="del" style="margin:0">🗑️</button>':''}</div></details>`};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-gk]');if(!b)return;if(b.dataset.gk==='del'){C.setGemKey('');C.toast('اتشال المفتاح');C._rerender&&C._rerender();return}
+ const v=(document.getElementById('gemKeyIn')||{}).value||'';if(!v||/^•+$/.test(v)){C.toast('الصق المفتاح الأول');return}C.setGemKey(v);C.toast('🔑 اتحفظ المفتاح ✓');C._rerender&&C._rerender()});
 })();
