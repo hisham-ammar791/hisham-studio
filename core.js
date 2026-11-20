@@ -3,7 +3,7 @@
 const CORE=window.CORE={};
 const $=CORE.$=id=>document.getElementById(id);
 CORE.esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-CORE.toast=function(m,ms){let t=$('coreToast');if(!t){t=document.createElement('div');t.id='coreToast';t.style.cssText='position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#0f172a;border:1px solid #38bdf8;color:#fff;padding:9px 14px;border-radius:12px;z-index:99;font-size:14px;max-width:90vw;text-align:center';document.body.appendChild(t)}
+CORE.toast=function(m,ms){let t=$('coreToast');if(!t){t=document.createElement('div');t.id='coreToast';t.style.cssText='pointer-events:none;position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#0f172a;border:1px solid #38bdf8;color:#fff;padding:9px 14px;border-radius:12px;z-index:99;font-size:14px;max-width:90vw;text-align:center';document.body.appendChild(t)}
  t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',ms||2200)};
 
 /* ---------- مخزن كبير (IndexedDB) احتياطي للمشروع والمكتبة والصور ---------- */
@@ -605,19 +605,28 @@ const C=window.CORE,esc=C.esc,KK='hs_gemkey',MK='hs_gemmodel',BASE='https://gene
 C.gemKey=()=>(localStorage.getItem(KK)||'').trim();
 C.setGemKey=k=>{try{if(k)localStorage.setItem(KK,k.trim());else localStorage.removeItem(KK);localStorage.removeItem(MK)}catch(e){}};
 /* بيختار أحدث موديل Flash متاح للمفتاح ده، عشان أسماء الموديلات بتتغير */
-C.gemModel=async function(){try{const c=JSON.parse(localStorage.getItem(MK)||'null');if(c&&Date.now()-c.t<864e5)return c.m}catch(e){}
- const r=await fetch(BASE+'/models?pageSize=200&key='+encodeURIComponent(C.gemKey()));if(!r.ok)throw new Error(r.status===400||r.status===403?'المفتاح مش صحيح أو مش مفعّل':'Gemini رد بخطأ '+r.status);
- const L=((await r.json()).models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')&&/flash/i.test(m.name)&&!/lite|tts|image|live|audio|embed|exp|8b/i.test(m.name));
- const ver=n=>{const x=n.match(/(\d+(?:\.\d+)?)/);return x?+x[1]:0};L.sort((a,b)=>(ver(b.name)-ver(a.name))||((/preview/.test(a.name)?1:0)-(/preview/.test(b.name)?1:0)));
- const m=(L[0]&&L[0].name)||'models/gemini-2.5-flash';try{localStorage.setItem(MK,JSON.stringify({m,t:Date.now()}))}catch(e){}return m};
+C.gemModels=async function(){try{const c=JSON.parse(localStorage.getItem(MK)||'null');if(c&&Date.now()-c.t<864e5&&Array.isArray(c.l))return c.l}catch(e){}
+ const r=await fetch(BASE+'/models?pageSize=200&key='+encodeURIComponent(C.gemKey()));if(!r.ok)throw new Error(r.status===400||r.status===403?'المفتاح مش صحيح أو مش مفعّل. اتأكد إنك نسخته كامل من aistudio.google.com/apikey':'Gemini رد بخطأ '+r.status);
+ const L=((await r.json()).models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')&&/flash/i.test(m.name)&&!/tts|image|live|audio|embed|exp|8b/i.test(m.name));
+ const ver=n=>{const x=n.match(/(\d+(?:\.\d+)?)/);return x?+x[1]:0},rank=n=>(/lite/.test(n)?2:0)+(/preview/.test(n)?1:0);L.sort((a,b)=>(rank(a.name)-rank(b.name))||(ver(b.name)-ver(a.name)));
+ const l=L.map(m=>m.name).slice(0,5);if(!l.length)l.push('models/gemini-2.5-flash');try{localStorage.setItem(MK,JSON.stringify({l,t:Date.now()}))}catch(e){}return l};
+C.gemModel=async()=>(await C.gemModels())[0];
+const nice=(st,msg)=>st===429||/quota|RESOURCE_EXHAUSTED|rate/i.test(msg)?'الحد المجاني لـ Gemini خلص دلوقتي. استنى دقيقة وجرّب تاني، ولو فضل كده جرّب بكرة.':st===403||/API key|PERMISSION/i.test(msg)?'المفتاح مش شغال (اتأكد إنه صح ومفعّل).':st>=500?'سيرفر Gemini مشغول. جرّب تاني بعد شوية.':msg;
 C.b64=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(blob)});
 /* parts: نص أو {blob} أو {b64,mime} */
-C.gemRun=async function(parts,onStep,opt){opt=opt||{};if(!C.gemKey())throw new Error('حط مفتاح Gemini الأول');onStep&&onStep('🤖 بختار الموديل…');const model=await C.gemModel();const P=[];let size=0;
+C.gemRun=async function(parts,onStep,opt){opt=opt||{};if(!C.gemKey())throw new Error('حط مفتاح Gemini الأول');onStep&&onStep('🤖 بختار الموديل…');await C.gemModels();const P=[];let size=0;
  for(const x of parts){if(typeof x==='string')P.push({text:x});else if(x.blob){const d=await C.b64(x.blob);size+=d.length;P.push({inline_data:{mime_type:x.blob.type||x.mime||'application/octet-stream',data:d}})}else if(x.b64){size+=x.b64.length;P.push({inline_data:{mime_type:x.mime,data:x.b64}})}}
  if(size>95e6)throw new Error('الملفات كبيرة أوي على الإيجنت (أكتر من 95 ميجا). قصّر الأغنية أو قلل الفيديوهات');
- onStep&&onStep('🤖 الفريق بيشتغل… ('+model.replace('models/','')+')');
- const r=await fetch(BASE+'/'+model+':generateContent?key='+encodeURIComponent(C.gemKey()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({systemInstruction:{parts:[{text:(opt.sys===false?'':C.CREW||'')+(opt.sysExtra?'\n'+opt.sysExtra:'')}]},contents:(opt.history||[]).map(h=>({role:h.role,parts:[{text:h.text}]})).concat([{role:'user',parts:P}]),generationConfig:{temperature:opt.temp==null?.6:opt.temp,maxOutputTokens:16384}},opt.search?{tools:[{google_search:{}}]}:{}))});
- const j=await r.json().catch(()=>({}));if(!r.ok){if(r.status===404){try{localStorage.removeItem(MK)}catch(e){}}throw new Error((j.error&&j.error.message)||('Gemini رد بخطأ '+r.status))}
+ const models=await C.gemModels();let j=null,lastErr='',model='',useSearch=!!opt.search;
+ for(let mi=0;mi<models.length&&!j;mi++){model=models[mi];onStep&&onStep('🤖 الفريق بيشتغل… ('+model.replace('models/','')+')');
+  const body=Object.assign({systemInstruction:{parts:[{text:(opt.sys===false?'':C.CREW||'')+(opt.sysExtra?'\n'+opt.sysExtra:'')}]},contents:(opt.history||[]).map(h=>({role:h.role,parts:[{text:h.text}]})).concat([{role:'user',parts:P}]),generationConfig:{temperature:opt.temp==null?.6:opt.temp,maxOutputTokens:16384}},useSearch?{tools:[{google_search:{}}]}:{});
+  let r;try{r=await fetch(BASE+'/'+model+':generateContent?key='+encodeURIComponent(C.gemKey()),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})}catch(e){throw new Error('مفيش نت أو Gemini مش بيرد')}
+  const jj=await r.json().catch(()=>({}));if(r.ok){j=jj;break}
+  const m=(jj.error&&jj.error.message)||'';lastErr=nice(r.status,m||('Gemini رد بخطأ '+r.status));
+  if(useSearch&&r.status===400&&/tool|search|ground/i.test(m)){useSearch=false;mi--;continue}
+  if(r.status===404||r.status===429||(r.status===400&&/not (found|supported)/i.test(m))||(r.status===403&&/billing|paid|free tier/i.test(m))){if(r.status===404){try{localStorage.removeItem(MK)}catch(e){}}continue}
+  throw new Error(lastErr)}
+ if(!j)throw new Error(lastErr||'Gemini ما ردّش');
  const cand=(j.candidates||[])[0]||{},t=cand.content;let out=t&&t.parts?t.parts.filter(p=>!p.thought).map(p=>p.text||'').join(''):'';if(!out.trim())throw new Error('Gemini ما ردّش (ممكن المحتوى اتمنع أو الحد المجاني خلص)');
  const G=cand.groundingMetadata&&cand.groundingMetadata.groundingChunks;if(opt.search&&G&&G.length){const seen={};const L=G.map(g=>g.web).filter(w=>w&&w.uri&&!seen[w.uri]&&(seen[w.uri]=1)).slice(0,12);if(L.length)out+='\n\nالمصادر اللي اتبحث فيها:\n'+L.map(w=>'- '+(w.title||'')+': '+w.uri).join('\n')}
  return out};
@@ -640,30 +649,31 @@ C.CREW=`أنت مش مساعد عادي. أنت فريق إنتاج عالمي �
 قواعد ثابتة: نفّذ اللي صاحب الشغل طالبه بالظبط وبأعلى احترافية، من غير ما تغيّر حاجة مطلبش يغيّرها. لو الطلب ممكن يتعمل أحسن قول اقتراحك في سطر، ونفّذ طلبه هو. التزم بأي شكل ناتج مطلوب منك حرفيًا (علامات، JSON، صيغة لقطات)، عشان البرنامج بيقرا ردك ويطبّقه أوتوماتيك. ردك بالعامية المصرية ومختصر، إلا لو المطلوب نص طويل.`;
 /* ===== محرك «اعمل العمل كله»: خطوات بنقط مراجعة ===== */
 C.agentFlow=function(o){if(!C.gemKey()){C.agentKeyBox();return}let ov=document.getElementById('agFlow');if(ov)ov.remove();ov=document.createElement('div');ov.id='agFlow';ov.style.cssText='position:fixed;inset:0;z-index:97;background:#000c;display:flex;align-items:flex-end';
- const S=o.steps.map(x=>Object.assign({st:'wait'},x));let cur=-1,out='',auto=false,busy=false,stopped=false,hist=[];
+ const S=o.steps.map(x=>Object.assign({st:'wait'},x));let cur=-1,out='',auto=false,busy=false,stopped=false,err=false,hist=[];
  const draw=(note)=>{const s=S[cur]||{};ov.innerHTML=`<div style="background:#0f172a;border:1px solid #10b981;border-radius:16px 16px 0 0;width:100%;max-height:92vh;overflow:auto;padding:12px;color:#fff">
-  <div style="display:flex;align-items:center;gap:8px"><b style="flex:1;font-size:16px">🤖 ${esc(o.title||'الإيجنت')}</b><button class="b" data-ag="close" style="margin:0">✕</button></div>
+  <div style="display:flex;align-items:center;gap:8px"><b style="flex:1;font-size:16px">🤖 ${esc(o.title||'الإيجنت')}</b>${busy?'<button class="b r" data-ag="stop" style="margin:0">⏹ إيقاف</button>':''}<button class="b" data-ag="close" style="margin:0">✕</button></div>
   <div style="display:flex;flex-wrap:wrap;gap:4px;margin:8px 0">${S.map((x,i)=>`<span class="tag" style="font-size:12px;${i===cur?'background:#10b981;color:#04130d':''}">${x.st==='done'?'✓':x.st==='skip'?'—':i===cur&&busy?'⏳':''} ${esc(x.label)}</span>`).join('')}</div>
   <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="agAuto" ${auto?'checked':''} style="width:auto"> كمّل لوحدك من غير ما تقف عند كل مرحلة</label>
   <div class="m" id="agNote" style="margin:8px 0;white-space:pre-wrap">${esc(note||'')}</div>
-  ${!busy&&cur>=0&&cur<S.length&&out?`<div class="m">${esc(s.gateLabel||'النتيجة (تقدر تعدّل فيها قبل ما تكمّل):')}</div><textarea id="agOut" rows="12" style="font-size:14px">${esc(out)}</textarea>
+  ${!busy&&err&&cur<S.length?`<div style="display:flex;gap:6px"><button class="b g" data-ag="redo" style="flex:2">🔁 جرّب تاني</button><button class="b r" data-ag="stop" style="flex:1">⏹ وقف هنا</button></div>`:''}
+  ${!busy&&!err&&cur>=0&&cur<S.length&&out?`<div class="m">${esc(s.gateLabel||'النتيجة (تقدر تعدّل فيها قبل ما تكمّل):')}</div><textarea id="agOut" rows="12" style="font-size:14px">${esc(out)}</textarea>
    <input id="agWish" placeholder="عايز يتغير إيه؟ (اختياري، لو هتطلب تاني)" style="margin-top:6px">
    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="b g" data-ag="ok" style="flex:2">✓ تمام، كمّل</button><button class="b" data-ag="redo" style="flex:1">🔁 اعمل تاني</button><button class="b" data-ag="copy" style="flex:1">📋 نسخ</button><button class="b r" data-ag="stop" style="flex:1">⏹ وقف هنا</button></div>`:''}
   ${cur>=S.length?`<button class="b g" data-ag="close" style="width:100%">🎉 خلص — اقفل وشوف الشغل</button>`:''}</div>`};
  document.body.appendChild(ov);
  const run=async(wish)=>{if(stopped)return;const s=S[cur];if(!s){draw('✅ الإيجنت خلص كل المراحل. الشغل كله اتحط في الصفحة، وتقدر تعدّل أي حاجة.');o.onDone&&o.onDone();return}
   if(s.skip&&s.skip()){s.st='skip';cur++;return run()}
-  busy=true;draw('⏳ '+s.label+'…');
+  busy=true;err=false;draw('⏳ '+s.label+'…');
   try{let res='';if(s.loop){res=await s.loop({say:t=>draw('⏳ '+t),gem:(p,op)=>C.gemRun(p,null,op),wish})}
    else{let pr=await s.build(wish);if(!pr){busy=false;stopped=true;draw('⏹ وقف: '+(s.need||'ناقص حاجة في الصفحة'));return}
     if(wish)pr=(Array.isArray(pr)?pr:[pr]).concat(['\n\nتعديل مطلوب على النسخة اللي فاتت: '+wish]);
     res=await C.gemRun(Array.isArray(pr)?pr:[pr],t=>draw(t),{search:!!s.search})}
-   out=s.pick?s.pick(res):(C.between(res)||res);busy=false;const pre=C.between(res)?res.split(/===\s*بداية/)[0].trim().slice(0,2500):'';
+   if(stopped)return;out=s.pick?s.pick(res):(C.between(res)||res);busy=false;if(!String(out).trim()){err=true;draw('⚠️ الرد جه فاضي. جرّب تاني.');return}const pre=C.between(res)?res.split(/===\s*بداية/)[0].trim().slice(0,2500):'';
    if(auto||!s.gate){await accept();return}draw((s.hint?s.hint+'\n\n':'')+pre)}
-  catch(e){busy=false;draw('⚠️ '+e.message+'\n\nتقدر تضغط «اعمل تاني».');out=out||' '}};
- const accept=async()=>{const s=S[cur];const v=(document.getElementById('agOut')||{}).value;if(v!=null&&!auto)out=v;try{s.apply&&await s.apply(out)}catch(e){draw('⚠️ '+e.message);return}s.st='done';cur++;out='';o.render&&o.render();run()};
- ov.onclick=async e=>{const b=e.target.closest('[data-ag]');if(e.target.id==='agAuto'){auto=e.target.checked;if(auto&&!busy&&out)accept();return}if(!b||busy)return;const a=b.dataset.ag;
-  if(a==='close'){ov.remove();o.render&&o.render();return}if(a==='stop'){stopped=true;ov.remove();o.render&&o.render();C.toast('⏹ الإيجنت وقف، واللي اتعمل اتحفظ');return}
+  catch(e){if(stopped)return;busy=false;err=true;draw('⚠️ '+e.message)}};
+ const accept=async()=>{if(stopped)return;const s=S[cur];const v=(document.getElementById('agOut')||{}).value;if(v!=null&&!auto)out=v;try{s.apply&&await s.apply(out)}catch(e){draw('⚠️ '+e.message);return}s.st='done';cur++;out='';o.render&&o.render();run()};
+ ov.onclick=async e=>{const b=e.target.closest('[data-ag]');if(e.target.id==='agAuto'){auto=e.target.checked;if(auto&&!busy&&!err&&out)accept();return}if(!b)return;const a=b.dataset.ag;if(busy&&a!=='close'&&a!=='stop')return;
+  if(a==='close'){if(busy)stopped=true;ov.remove();o.render&&o.render();return}if(a==='stop'){stopped=true;ov.remove();o.render&&o.render();C.toast('⏹ الإيجنت وقف، واللي اتعمل اتحفظ');return}
   if(a==='copy'){C.copy((document.getElementById('agOut')||{}).value||out,'اتنسخ ✓');return}
   if(a==='ok'){accept();return}if(a==='redo'){const w=(document.getElementById('agWish')||{}).value||'';run(w.trim())}};
  cur=0;draw('');run()};
