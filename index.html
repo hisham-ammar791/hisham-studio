@@ -41,9 +41,13 @@ a.c:active{background:#162036}
  <a class="c on" href="studio.html"><div class="i">🧰</div><b>الاستوديو الكامل (القديم)</b><span>الأدوات المتقدمة وشغلك القديم.</span></a>
 </div>
 <div class="c wide" style="margin-top:12px" id="dash"><b>☁️ أعمالك على Drive</b><span>كل الأعمال المحفوظة من كل الاستوديوهات، دوّر بالاسم وافتح على طول.</span><button id="dashDrive" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1d4ed8;color:#fff;font-family:inherit">☁️ اعرض أعمالي</button><div id="dashD"></div></div>
-<div class="c wide" style="margin-top:12px"><b>💾 نسخة احتياطية</b><span>كل أعمال الاستوديوهات الجديدة والشخصيات والأماكن والكادرات والدروس في ملف واحد. (الاستوديو القديم له نسخته الخاصة جواه.)</span><br>
-<button id="bkOut" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1d4ed8;color:#fff;font-family:inherit">⬇️ تصدير</button>
-<label style="display:inline-block;margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#fff">⬆️ استرجاع<input type="file" id="bkIn" accept=".json,application/json" hidden></label></div>
+<div class="c wide" style="margin-top:12px" id="bkCard"><b>☁️ نسخة احتياطية على Google Drive</b><span>كل الاستوديوهات والشخصيات والأماكن والدروس في نسخة واحدة على Drive، من اللاب أو الموبايل. تقدر ترجّعها على أي جهاز.</span><div id="bkLast" style="font-size:12px;margin-top:6px"></div>
+<label style="display:flex;gap:6px;align-items:center;font-size:13px;margin-top:6px"><input type="checkbox" id="bkMedia" style="width:auto">ومعاها فيديوهات ومواد استوديو المونتاج (أبطأ)</label>
+<button id="bkDrive" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:0;background:#10b981;color:#04130d;font-weight:700;font-family:inherit">☁️ اعمل نسخة على Drive</button>
+<button id="bkDriveIn" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#fff;font-family:inherit">⬇️ رجّع نسخة من Drive</button><div id="bkMsg" style="font-size:13px;color:#94a3b8;margin-top:6px"></div><div id="bkList"></div>
+<details style="margin-top:8px"><summary style="font-size:13px;color:#94a3b8">💾 نسخة كملف على الجهاز</summary>
+<button id="bkOut" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1d4ed8;color:#fff;font-family:inherit">⬇️ تصدير ملف</button>
+<label style="display:inline-block;margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#fff">⬆️ استرجاع ملف<input type="file" id="bkIn" accept=".json,application/json" hidden></label></details></div>
 <div class="c wide" style="margin-top:12px"><a href="guide.pdf" style="color:inherit;text-decoration:none"><b>📖 دليل الاستخدام</b><span>شرح مبسّط لكل الأزرار والخطوات (PDF).</span></a></div>
 <div class="ft">داخل الاستوديو: زر 🏠 يرجعك هنا، وزر 🕘 يفتح سجل النسخ.</div>
 <script src="core.js"></script>
@@ -62,13 +66,22 @@ document.getElementById('dashDrive').onclick=async()=>{const box=document.getEle
   box.innerHTML=`<input id="dashQ" placeholder="دوّر باسم العمل…" style="width:100%;margin-top:8px;padding:8px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#fff;font-family:inherit"><div id="dashR"></div>`;
   const show=q=>{document.getElementById('dashR').innerHTML=l.filter(x=>!q||(x.appProperties.name||'').includes(q)).map(x=>{const s=ST.find(y=>y[0]===x.ns);return `<a href="${x.ns}.html?open=${x.id}" style="display:flex;gap:10px;align-items:center;border-top:1px dashed #1f2a44;padding:8px 0;color:inherit;text-decoration:none"><span>${s[1]}</span><div style="flex:1"><b style="font-size:14px">${E(x.appProperties.name)}</b><div style="font-size:12px;color:#94a3b8">${s[2]} • ${new Date(x.modifiedTime).toLocaleString('ar-EG',{dateStyle:'short',timeStyle:'short'})}</div></div><span style="color:#38bdf8;font-size:13px">افتح</span></a>`}).join('')||'<div style="font-size:13px;color:#94a3b8;margin-top:6px">مفيش أعمال.</div>'};
   show('');document.getElementById('dashQ').oninput=e=>show(e.target.value.trim())}catch(e){box.innerHTML='<div style="color:#fca5a5;font-size:13px">⚠️ '+E(e.message)+'</div>'}};
-document.getElementById('bkOut').onclick=async()=>{const d={type:'hisham-studios-backup',v:1,at:new Date().toISOString(),keys:{}};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^hs_(?!trc|dirty)/.test(k))d.keys[k]=localStorage.getItem(k)}
- for(const k of await CORE.idb.keys()){if(/^hs_(?!trc|dirty)/.test(k)&&!(k in d.keys)){const r=await CORE.idb.get(k);if(r&&r.raw)d.keys[k]=r.raw}}
+document.getElementById('bkOut').onclick=async()=>{const d=await CORE.backupCollect();
  const name='استوديو-نسخة-'+new Date().toISOString().slice(0,10)+'.json',f=new File([JSON.stringify(d)],name,{type:'application/json'});
  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==='AbortError')return}
  const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=name;a.click()};
 document.getElementById('bkIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(d.type!=='hisham-studios-backup')throw 0;
- if(!confirm('استرجاع النسخة؟ هتستبدل الأعمال الحالية في الاستوديوهات الجديدة ('+Object.keys(d.keys).length+' عنصر).'))return;Object.entries(d.keys).forEach(([k,v])=>{if(/^hs_(film|ad|song|doc|montage|lib)$/.test(k))CORE.persist(k,v);else try{localStorage.setItem(k,v)}catch(x){}});alert('اترجعت ✓');location.reload()}catch(x){alert('الملف ده مش نسخة احتياطية للاستوديو')}};
+ if(!confirm('استرجاع النسخة؟ هتستبدل الأعمال الحالية في الاستوديوهات الجديدة ('+Object.keys(d.keys).length+' عنصر).'))return;await CORE.backupApply(d);alert('اترجعت ✓');location.reload()}catch(x){alert('الملف ده مش نسخة احتياطية للاستوديو')}};
+
+/* نسخة Drive */
+const bkMsg=t=>{document.getElementById('bkMsg').textContent=t};
+function bkLast(){const t=+(localStorage.getItem('hs_lastbk')||0),el=document.getElementById('bkLast');if(!t){el.innerHTML='<span style="color:#fcd34d">⚠️ لسه ما عملتش نسخة على Drive</span>';return}const d=Math.floor((Date.now()-t)/864e5);el.innerHTML=d>=3?'<span style="color:#fcd34d">⚠️ آخر نسخة من '+d+' يوم، اعمل نسخة جديدة</span>':'<span style="color:#86efac">✓ آخر نسخة: '+(d?'من '+d+' يوم':'النهارده')+'</span>'}
+bkLast();
+document.getElementById('bkDrive').onclick=async e=>{const b=e.target;b.disabled=true;try{const ok=await CORE.backupToDrive(document.getElementById('bkMedia').checked,bkMsg);bkMsg(ok?'✓ اتعملت النسخة على Drive':'اتلغى');bkLast()}catch(x){bkMsg('⚠️ '+x.message)}b.disabled=false};
+document.getElementById('bkDriveIn').onclick=async()=>{bkMsg('⏳ بجيب النسخ…');let l;try{l=await CORE.backupList()}catch(x){bkMsg('⚠️ '+x.message);return}if(!l){bkMsg('');return}if(!l.length){bkMsg('مفيش نسخ على Drive لسه');return}bkMsg('اختار النسخة:');
+ document.getElementById('bkList').innerHTML=l.slice(0,15).map(x=>'<div style="display:flex;gap:8px;align-items:center;border-top:1px dashed #1f2a44;padding:6px 0"><span style="flex:1;font-size:13px">'+E(x.name.replace(/\.json$/,''))+'</span><button data-bk="'+x.id+'" style="padding:6px 10px;border-radius:8px;border:0;background:#10b981;font-family:inherit">رجّعها</button></div>').join('')};
+document.getElementById('bkList').onclick=async e=>{const b=e.target.closest('[data-bk]');if(!b)return;if(!confirm('ترجّع النسخة دي؟ هتستبدل الشغل الحالي على الجهاز ده (الأعمال والمكتبة).'))return;
+ try{const r=await CORE.backupFromDrive(b.dataset.bk,document.getElementById('bkMedia').checked,bkMsg);alert('اترجعت ✓ ('+r.keys+' عنصر'+(r.media?' + '+r.media+' ملف مونتاج':'')+')');location.reload()}catch(x){bkMsg('⚠️ '+x.message)}};
 </script>
 <script>if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}</script>
 <script src="fieldtools.js"></script>

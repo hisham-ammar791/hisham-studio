@@ -3,7 +3,7 @@
 // - The page itself (index.html) is fetched from the network first, so a new upload appears at once;
 //   if the network is missing or slower than 4 seconds, the stored copy opens instead.
 // - Icons, fonts and other files are served from the cache and refreshed in the background.
-const CACHE = 'hisham-studio-v28';
+const CACHE = 'hisham-studio-v30';
 const FILES = ['./', 'index.html', 'studio.html', 'song-fix.html', 'song.html', 'ad.html', 'film.html', 'doc.html', 'montage.html', 'core.js', 'fieldtools.js', 'manifest.webmanifest', 'icons/film-192.png', 'icons/film-512.png', 'icons/film-180.png', 'icons/ad-192.png', 'icons/ad-512.png', 'icons/ad-180.png', 'icons/song-192.png', 'icons/song-512.png', 'icons/song-180.png', 'icons/doc-192.png', 'icons/doc-512.png', 'icons/doc-180.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
   'apple-touch-icon.png', 'fonts/cairo-arabic.woff2', 'fonts/cairo-latin.woff2', 'fonts/cairo-latin-ext.woff2', 'guide.pdf'];
 
@@ -14,15 +14,26 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE && k !== FONTS_CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
+const FONTS_CACHE = 'hs-fonts';
 const offline = () => new Response('غير متصل بالإنترنت', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 
 self.addEventListener('fetch', e => {
   const req = e.request;
+  if (req.method === 'GET' && /^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(req.url)) {
+    // Google Fonts: stored after the first download, so the fonts work with no internet later
+    e.respondWith(caches.open(FONTS_CACHE).then(async c => {
+      const hit = await c.match(req);
+      if (hit) return hit;
+      try { const res = await fetch(req); if (res && (res.ok || res.type === 'opaque')) c.put(req, res.clone()); return res; }
+      catch (x) { return new Response('', { status: 504 }); }
+    }));
+    return;
+  }
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return; // AI, translation & Google go to the network
   const pn = new URL(req.url).pathname;
   const isPage = req.mode === 'navigate' || /\/(index\.html|studio\.html|song-fix\.html|song\.html|ad\.html|film\.html|doc\.html|montage\.html|core\.js|fieldtools\.js)?$/.test(pn);

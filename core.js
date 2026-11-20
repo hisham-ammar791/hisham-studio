@@ -216,6 +216,32 @@ C.gdSave=async function(ns,name,data){if(!(await C.gdConnect()))return false;con
  const ex=(await C.gdList(ns)).find(x=>x.appProperties&&x.appProperties.name===name);const meta=ex?{name:fname}:{name:fname,parents:[fid],appProperties:{hs:ns,name}};
  const b='hsb'+Date.now(),body=`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(data)}\r\n--${b}--`;
  await f(API+'/upload/drive/v3/files'+(ex?'/'+ex.id:'')+'?uploadType=multipart',{method:ex?'PATCH':'POST',headers:{'Content-Type':'multipart/related; boundary='+b},body});return true};
+/* ---------- نسخة احتياطية كاملة على Drive ---------- */
+C.gdUpload=async function(name,blob,props,parentId){const meta={name,parents:[parentId||await folder()],appProperties:props||{}};
+ const r=await f(API+'/upload/drive/v3/files?uploadType=resumable&fields=id',{method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8','X-Upload-Content-Type':blob.type||'application/octet-stream'},body:JSON.stringify(meta)});
+ const loc=r.headers.get('Location');if(!loc)throw new Error('Drive ما رجّعش رابط الرفع');
+ const u=await fetch(loc,{method:'PUT',headers:{'Content-Type':blob.type||'application/octet-stream'},body:blob});if(!u.ok)throw new Error('رفع الملف فشل ('+u.status+')');return (await u.json()).id};
+C.gdFind=async function(q){const l=await (await f(API+'/drive/v3/files?q='+encodeURIComponent(q+' and trashed=false')+'&orderBy=modifiedTime desc&pageSize=50&fields=files(id,name,modifiedTime,size,appProperties)')).json();return l.files||[]};
+C.gdBlob=async function(id){return await (await f(API+'/drive/v3/files/'+id+'?alt=media')).blob()};
+C.backupCollect=async function(){const d={type:'hisham-studios-backup',v:2,at:new Date().toISOString(),device:/Android|iPhone|Mobile/i.test(navigator.userAgent)?'موبايل':'لاب/كمبيوتر',keys:{}};
+ for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^hs_(?!trc|dirty|ts~)/.test(k))d.keys[k]=localStorage.getItem(k)}
+ for(const k of await C.idb.keys()){if(/^hs_(?!trc|dirty|media_)/.test(k)&&!(k in d.keys)){const r=await C.idb.get(k);if(r&&r.raw)d.keys[k]=r.raw}}
+ try{const g=JSON.parse(localStorage.getItem(GDK)||'{}');d.keys[GDK]=JSON.stringify({cid:g.cid})}catch(e){}
+ return d};
+C.backupApply=async function(d){Object.entries(d.keys||{}).forEach(([k,v])=>{if(/^hs_(film|ad|song|doc|montage|lib)$/.test(k))C.persist(k,v);else try{localStorage.setItem(k,v)}catch(x){}});await new Promise(r=>setTimeout(r,400))};
+/* رفع: كل الشغل + (اختياري) ملفات المونتاج */
+C.backupToDrive=async function(withMedia,log){log=log||(()=>{});if(!(await C.gdConnect()))return false;const fid=await folder();const d=await C.backupCollect();d.media=[];
+ if(withMedia){let M=[];try{const J=JSON.parse(d.keys.hs_montage||'{}');M=(J.media||[]).slice();if(J.logo)M.push({id:'logo',name:'logo-'+(J.logo.name||'')})}catch(e){}const up=await C.gdFind("appProperties has { key='hsm' and value='1' }");
+  for(let i=0;i<M.length;i++){const m=M[i],ex=up.find(x=>x.appProperties&&x.appProperties.mid===m.id);if(ex){d.media.push({id:m.id,fid:ex.id});continue}
+   const r=await C.idb.get('hs_media_'+m.id);if(!r||!r.blob)continue;log('⬆️ برفع '+m.name+' ('+(i+1)+'/'+M.length+')…');
+   const id=await C.gdUpload('مونتاج - '+m.name,r.blob,{hsm:'1',mid:m.id},fid);d.media.push({id:m.id,fid:id})}}
+ log('⬆️ برفع النسخة…');const name='نسخة احتياطية - '+d.device+' - '+new Date().toLocaleString('ar-EG',{dateStyle:'medium',timeStyle:'short'})+'.json';
+ await C.gdUpload(name,new Blob([JSON.stringify(d)],{type:'application/json'}),{hsb:'1',dev:d.device},fid);
+ try{localStorage.setItem('hs_lastbk',String(Date.now()))}catch(e){}return true};
+C.backupList=async function(){if(!(await C.gdConnect()))return null;return C.gdFind("appProperties has { key='hsb' and value='1' }")};
+C.backupFromDrive=async function(id,withMedia,log){log=log||(()=>{});log('⬇️ بنزّل النسخة…');const d=await (await C.gdBlob(id)).text().then(JSON.parse);if(d.type!=='hisham-studios-backup')throw new Error('الملف ده مش نسخة احتياطية');
+ await C.backupApply(d);let n=0;if(withMedia&&d.media){for(let i=0;i<d.media.length;i++){const x=d.media[i];if((await C.idb.get('hs_media_'+x.id)))continue;log('⬇️ بنزّل ملف مونتاج '+(i+1)+'/'+d.media.length+'…');try{const b=await C.gdBlob(x.fid);await C.idb.set('hs_media_'+x.id,{blob:b,name:'',type:b.type});n++}catch(e){}}}
+ return {keys:Object.keys(d.keys||{}).length,media:n,at:d.at,device:d.device}};
 C.gdLoad=async function(id){return await (await f(API+'/drive/v3/files/'+id+'?alt=media')).json()};
 
 /* الشخصيات والأماكن المختارة بتتحفظ مع العمل على Drive، وبترجع للمكتبة لما تفتحه على جهاز تاني */
