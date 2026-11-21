@@ -1,6 +1,6 @@
 /* core.js — القلب المشترك للاستوديوهات الجديدة (صغير وآمن: ما بيلمسش الاستوديو القديم) */
 (function(){
-const CORE=window.CORE={};CORE.VER='html76';
+const CORE=window.CORE={};CORE.VER='html77';
 const $=CORE.$=id=>document.getElementById(id);
 CORE.esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 CORE.toast=function(m,ms){let t=$('coreToast');if(!t){t=document.createElement('div');t.id='coreToast';t.style.cssText='pointer-events:none;position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#0f172a;border:1px solid #38bdf8;color:#fff;padding:9px 14px;border-radius:12px;z-index:99;font-size:14px;max-width:90vw;text-align:center';document.body.appendChild(t)}
@@ -251,10 +251,11 @@ C.unpackWork=function(d){d=d||{};const L=d._lib;delete d._lib;let n=0;if(L){['ch
 C.work=function(o){const {ns,st,render}=o,P=()=>st.get();C._page={st,def:o.def,render,ns};
  const bar=()=>{let el=document.getElementById('wbar');if(!el){el=document.createElement('div');el.id='wbar';const h=document.querySelector('header');h.parentNode.insertBefore(el,h.nextSibling)}
   el.innerHTML=`<div style="display:flex;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap"><span style="font-size:13px;color:var(--muted)">📁</span><input id="wName" value="${esc(P().wname||'')}" placeholder="اسم العمل" style="flex:1;min-width:120px;padding:6px 8px;font-size:14px">
-  <button class="b" data-w="save" style="margin:0">☁️ حفظ</button><button class="b" data-w="open" style="margin:0">📂 فتح</button><button class="b" data-w="new" style="margin:0">🆕 جديد</button><button class="b bl" data-w="check" style="margin:0">🔎 فحص</button><button class="b" data-w="tools" style="margin:0">🧰 أدوات</button></div>${dirty()?'<div style="background:#422006;color:#fcd34d;font-size:12px;padding:3px 12px">● فيه تعديلات ما اتحفظتش على Drive</div>':''}`};
+  <button class="b" data-w="save" style="margin:0">☁️ حفظ</button><button class="b" data-w="open" style="margin:0">📂 فتح</button><button class="b" data-w="new" style="margin:0">🆕 جديد</button><button class="b bl" data-w="check" style="margin:0">🔎 فحص</button><button class="b" data-w="tools" style="margin:0">🧰 أدوات</button><button class="b r" data-w="wipe" style="margin:0" title="مشروع جديد: امسح كل القديم">🧹</button></div><div id="wbDirty">${dirty()?DB:''}</div>`};
+ const DB='<div style="background:#422006;color:#fcd34d;font-size:12px;padding:3px 12px">● فيه تعديلات ما اتحفظتش على Drive</div>';
  C._wbar=bar;
- const DK='hs_dirty_'+ns,dirty=()=>!!localStorage.getItem(DK)&&JSON.stringify(P())!==JSON.stringify(Object.assign({},o.def,{step:0}));
- const sv0=st.save;st.save=function(){sv0.apply(st,arguments);if(!localStorage.getItem(DK)){try{localStorage.setItem(DK,'1')}catch(e){}bar()}};
+ const DK='hs_dirty_'+ns,dirty=()=>!!localStorage.getItem(DK)&&JSON.stringify(Object.assign({},P(),{step:0}))!==JSON.stringify(Object.assign({},o.def,{step:0}));
+ const sv0=st.save;st.save=function(){sv0.apply(st,arguments);if(!localStorage.getItem(DK)){try{localStorage.setItem(DK,'1')}catch(e){}}const w=document.getElementById('wbDirty');if(w){const h=dirty()?DB:'';if(w.innerHTML!==h)w.innerHTML=h}else bar()};
  const clean=()=>{try{localStorage.removeItem(DK)}catch(e){}bar()};
  C.workDirty=dirty;
  C._rerender=render;
@@ -298,7 +299,7 @@ C.work=function(o){const {ns,st,render}=o,P=()=>st.get();C._page={st,def:o.def,r
    if(a==='apply'){let v=ta.value;if(!v.trim()){alert('الصق الرد الأول');return}const m=v.match(/===\s*بداية\s*===([\s\S]*?)===\s*نهاية\s*===/);if(m)v=m[1].trim();else if(!confirm('الرد مفيهوش علامات ===بداية=== و===نهاية===. أطبّق الرد كله؟'))return;
     st.snap('قبل تطبيق الفحص',true);const r=o.check.apply(v);if(r===false)return;P().chkPaste='';st.save();ov.remove();render();C.toast('✅ اتطبق التصحيح ('+r+')')}}}
  document.addEventListener('input',e=>{if(e.target.id==='wName'){P().wname=e.target.value;st.save()}});
- document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w;if(a==='save')save();if(a==='open')openBox();if(a==='new')nw();if(a==='check')check();if(a==='tools')C.toolsMenu(o,st,render,bar);if(a==='lessons')C.lessonsBox();if(a==='pub'){const t=C.pubPrompt(o.ctx?o.ctx():'');C.copy(t,'اتنسخ أمر حزمة النشر ✓')}});
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w;if(a==='save')save();if(a==='open')openBox();if(a==='new')nw();if(a==='check')check();if(a==='tools')C.toolsMenu(o,st,render,bar);if(a==='wipe')C.wipeBox();if(a==='lessons')C.lessonsBox();if(a==='pub'){const t=C.pubPrompt(o.ctx?o.ctx():'');C.copy(t,'اتنسخ أمر حزمة النشر ✓')}});
  bar();
  const qo=new URLSearchParams(location.search).get('open');
  if(qo)setTimeout(async()=>{history.replaceState(null,'',location.pathname);if(!(await C.leaveOk()))return;if(!(await C.gdConnect()))return;try{C.toast('⏳ بفتح العمل…',8000);const d=C.unpackWork(await C.gdLoad(qo));st.snap('قبل فتح عمل من Drive',true);st.set(d);clean();render();C.toast('اتفتح ✓')}catch(x){C.toast('⚠️ '+x.message,4000)}},300)};
@@ -777,4 +778,42 @@ C.agentKeyHTML=function(){const has=!!C.gemKey();return `<details${has?'':' open
  <div class="m" style="font-size:11px">نسخة البرنامج: ${C.VER}</div><div style="display:flex;gap:4px;margin:6px 0">${[['fast','⚡ سريع'],['balanced','⚖️ متوازن'],['deep','🧠 دقيق']].map(x=>`<button class="b${C.gemSpeed()===x[0]?' g':''}" data-gs="${x[0]}" style="flex:1;margin:0;padding:6px">${x[1]}</button>`).join('')}</div><div class="m" style="font-size:11px">سريع: رد في ثواني للطلبات العادية. دقيق: بيفكر أكتر، أبطأ وأحسن للسيناريو الكامل والبحث.</div><div style="display:flex;gap:6px"><input type="password" id="gemKeyIn" placeholder="AIza..." value="${has?'••••••••':''}" style="flex:1;direction:ltr"><button class="b" data-gk="save" style="margin:0">حفظ</button>${has?'<button class="b r" data-gk="del" style="margin:0">🗑️</button>':''}</div></details>`};
 document.addEventListener('click',e=>{const g=e.target.closest('[data-gs]');if(g){try{localStorage.setItem('hs_gemspeed',g.dataset.gs)}catch(x){}C.toast('السرعة: '+g.textContent.trim());C._rerender&&C._rerender();return}const b=e.target.closest('[data-gk]');if(!b)return;if(b.dataset.gk==='del'){C.setGemKey('');C.toast('اتشال المفتاح');C._rerender&&C._rerender();return}
  const v=(document.getElementById('gemKeyIn')||{}).value||'';if(!v||/^•+$/.test(v)){C.toast('الصق المفتاح الأول');return}C.setGemKey(v);C.toast('🔑 اتحفظ المفتاح ✓');C._rerender&&C._rerender()});
+})();
+
+/* ================= 🧹 مشروع جديد: مسح كل القديم ================= */
+(function(){const C=window.CORE,esc=C.esc;
+const G=[['works','🎬 الأعمال الحالية في كل الاستوديوهات','مع سجل النسخ 🕘 وملفات المونتاج',1],
+ ['lib','👥 مكتبة الشخصيات والأماكن والأدوات والكادرات','بصورها وأصواتها',1],
+ ['content','⚡ أفكار وردود وسجل أداء وبراندات المحتوى السريع','',1],
+ ['learn','🪝 بنك الهوكات وسجل الدروس','',1],
+ ['old','🧰 الاستوديو الكامل القديم','حلقاته وصوره، ومش بتدخل في نسخة Drive، يعني مش هترجع',0]];
+const RX={works:/^hs_(film|ad|song|doc|montage|content)$|^hs_(hist_|dirty_|ts~|media_)/,lib:/^hs_lib$/,content:/^hs_cs_/,learn:/^hs_(hooks|lessons)$/,
+ old:/^(studio5s_v2|ez_cur|ez_paste|ez_projlist|ez_step|ez_undo|studio_shortundo|studio_bkProg|studio_bkSnooze|studio_lastBackup)$/};
+const OLDDB=['ez_state','studio_charimg','ez_imgs','ez_projs'];
+const delDb=n=>new Promise(r=>{try{const q=indexedDB.deleteDatabase(n);q.onsuccess=q.onerror=q.onblocked=()=>r()}catch(e){r()}});
+C.wipe=async function(sel){const rx=sel.map(k=>RX[k]).filter(Boolean),hit=k=>rx.some(r=>r.test(k));let n=0;
+ Object.keys(localStorage).filter(hit).forEach(k=>{localStorage.removeItem(k);n++});
+ for(const k of await C.idb.keys())if(hit(k)){await C.idb.del(k);n++}
+ if(sel.includes('lib')){try{localStorage.setItem('hs_lib_imp','1')}catch(e){}C.lib&&['chars','places','props','frames'].forEach(t=>{if(Array.isArray(C.lib[t]))C.lib[t].length=0})}
+ if(sel.includes('old'))for(const d of OLDDB){await delDb(d);n++}
+ return n};
+C.wipeBox=function(){let o=document.getElementById('wipeBox');if(o)o.remove();o=document.createElement('div');o.id='wipeBox';o.style.cssText='position:fixed;inset:0;z-index:99;background:#000d;display:flex;align-items:flex-end';
+ const lb=+(localStorage.getItem('hs_lastbk')||0),fresh=Date.now()-lb<15*60000;
+ o.innerHTML=`<style>#wipeBox .b{background:#1e293b;color:#f8fafc;border:1px solid #334155;border-radius:10px;padding:10px 12px;font-family:inherit;font-size:15px;cursor:pointer}#wipeBox .b.g{background:#10b981;border-color:#10b981;color:#04130d;font-weight:700}#wipeBox .m{color:#94a3b8;font-size:13px;line-height:1.7}#wipeBox .l{display:block;font-size:13px;color:#cbd5e1;margin:10px 0 4px}#wipeBox input#wpOk{width:100%;box-sizing:border-box;background:#0b1220;color:#fff;border:1px solid #334155;border-radius:10px;padding:9px;font-family:inherit;font-size:15px}</style><div style="background:#0f172a;border:1px solid #ef4444;border-radius:16px 16px 0 0;width:100%;max-height:92vh;overflow:auto;padding:14px;color:#fff;font-family:inherit">
+ <b style="font-size:17px">🧹 مشروع جديد: امسح كل القديم</b>
+ <div class="m" style="margin:6px 0">الخطوة الأولى: اعمل نسخة على Drive، عشان لو احتجت أي حاجة بعدين ترجّعها من الصفحة الرئيسية.</div>
+ <button class="b g" data-wp="bk" style="width:100%;margin:0">☁️ اعمل نسخة على Drive الأول</button><div id="wpMsg" class="m" style="margin-top:4px">${fresh?'<span style="color:#86efac">✓ فيه نسخة اتعملت من شوية</span>':''}</div>
+ <div class="m" style="margin-top:10px">امسح إيه؟</div>
+ ${G.map(g=>`<label style="display:flex;gap:10px;align-items:center;border-top:1px dashed #334155;padding:8px 0;font-size:14px"><input type="checkbox" data-wg="${g[0]}" ${g[3]?'checked':''} style="width:22px;height:22px;flex:0 0 auto"><span>${g[1]}${g[2]?`<br><span class="m" style="font-size:12px">${esc(g[2])}</span>`:''}</span></label>`).join('')}
+ <div class="m" style="font-size:12px;margin-top:6px">مفتاح Gemini وربط Drive والإعدادات مش هيتمسحوا. والمسح على الجهاز ده بس، وأعمالك المحفوظة على Drive بتفضل زي ما هي.</div>
+ <label class="l">اكتب كلمة <b>امسح</b> للتأكيد</label><input id="wpOk" autocomplete="off">
+ <button class="b" data-wp="go" style="width:100%;margin:10px 0 0;background:#b91c1c;border-color:#b91c1c;color:#fff;font-weight:700">🗑️ امسح وابدأ من الصفر</button>
+ <button class="b" data-wp="x" style="width:100%;margin:8px 0 0">إلغاء</button></div>`;
+ document.body.appendChild(o);const msg=t=>{o.querySelector('#wpMsg').textContent=t};
+ o.onclick=async e=>{const b=e.target.closest('[data-wp]');if(e.target===o||(b&&b.dataset.wp==='x')){o.remove();return}if(!b)return;
+  if(b.dataset.wp==='bk'){b.disabled=true;try{const ok=await C.backupToDrive(false,msg);msg(ok?'✓ اتعملت النسخة على Drive':'اتلغت النسخة')}catch(x){msg('⚠️ '+x.message)}b.disabled=false;return}
+  const sel=[...o.querySelectorAll('[data-wg]')].filter(x=>x.checked).map(x=>x.dataset.wg);if(!sel.length){C.toast('علّم حاجة تتمسح');return}
+  if(o.querySelector('#wpOk').value.trim()!=='امسح'){C.toast('اكتب «امسح» في الخانة للتأكيد');o.querySelector('#wpOk').focus();return}
+  if(Date.now()-(+(localStorage.getItem('hs_lastbk')||0))>15*60000&&!confirm('ما عملتش نسخة على Drive دلوقتي، والمسح مالوش رجوع. تمسح برضه؟'))return;
+  b.disabled=true;b.textContent='⏳ بمسح…';const n=await C.wipe(sel);C._leaving=true;C.toast('🧹 اتمسح ('+n+' عنصر). بداية جديدة ✓',3000);setTimeout(()=>location.replace(location.pathname),700)}};
 })();
