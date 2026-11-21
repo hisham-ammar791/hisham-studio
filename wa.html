@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090d16">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ردود الصيدلية">
+<title>ردود واتساب للصيدلية</title>
+<style>
+@font-face{font-family:Cairo;src:url(fonts/cairo-arabic.woff2) format("woff2");font-display:swap}
+:root{--bg:#090d16;--card:#131c2e;--panel:#1e293b;--accent:#25d366;--text:#f8fafc;--muted:#94a3b8;--border:#334155}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Cairo,system-ui,sans-serif;padding-bottom:80px}
+header{padding:12px;position:sticky;top:0;background:#090d16ee;z-index:5;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+header h1{font-size:17px;margin:0;flex:1}
+header a{color:var(--muted);text-decoration:none;font-size:13px}
+main{padding:0 12px;max-width:720px;margin:0 auto}
+.c{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0}
+.c h3{margin:0 0 6px;font-size:16px}
+.m{color:var(--muted);font-size:13px;line-height:1.8}
+label{display:block;font-size:13px;color:#cbd5e1;margin:10px 0 4px}
+input,textarea{width:100%;background:#0b1220;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px;font-family:inherit;font-size:15px}
+textarea{resize:vertical;min-height:90px;line-height:1.7}
+.row{display:flex;gap:8px}.row>div{flex:1;min-width:0}
+.b{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:14px;cursor:pointer;margin:6px 0 0 6px}
+.b.g{background:var(--accent);border-color:var(--accent);color:#04130d;font-weight:700}
+.b.r{color:#fca5a5}
+.sc{display:inline-block;background:#0b1220;border:1px solid var(--border);border-radius:99px;padding:1px 10px;font-size:13px;color:#86efac;direction:ltr}
+.st{display:inline-block;border-radius:99px;padding:2px 12px;font-size:13px;font-weight:700}
+.st.on{background:#14532d;color:#bbf7d0}.st.off{background:#7f1d1d;color:#fecaca}
+.chk{display:flex;align-items:center;gap:8px;margin-top:10px}.chk input{width:22px;height:22px}
+.rp{border-top:1px dashed var(--border);padding:10px 0}
+.rp b{font-size:15px}
+ol{padding-right:20px;margin:6px 0;line-height:1.9;font-size:14px;color:#cbd5e1}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#065f46;color:#fff;padding:9px 16px;border-radius:99px;font-size:14px;display:none;z-index:9}
+</style>
+</head>
+<body>
+<header><a href="index.html">← الرئيسية</a><h1>🏪 ردود واتساب للصيدلية</h1></header>
+<main>
+
+<div class="c">
+ <h3 id="nm">—</h3>
+ <div class="m">الحالة الآن: <span id="stat" class="st"></span></div>
+ <div class="m" style="margin-top:6px">الصفحة دي بتجهّز لك الردود الجاهزة لواتساب بيزنس بدون ذكاء اصطناعي ولا اشتراك، وبتشتغل أوفلاين. عدّل البيانات تحت والردود بتتحدّث لوحدها.</div>
+</div>
+
+<div class="c">
+ <h3>⚙️ بيانات الصيدلية</h3>
+ <label>اسم الصيدلية</label><input id="f_name">
+ <div class="row"><div><label>بتفتح الساعة</label><input id="f_from" type="time"></div><div><label>بتقفل الساعة</label><input id="f_to" type="time"></div></div>
+ <label>رقم واتساب الصيدلية (اختياري، للرابط المباشر)</label><input id="f_phone" inputmode="tel" placeholder="مثال: 01012345678">
+ <label>العنوان (اختياري)</label><input id="f_addr" placeholder="الشارع / المنطقة / علامة مميزة">
+ <div class="chk"><input type="checkbox" id="f_deliv"><span>فيه توصيل</span></div>
+ <div class="row"><div><label>مدة التوصيل التقريبية</label><input id="f_dtime" placeholder="نص ساعة"></div><div><label>مصاريف التوصيل (اختياري)</label><input id="f_dfee" placeholder="مثال: ١٥ جنيه"></div></div>
+ <label>منطقة التوصيل (اختياري)</label><input id="f_darea" placeholder="مثال: داخل الحي وما حوله">
+ <label>طرق الدفع</label><input id="f_pay" placeholder="كاش عند الاستلام، فودافون كاش…">
+ <button class="b" data-a="save">💾 حفظ</button>
+ <button class="b" data-a="link">🔗 رابط بإعداداتك لموبايل الصيدلية</button>
+</div>
+
+<div class="c">
+ <h3>📋 الردود الجاهزة</h3>
+ <div class="m">اضغط «نسخ» على كل رد، وبعدين الصقه في واتساب بيزنس (الخطوات تحت). الاختصار هو اللي هتكتبه بعد <b>/</b> في أي محادثة.</div>
+ <button class="b g" data-a="copyall">📋 نسخ كل الردود مرتبة</button>
+ <div id="list"></div>
+</div>
+
+<div class="c">
+ <h3>🚀 خطوات التفعيل على موبايل الصيدلية</h3>
+ <ol>
+  <li>افتح <b>WhatsApp Business</b> ← النقاط الثلاث ← <b>أدوات الأعمال</b>.</li>
+  <li><b>رسالة الترحيب:</b> فعّلها والصق ردّ «الترحيب».</li>
+  <li><b>رسالة الغياب:</b> فعّلها، اختار «جدول مخصص» وحدد مواعيد الصيدلية، والصق ردّ «خارج الدوام».</li>
+  <li><b>الردود السريعة:</b> اضغط ➕ والصق الرد واكتب اختصاره (من الأعلى)، وكرر لكل رد.</li>
+  <li>في أي محادثة اكتب <b>/</b> وهتظهر لك الردود، اختار واحد وابعت.</li>
+ </ol>
+ <div class="m">لو الصيدلية بتستخدم واتساب العادي مش بيزنس، حمّل WhatsApp Business (مجاني) وانقل الرقم له.</div>
+</div>
+
+<div class="c">
+ <h3>🔗 رابط محادثة مباشر</h3>
+ <div class="m">حط الرابط على صفحة الفيسبوك أو الباب أو الاستيكر، والعميل يضغط فيفتح لك واتساب برسالة جاهزة.</div>
+ <input id="wal" readonly onclick="this.select()" placeholder="اكتب رقم واتساب فوق عشان الرابط يظهر">
+ <button class="b" data-a="copywal">📋 نسخ الرابط</button>
+</div>
+
+</main>
+<div id="toast"></div>
+<script>
+(function(){
+const KEY='hs_wa_pharm';
+const DEF={name:'صيدلية هشام عمار',from:'10:00',to:'02:00',phone:'',addr:'',deliv:true,dtime:'نص ساعة',dfee:'',darea:'',pay:'كاش عند الاستلام',ov:{}};
+let S=Object.assign({},DEF,{ov:{}});
+try{const r=JSON.parse(localStorage.getItem(KEY)||'null');if(r)S=Object.assign({},DEF,r,{ov:r.ov||{}})}catch(e){}
+const $=id=>document.getElementById(id);
+const AR=s=>String(s).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+function fmt(t){const h=+String(t||'0:0').split(':')[0],m=+String(t||'0:0').split(':')[1]||0;
+ const mm=m?':'+String(m).padStart(2,'0'):'';
+ if(h===0&&!m)return'١٢ منتصف الليل';
+ if(h===12)return AR('12'+mm)+' ظهرًا';
+ if(h<12)return AR(h+mm)+' صباحًا';
+ return AR((h-12)+mm)+' مساءً'}
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',1800)}
+function isOpen(){const n=new Date(),now=n.getHours()*60+n.getMinutes();
+ const [a,b]=S.from.split(':'),[c,d]=S.to.split(':');const f=+a*60+(+b),t=+c*60+(+d);
+ if(f===t)return true;return f<t?(now>=f&&now<t):(now>=f||now<t)}
+function T(){
+ const n=S.name||'الصيدلية',hrs='من '+fmt(S.from)+' إلى '+fmt(S.to);
+ const dl=S.deliv?('بنوصّل لحد بابك 🛵'+(S.darea?' ('+S.darea+')':'')+(S.dtime?' في خلال '+S.dtime+' تقريبًا':'')+(S.dfee?'، ومصاريف التوصيل '+S.dfee:'')+'.'):'حاليًا مفيش توصيل، تقدر تعدّي علينا.';
+ const L=[
+ ['welcome','ترحيب','ترحيب','أهلًا بيك في '+n+' 🌿\nابعت اسم الدواء أو صورة الروشتة، وهنرد عليك بالمتوفر والسعر في دقايق.\nمواعيدنا '+hrs+'.'],
+ ['away','خارج الدوام','غياب','أهلًا بيك في '+n+' 🌙\nإحنا قافلين دلوقتي، ومواعيدنا '+hrs+'.\nسيب طلبك وهنرد عليك أول ما نفتح.\nلو الحالة طارئة روح أقرب مستشفى.'],
+ ['hours','المواعيد','مواعيد','مواعيد '+n+': '+hrs+' ⏰\n'+(S.deliv?'والتوصيل شغال طول المواعيد دي.':'')],
+ ['deliv','التوصيل','توصيل',dl+'\nابعت الطلب والعنوان وهنأكد لك الإجمالي.'],
+ ['rx','ابعت الروشتة','روشتة','ابعتلنا صورة الروشتة واضحة 📸 وهنقولك المتوفر والسعر والبدائل لو فيه حاجة ناقصة.'],
+ ['ask','اسم الدواء','دواء','ابعت اسم الدواء والتركيز (مثلًا 500 مجم) وعدد العلب، وهنرد عليك بالمتوفر والسعر.'],
+ ['price','السعر','سعر','لحظة نراجع السعر والتوافر ونرد عليك 🌿'],
+ ['alt','مفيش الدواء','بديل','الصنف ده مش متوفر عندنا دلوقتي. عندنا بدائل بنفس المادة الفعالة، تحب أقولك عليها؟'],
+ ['addr','العنوان','عنوان',S.addr?('عنوان '+n+': '+S.addr+' 📍'):('ابعتلنا موقعك وهنوضح لك أقرب طريق لـ'+n+' 📍')],
+ ['pay','طريقة الدفع','دفع',S.pay?('طرق الدفع: '+S.pay+'.\nلو تحويل، ابعت صورة التحويل بعد ما تحوّل.'):'ابعت طريقة الدفع اللي تناسبك.'],
+ ['got','استلمنا الطلب','طلب','استلمنا طلبك ✓ بنجهزه دلوقتي.'+(S.deliv?' وهنبعتلك أول ما يخرج للتوصيل.':' وهنبلّغك أول ما يبقى جاهز.')],
+ ['out','الطلب خرج','خرج',S.deliv?('طلبك خرج مع المندوب 🛵'+(S.dtime?' ويوصلك في خلال '+S.dtime+' تقريبًا':'')+'.\nلو محتاج حاجة تانية قولنا.'):'طلبك جاهز، تقدر تعدّي تستلمه.'],
+ ['ready','الطلب جاهز','جاهز','طلبك جاهز ✓ تقدر تعدّي تستلمه في أي وقت خلال مواعيدنا.'],
+ ['renew','تذكير تجديد','تجديد','أهلًا بيك 🌿 علاجك المعتاد قرّب يخلص. نجهزهولك'+(S.deliv?' ونبعته زي كل مرة؟':'؟')],
+ ['advice','سؤال طبي','استشارة','للاستفسار عن دواء ابعت اسمه وعمرك والحالة بإيجاز، وهيرد عليك الصيدلي. ولو فيه أعراض شديدة أو حالة طارئة روح الطوارئ فورًا.'],
+ ['thanks','شكر','شكرا','شكرًا لثقتك في '+n+' 🌿 ولو احتجت أي حاجة إحنا موجودين.']];
+ return L}
+function val(k,d){return S.ov[k]!=null?S.ov[k]:d}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function render(){
+ $('nm').textContent='🏪 '+(S.name||'الصيدلية');
+ const o=isOpen();const e=$('stat');e.className='st '+(o?'on':'off');e.textContent=o?'🟢 مفتوحين':'🔴 مقفولين (مواعيدنا '+fmt(S.from)+' – '+fmt(S.to)+')';
+ $('list').innerHTML=T().map(x=>{const k=x[0],txt=val(k,x[3]);
+  return '<div class="rp"><b>'+esc(x[1])+'</b> <span class="sc">/'+esc(x[2])+'</span><textarea data-k="'+k+'">'+esc(txt)+'</textarea>'+
+  '<button class="b g" data-a="copy" data-k="'+k+'">📋 نسخ</button><button class="b" data-a="reset" data-k="'+k+'">↺ الأصل</button></div>'}).join('');
+ const p=(S.phone||'').replace(/\D/g,'');
+ $('wal').value=p?('https://wa.me/'+(p.startsWith('0')?'2'+p:p)+'?text='+encodeURIComponent('أهلًا، عايز أستفسر عن دواء')):''}
+function fill(){$('f_name').value=S.name;$('f_from').value=S.from;$('f_to').value=S.to;$('f_phone').value=S.phone;$('f_addr').value=S.addr;$('f_deliv').checked=!!S.deliv;$('f_dtime').value=S.dtime;$('f_dfee').value=S.dfee;$('f_darea').value=S.darea;$('f_pay').value=S.pay}
+function read(){S.name=$('f_name').value.trim();S.from=$('f_from').value||'10:00';S.to=$('f_to').value||'02:00';S.phone=$('f_phone').value.trim();S.addr=$('f_addr').value.trim();S.deliv=$('f_deliv').checked;S.dtime=$('f_dtime').value.trim();S.dfee=$('f_dfee').value.trim();S.darea=$('f_darea').value.trim();S.pay=$('f_pay').value.trim()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function cp(t){
+ const done=()=>toast('✓ اتنسخ');
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,fb)}else fb();
+ function fb(){const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();try{document.execCommand('copy');done()}catch(e){toast('انسخ يدويًا')}a.remove()}}
+function shareLink(){const d=Object.assign({},S);const j=btoa(unescape(encodeURIComponent(JSON.stringify(d))));
+ return location.origin+location.pathname+'#c='+j}
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.dataset&&t.dataset.k){S.ov[t.dataset.k]=t.value;save();return}
+ if(t.id&&t.id.indexOf('f_')===0){read();save();const lst=$('list');const ae=document.activeElement;
+  // أعد رسم القائمة بدون فقد التركيز في الحقول
+  const keep=ae&&ae.id;render();if(keep)$(keep).focus&&$(keep).focus()}});
+document.addEventListener('change',e=>{if(e.target.id==='f_deliv'){read();save();render()}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,k=b.dataset.k;
+ if(a==='save'){read();save();render();toast('✓ اتحفظ')}
+ else if(a==='copy'){const ta=document.querySelector('textarea[data-k="'+k+'"]');cp(ta?ta.value:'')}
+ else if(a==='reset'){delete S.ov[k];save();render()}
+ else if(a==='copyall'){const s=T().map(x=>'▪️ '+x[1]+'  (/'+x[2]+')\n'+val(x[0],x[3])).join('\n\n———\n\n');cp(s)}
+ else if(a==='copywal'){const v=$('wal').value;if(v)cp(v);else toast('اكتب رقم واتساب أولًا')}
+ else if(a==='link'){read();save();const l=shareLink();cp(l);toast('✓ الرابط اتنسخ، ابعته لموبايل الصيدلية')}});
+// استيراد الإعدادات من الرابط (موبايل الصيدلية)
+try{const m=/#c=([^&]+)/.exec(location.hash);if(m){const r=JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+ if(r&&typeof r==='object'){S=Object.assign({},DEF,r,{ov:r.ov||{}});save();history.replaceState(null,'',location.pathname);setTimeout(()=>toast('✓ اتحمّلت إعدادات الصيدلية'),300)}}}catch(e){}
+fill();render();setInterval(()=>{const o=isOpen(),e=$('stat');e.className='st '+(o?'on':'off');e.textContent=o?'🟢 مفتوحين':'🔴 مقفولين (مواعيدنا '+fmt(S.from)+' – '+fmt(S.to)+')'},60000);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
