@@ -35,6 +35,7 @@ a.c:active{background:#162036}
  <a class="c on" href="film.html"><div class="i">🎬</div><b>أفلام ومسلسلات</b><span>قصة، ذاكرة مسلسل، لقطات، ريلز.</span><div class="st" data-st="film"></div></a>
  <a class="c on" href="ad.html"><div class="i">📣</div><b>إعلانات</b><span>فيديو، صوتي، بوست، بوستر.</span><div class="st" data-st="ad"></div></a>
  <a class="c on" href="song.html"><div class="i">🎼</div><b>أغاني وكليب</b><span>كلمات، Suno، كليب أو صورة متحركة.</span><div class="st" data-st="song"></div></a>
+ <a class="c on" href="content.html"><div class="i">⚡</div><b>محتوى سريع</b><span>أفكار وهوكات، كاروسيل، ريلز بدون وش، خطة نشر، فحص صحي، ردود، أداء.</span><div class="st" data-st="content"></div></a>
  <a class="c on" href="doc.html"><div class="i">🎙️</div><b>برامج ووثائقي وشرح</b><span>بحث بمصادر، بودكاست، وايت بورد وخرائط.</span><div class="st" data-st="doc"></div></a>
  <a class="c on" href="song-fix.html"><div class="i">🎵</div><b>مُصلّح الأغنية</b><span>استبدال الجزء الغلط في أغنية Suno.</span></a>
  <a class="c on" href="montage.html"><div class="i">🎞️</div><b>استوديو المونتاج</b><span>ارفع لقطاتك، اكتب اللي عايزه، والفريق يعمل المونتاج والتلوين والصوت.</span><div class="st" data-st="montage"></div></a>
@@ -52,7 +53,7 @@ a.c:active{background:#162036}
 <div class="ft">داخل الاستوديو: زر 🏠 يرجعك هنا، وزر 🕘 يفتح سجل النسخ.</div>
 <script src="core.js"></script>
 <script>
-const ST=[['film','🎬','أفلام ومسلسلات'],['ad','📣','إعلانات'],['song','🎼','أغاني وكليب'],['doc','🎙️','برامج ووثائقي'],['montage','🎞️','مونتاج']];
+const ST=[['film','🎬','أفلام ومسلسلات'],['ad','📣','إعلانات'],['song','🎼','أغاني وكليب'],['doc','🎙️','برامج ووثائقي'],['montage','🎞️','مونتاج'],['content','⚡','محتوى سريع']];
 const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function dash(){ST.forEach(async([ns])=>{const el=document.querySelector('[data-st="'+ns+'"]');if(!el)return;let P={};try{P=JSON.parse(localStorage.getItem('hs_'+ns)||(await CORE.restoreBig('hs_'+ns))||'{}')}catch(e){}
  const sh=P.shots||[],dn=sh.filter(x=>x.done).length,has=(P.wname||P.idea||P.script||P.lyrics||P.topic||P.bName||P.title||sh.length),dirty=localStorage.getItem('hs_dirty_'+ns),ps=CORE.pubStatus(P);

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090d16">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="محتوى سريع">
+<title>استوديو المحتوى السريع</title>
+<style>
+@font-face{font-family:Cairo;src:url(fonts/cairo-arabic.woff2) format("woff2");font-display:swap}
+:root{--bg:#090d16;--card:#131c2e;--panel:#1e293b;--accent:#10b981;--blue:#3b82f6;--warn:#f59e0b;--text:#f8fafc;--muted:#94a3b8;--border:#334155}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Cairo,system-ui,sans-serif;padding-bottom:90px}
+header{display:flex;align-items:center;gap:8px;padding:10px 12px;position:sticky;top:0;background:#090d16ee;z-index:5;border-bottom:1px solid var(--border)}
+header h1{font-size:17px;margin:0;flex:1}
+nav{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;scrollbar-width:none}
+nav button{flex:0 0 auto;white-space:nowrap}
+main{padding:0 12px}
+.c{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0}
+.c h3{margin:0 0 6px;font-size:16px}
+.m{color:var(--muted);font-size:13px;line-height:1.7}
+label.l{display:block;font-size:13px;color:#cbd5e1;margin:10px 0 4px}
+input,textarea,select{width:100%;background:#0b1220;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px;font-family:inherit;font-size:15px}
+textarea{resize:vertical}
+input[type=checkbox]{width:22px;height:22px;flex:0 0 auto}
+.row{display:flex;gap:8px}.row>div{flex:1;min-width:0}
+.b{background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:14px;cursor:pointer;margin:6px 4px 0 0}
+.b.g{background:var(--accent);border-color:var(--accent);color:#04130d;font-weight:700}
+.b.bl{background:#1d4ed8;border-color:#1d4ed8}
+.b.r{color:#fca5a5}
+.b.s{padding:5px 9px;font-size:13px}
+.pair{display:flex;gap:6px;margin-top:8px}.pair .b{margin:0}.pair .b:first-child{flex:1}
+.it{border-top:1px dashed var(--border);padding:8px 0}
+.it b{font-size:14.5px}
+.hk{font-size:14px;color:#fde68a;margin-top:3px}
+.tag{display:inline-block;font-size:11px;background:#1e293b;border-radius:99px;padding:1px 8px;color:#cbd5e1;margin:3px 3px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.chips .b{margin:0}
+.sl{border:1px solid var(--border);border-radius:12px;padding:10px;margin:10px 0;background:#0f172a}
+.ok{color:#86efac}.bad{color:#fca5a5}.wr{color:#fcd34d}
+.qr{border-right:3px solid #f59e0b;padding:6px 10px;margin:8px 0;background:#1c1407;border-radius:8px;font-size:14px;line-height:1.7}
+.qr mark{background:#7f1d1d;color:#fff;border-radius:4px;padding:0 3px}
+.st{display:flex;gap:8px;align-items:center;font-size:14px;padding:4px 0}.st span:first-child{flex:1}
+.bar{height:8px;border-radius:99px;background:#10b981}
+.dn{opacity:.55}
+.ltr{direction:ltr;text-align:left}
+</style>
+</head>
+<body>
+<header><button class="b" data-a="home" style="margin:0">🏠</button><h1>⚡ استوديو المحتوى السريع</h1><button class="b" data-a="hist" style="margin:0" title="سجل النسخ">🕘</button></header>
+<nav id="nav"></nav>
+<main id="app"></main>
+<script src="core.js"></script>
+<script src="fieldtools.js"></script>
+<script>
+const {esc,toast}=CORE;
+
+/* ================= ثوابت ================= */
+const NICHES=[['pharmacy','صيدلية وصحة'],['nutrition','تغذية ودايت'],['skin','تجميل وعناية بالبشرة'],['hair','عناية بالشعر'],['mom','أمومة وأطفال'],['fitness','لياقة ورياضة'],['food','مطاعم وأكل'],['perfume','عطور'],['fashion','موضة وملابس'],['realestate','عقارات'],['edu','تعليم ودروس'],['tech','تكنولوجيا وتطبيقات'],['biz','تسويق وبيزنس'],['cars','سيارات'],['travel','سفر وسياحة'],['decor','ديكور وأثاث'],['clinic','عيادات وطب أسنان'],['self','تنمية ذاتية'],['fun','ترفيه وألعاب'],['mystery','غموض وحكايات'],['custom','✏️ مجال تكتبه أنت']];
+const HEALTHY=['pharmacy','nutrition','skin','hair','mom','fitness','clinic'];
+const TABS=['🧭 الصفحة','💡 أفكار وهوكات','♻️ فكرة ← ٤ صيغ','🖼️ كاروسيل','🎙️ ريلز بدون وش','🗓️ خطة النشر','✅ فحص صحي','💬 ردود جاهزة','📊 الأداء'];
+const GOALS=[['mix','مزيج متوازن'],['aware','توعية وقيمة'],['sell','بيع'],['engage','تفاعل وتعليقات'],['trust','ثقة وكواليس'],['viral','انتشار ومشاركة']];
+const FMTS=[['reel','ريلز'],['car','كاروسيل'],['post','بوست'],['story','ستوري'],['video','فيديو طويل'],['live','لايف']];
+const CKINDS=[['tips','نصايح مرقّمة'],['myth','خرافة وحقيقة'],['steps','خطوات (إزاي تعمل…)'],['mistakes','أخطاء شائعة'],['compare','مقارنة (ده ولا ده)'],['story','قصة على سلايدات'],['checklist','قايمة تتحفظ']];
+const CTEXT=[['clean','صورة بدون كلام، وأحط النص في Canva أو CapCut (أدق للعربي)'],['ai','الذكاء يكتب النص جوه الصورة']];
+const RSTYLES=[['broll','🎞️ تعليق على لقطات','لقطات متنوعة (المنتج، المكان، تفاصيل قريبة) والصوت هو اللي بيحكي؛ قطع كل 1.5 لـ3 ثواني'],
+ ['text','🔤 نص على الشاشة بس','جمل قصيرة كبيرة بتظهر على إيقاع الموسيقى فوق خلفية بسيطة أو لقطة واحدة؛ كل شاشة تتقري في ثانيتين'],
+ ['hands','✋ إيدين بس','كاميرا من فوق أو قريبة، والإيدين بتعرض المنتج أو الخطوات، من غير وش'],
+ ['char','🧸 شخصية كرتون أو 3D','شخصية من مكتبتك هي اللي بتقدّم وتتكلم بصوتها الثابت'],
+ ['slides','🖼️ صور متحركة وتعليق','صور ثابتة بحركة كاميرا بطيئة (Ken Burns) وتعليق صوتي'],
+ ['pov','👁️ POV','الكاميرا مكان عين المشاهد، والنص بيبدأ بـ «POV:»'],
+ ['screen','📱 شاشة موبايل','تسجيل شاشة أو موك أب موبايل مع تعليق؛ مناسب للتطبيقات والعروض والأسعار']];
+const RVOICE=[['mine','بصوتي أنا'],['ai','صوت ذكاء اصطناعي'],['none','بدون تعليق (موسيقى ونص)']];
+const HT=CORE.HOOKS.filter(x=>x[0]!=='auto').concat([['warn','تحذير']]);
+const HEALTH='قواعد المحتوى الصحي (إلزامي، أنت صيدلي مسؤول): ممنوع ادعاء علاج أو شفاء أو وقاية مؤكدة، وممنوع نتائج مضمونة أو نسب مطلقة، وممنوع أرقام أو دراسات مش موجودة فعلًا، وممنوع قبل/بعد مضلل، وممنوع التخويف المبالغ، وممنوع الترويج لأدوية الروشتة أو المضادات الحيوية للاستخدام من غير طبيب، وممنوع جرعات محددة في محتوى عام، و«طبيعي» لا تعني «آمن». مع الأطفال والحوامل والأمراض المزمنة اكتب «استشر الطبيب أو الصيدلي». متوافق مع ضوابط هيئة الدواء المصرية للإعلان عن المستحضرات. الصدق أولًا.';
+
+/* قوالب هوكات جاهزة (بالعامية، املا اللي بين القوسين) */
+const HF=[['shock','لو [المشكلة] بتحصلك كل يوم… إمتى آخر مرة سألت نفسك ليه؟'],['shock','تعرف إن [عادة يومية] ممكن تكون هي سبب [المشكلة]؟'],['shock','إيه اللي يخلي واحد يدفع ضعف التمن في [حاجة] غلط؟'],['shock','لو معاك ٣٠ ثانية بس: تختار [أ] ولا [ب]؟'],
+ ['number','٣ حاجات في [المجال] محدش هيقولهالك ببلاش.'],['number','جرّبت [الحاجة] ٧ أيام… وده اللي حصل بالظبط.'],['number','خطوة واحدة بتاخد دقيقتين وبتوفر عليك [النتيجة].'],['number','[رقم حقيقي من شغلك] — الرقم ده غيّر طريقتي في [المجال].'],
+ ['funny','الزبون: «[جملة حقيقية مضحكة]»… وأنا:'],['funny','أنا كل ما حد يقولي «[جملة بتتقال كتير]»:'],['funny','شكل [الجمهور] لما يكتشف إن [الحقيقة]:'],
+ ['secret','اللي بيحصل ورا الكاونتر لما تطلب [الحاجة].'],['secret','الحاجة اللي [أهل المجال] مش بيقولوها عن [المنتج].'],['secret','كواليس [الشغل] اللي عمرك ما شفتها.'],
+ ['reverse','بطّل [نصيحة مشهورة]… أيوه، زي ما سمعت.'],['reverse','[الحاجة الغالية] مش دايمًا أحسن من [الرخيصة]، وده الدليل.'],['reverse','أكبر غلطة في [المجال] هي الحاجة اللي الكل فاكرها صح.'],
+ ['cut','كنت هعمل [القرار]… لحد ما حصل ده.'],['cut','فيه حاجة غلط في الصورة دي. خدت بالك منها؟'],['cut','آخر حاجة توقعتها إن [الموقف]… استنى للآخر.'],
+ ['confront','«إنت بتبيعلي حاجة مش محتاجها!» — وده كان ردي.'],['confront','زبون قالي [اعتراض]… احكم أنت مين عنده حق.'],
+ ['pov','POV: أنت [الجمهور] وأول مرة [الموقف].'],['pov','POV: دخلت [المكان] وعايز [الحاجة] بسرعة.'],
+ ['challenge','اختبر نفسك: إيه الغلط في [الروتين/الصورة] ده؟'],['challenge','خمّن [السعر/الإجابة] قبل ما أقول… عندك ٥ ثواني.'],['challenge','لو بتعمل [عادة]، اكتبلي في التعليقات من إمتى.'],
+ ['end','النتيجة الأول: [النتيجة]. تعالى أقولك وصلنا لها إزاي.'],['end','ده شكل [الحاجة] بعد [المدة]… والبداية صعب تصدقها.'],
+ ['visual','(لقطة قريبة جدًا على [تفصيلة غريبة] ثانيتين من غير كلام، وبعدين الكشف)'],['visual','(إيد بتحط [حاجتين] جنب بعض… مين فيهم الصح؟)'],
+ ['sound','(صوت [حاجة مألوفة] عالي فجأة) — الصوت ده معناه إن [المعلومة].'],
+ ['warn','وقّف! ما تعملش [الحاجة] قبل ما تشوف ده.'],['warn','لو بتاخد [حاجة] مع [حاجة]، خلي بالك.'],['warn','العلامة دي على [المنتج] معناها إنه مش أصلي.'],['warn','الغلطة دي بتبوّظ [النتيجة] وإنت مش واخد بالك.']];
+
+/* ردود جاهزة أولية (تتعدل وتتمسح) */
+const RCATS=[['all','الكل'],['price','سعر'],['avail','توفّر'],['delivery','توصيل ومواعيد'],['consult','استشارة'],['complaint','شكوى'],['thanks','شكر'],['engage','تفاعل'],['custom','مخصص']];
+const RDEF=[['price','سؤال عن السعر','أهلًا يا {الاسم} 🌿 سعر {المنتج} النهارده {السعر}. تحب نجهزهولك ونبعته، ولا هتعدي علينا؟'],
+ ['price','السعر في التعليقات','بعتنالك التفاصيل والسعر في الرسائل يا {الاسم} 💬'],
+ ['avail','متوفر','متوفر يا {الاسم} ✓ ولو حابب نحجزهولك باسمك لحد ما تيجي، ابعتلنا رقمك.'],
+ ['avail','مش متوفر','للأسف {المنتج} خلصان دلوقتي، ومتوقع يوصل قريب. أبلغك أول ما يوصل؟ ولو مستعجل، الصيدلي يقدر يقولك على بديل مناسب بعد ما يعرف حالتك.'],
+ ['delivery','توصيل','أيوه بنوصّل لحد البيت 🛵 ابعتلنا العنوان ورقم الموبايل، والطلب يوصلك في أسرع وقت.'],
+ ['delivery','مواعيد','مواعيدنا من {من} لـ {إلى}. ولو محتاج حاجة ضروري بره المواعيد ابعتلنا هنا ونرد عليك أول ما نقدر.'],
+ ['consult','سؤال عن دواء أو جرعة','سؤالك مهم يا {الاسم}، والإجابة بتفرق حسب السن والوزن والأدوية التانية. ابعتلنا في الرسائل أو كلم الصيدلي على {الرقم} عشان يرد عليك بدقة. ولو الأعراض شديدة روح للطبيب فورًا.'],
+ ['consult','عايز تشخيص من صورة','مقدرش أحكم على الحالة من صورة، وده لمصلحتك. الأفضل كشف عند طبيب متخصص، وبعدها نساعدك في الروشتة.'],
+ ['consult','مضاد حيوي من غير روشتة','المضاد الحيوي من غير روشتة ممكن يضر أكتر ما يفيد، ويخلي البكتيريا تتعود عليه. تعالى نشوف الأعراض مع الصيدلي، ولو محتاج دكتور هنقولك بصراحة.'],
+ ['complaint','شكوى','حقك علينا يا {الاسم}، وآسفين على اللي حصل. ابعتلنا رقم الطلب في الرسائل ونحلها النهارده.'],
+ ['complaint','تعليق سلبي قدام الناس','شكرًا إنك قلت رأيك بصراحة. كلمناك في الرسائل عشان نفهم اللي حصل ونصلّحه.'],
+ ['thanks','شكر','تسلم يا {الاسم} ❤️ كلامك ده بيفرق معانا جدًا.'],
+ ['thanks','تقييم حلو','إحنا اللي بنشكرك 🌿 مستنيينك دايمًا، وأي سؤال إحنا موجودين.'],
+ ['engage','منشن لصاحبه','منوّر يا {الاسم} 👋 ولو صاحبك محتاج نصيحة، إحنا هنا.']];
+
+/* فحص سريع على الجهاز: كلمات خطر شائعة في المحتوى الصحي */
+const QRULES=[[/(بيعالج|يعالج|تعالج|علاج نهائي|علاج جذري|يقضي على|بيقضي على|هيقضي على)/g,'ادعاء علاج','قول «يساعد في» أو «يخفف» واذكر إن النتيجة بتختلف حسب الحالة'],
+ [/(شفاء تام|شفاء نهائي|يشفي|بيشفي|هتخف خالص|هتخفي خالص)/g,'وعد بالشفاء','احذف الوعد، واكتب الفايدة المتوقعة بصدق'],
+ [/(مضمون|مضمونة|ضمان|١٠٠ ?٪|100 ?%|مية في المية|نتيجة أكيدة|نتايج أكيدة)/g,'نتيجة مضمونة أو نسبة مطلقة','اكتب «مع الاستخدام المنتظم» وابعد عن الضمان'],
+ [/(بدون (?:أي )?(?:أعراض|آثار) جانبية|مالوش (?:أي )?أعراض|ملوش أعراض|آمن تمامًا|آمن تماما|بدون أضرار|مالوش أضرار)/g,'نفي الأعراض الجانبية','اكتب «اقرأ النشرة واسأل الصيدلي»'],
+ [/(سحري|سحرية|معجزة|خارق|خارقة)/g,'مبالغة','وصف محدد للفايدة بدل الكلمة الكبيرة'],
+ [/(لأنه طبيعي|عشان طبيعي|طبيعي ?(?:١٠٠|100))/g,'«طبيعي يعني آمن»','الطبيعي برضه ليه تداخلات وأعراض؛ قول «مكونات طبيعية» من غير وعد بالأمان'],
+ [/(من غير دكتور|مش محتاج دكتور|بدل الدكتور|بديل (?:الدوا|الدواء|العلاج)|بطّل الدوا|بطل الدوا|وقف الدوا)/g,'بديل للطبيب أو الدواء','ممنوع؛ اكتب «مكمل للعلاج بعد استشارة الطبيب»'],
+ [/((?:\d+|[٠-٩]+)\s*(?:كيلو|كجم|كيلوجرام)\s*(?:في|ف)\s*(?:أسبوع|اسبوع|أيام|ايام|يوم|شهر))/g,'وعد بأرقام إنقاص وزن','احذف الرقم، وكلّم عن العادة والنظام'],
+ [/(قبل\s*(?:و|\/)\s*بعد)/g,'قبل/بعد','لازم صور حقيقية بموافقة صاحبها، واكتب «النتايج بتختلف من شخص للتاني»'],
+ [/(دراسات? (?:أثبتت|بتقول|بيقولوا)|ثبت علميًا|ثبت علميا|مثبت علميًا|مثبت علميا|أطباء العالم|منظمة الصحة (?:بتنصح|أوصت))/g,'ادعاء علمي','لازم مصدر حقيقي تقدر تحطه، وإلا احذف الجملة'],
+ [/(مضاد حيوي|مضادات حيوية|أنتي ?بيوتك|انتي ?بيوتك)/g,'مضاد حيوي','ممنوع ترويجه للاستخدام الذاتي؛ خليه رسالة توعية بس'],
+ [/(من غير روشتة|بدون روشتة|من غير وصفة)/g,'صرف بدون روشتة','اتأكد إن المنتج مش من أدوية الروشتة'],
+ [/(هتموت|هيموتك|كارثة صحية|قنبلة موقوتة|هيدمر)/g,'تخويف مبالغ','قول الخطر الحقيقي بهدوء ومعاه الحل'],
+ [/((?:حبتين|حباية|قرصين|[٢-٩2-9] مرات|مرتين) (?:في|ف) اليوم|جرعة)/g,'جرعات في محتوى عام','اكتب «الجرعة حسب الطبيب أو النشرة»'],
+ [/(للرضع|للرضّع|للحوامل|للحامل|للمرضعات|لمرضى السكر|لمرضى الضغط)/g,'فئة حساسة','زوّد «بعد استشارة الطبيب»'],
+ [/(أرخص سعر في مصر|الأقوى في|الأفضل في العالم|الأول في العالم|رقم ١ في|رقم 1 في)/g,'مقارنة مطلقة','لازم دليل، أو خليها «من أفضل الاختيارات عندنا»'],
+ [/(نتيجة من أول (?:مرة|استخدام)|في يوم واحد|تبييض فوري|نتيجة فورية|نتايج فورية)/g,'نتيجة فورية','اكتب المدة الواقعية للنتيجة'],
+ [/((?:يحمي|بيحمي|يمنع|بيمنع|يقي|بيقي) من (?:البرد|الإنفلونزا|الانفلونزا|كورونا|الفيروس|السرطان))/g,'وعد بالوقاية من مرض','اكتب «يدعم المناعة» مع العادات الصحية، من غير وعد']];
+
+/* ================= التخزين ================= */
+const DEF={step:0,wname:'',
+ pName:'',niche:'pharmacy',nicheCustom:'',audience:'',offer:'',identity:'',lang:'eg',voice:'friend',customVoice:'',satire:'light',health:true,
+ iNiche:'',iCount:10,iGoal:'mix',hook:'auto',emo:'auto',iPaste:'',compIn:'',compOut:'',
+ idea:'',goal:'aware',fSec:30,fourOut:'',
+ cTopic:'',cKind:'tips',cN:7,cAspect:'4:5',cText:'clean',cPaste:'',slides:[],cIdent:'',cCap:'',
+ rTopic:'',rStyle:'broll',rSec:30,rVoice:'mine',rOut:'',
+ pStart:'',pDays:30,pPerWeek:5,pMix:'',pPillars:'',occOff:[],planPaste:'',plan:[],
+ hIn:'',hOut:'',rpNew:'',rpOut:'',perfOut:''};
+const st=CORE.store('content',DEF);const p=()=>st.get();
+const LS=(k,d)=>({get(){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d():v}catch(e){return d()}},set(v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('⚠️ مساحة الجهاز مليانة')}}});
+const LIB=LS('hs_cs_lib',()=>[]),PERF=LS('hs_cs_perf',()=>[]),BR=LS('hs_cs_brands',()=>[]),VARS=LS('hs_cs_vars',()=>({}));
+const REP=LS('hs_cs_replies',()=>RDEF.map(x=>({cat:x[0],title:x[1],text:x[2]})));
+let libF='',libQ='',hfT='',rpF='all',qRes=null,pf={d:'',fmt:'reel',hook:'',ht:'',views:'',eng:'',saves:'',shares:'',follows:''},brandSel='',busy=false;
+
+/* ================= أدوات مساعدة ================= */
+const pad=n=>String(n).padStart(2,'0'),iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const dayName=d=>d.toLocaleDateString('ar-EG',{weekday:'long'});
+const startDate=()=>{const v=p().pStart;const d=v?new Date(v+'T00:00:00'):new Date();d.setHours(0,0,0,0);return isNaN(d)?new Date():d};
+const nicheName=k=>{const P=p();k=k||P.niche;return k==='custom'?(P.nicheCustom.trim()||'مجال عام'):CORE.pick(NICHES,k)[1]};
+const L=()=>CORE.pick(CORE.LANGS,p().lang),S=()=>CORE.pick(CORE.SATIRE,p().satire),VO=()=>CORE.pick(CORE.VOICES,p().voice);
+const voiceTxt=()=>p().voice==='custom'?('قلّد بصمة العينة دي:\n"""'+(p().customVoice||'').slice(0,1500)+'"""'):VO()[1]+': '+VO()[2];
+const pageTxt=()=>{const P=p();return ['الصفحة/البراند: '+(P.pName.trim()||'(من غير اسم)'),'المجال: '+nicheName(),P.audience.trim()&&'الجمهور: '+P.audience.trim(),P.offer.trim()&&'المنتجات/الخدمات والعروض: '+P.offer.trim(),P.identity.trim()&&'الهوية (ألوان، خط، نبرة): '+P.identity.trim(),'البلد: مصر'].filter(Boolean).join('\n')};
+const base=()=>`${pageTxt()}\nاللغة: ${L()[2]}.\nالبصمة: ${voiceTxt()}\n${S()[2]?'السخرية: '+S()[2]+'.\n':''}${p().health?HEALTH+'\n':''}${CORE.WRITING}`;
+const rate=e=>{const v=+e.views||0;return v?((+e.eng||0)+(+e.saves||0)+(+e.shares||0))/v*100:0};
+const topHooks=n=>PERF.get().filter(e=>e.hook&&+e.views).sort((a,b)=>rate(b)-rate(a)).slice(0,n);
+const learnTxt=()=>{const l=[...new Set(topHooks(5).map(x=>x.hook).concat(CORE.hooks().slice(0,8)))].slice(0,10);return l.length?'\nهوكات نجحت معايا قبل كده (اتعلم من نوعها وإيقاعها وما تكررهاش):\n'+l.map(x=>'- '+x).join('\n')+'\n':''};
+const addBank=h=>{h=(h||'').trim();if(!h)return;const l=CORE.hooks();if(!l.includes(h)){l.unshift(h);try{localStorage.setItem('hs_hooks',JSON.stringify(l.slice(0,60)))}catch(e){}}toast('🪝 اتحفظ في بنك الهوكات ✓')};
+const fillVars=t=>{const v=VARS.get();return t.replace(/\{(الاسم|المنتج|السعر|الرقم|من|إلى)\}/g,(m,k)=>(v[k]||'').trim()||m)};
+
+/* المناسبات: مصرية وصحية وهجرية ومواسم */
+let HFMT=null;try{HFMT=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'numeric'});if(!/islamic/.test(HFMT.resolvedOptions().calendar))HFMT=null}catch(e){HFMT=null}
+const hij=d=>{const q=HFMT.formatToParts(d);return {m:+q.find(x=>x.type==='month').value,d:+q.find(x=>x.type==='day').value}};
+const GFIX=[[1,1,'ny','رأس السنة الميلادية','عادة صحية واحدة بدل عشرة'],[1,7,'xmas','عيد الميلاد المجيد','تهنئة، والأكل بعد الصيام'],[1,25,'jan25','عيد الشرطة',''],[2,4,'cancer','اليوم العالمي للسرطان','الكشف المبكر'],[2,14,'val','عيد الحب','هدايا العناية والعطور'],[3,4,'obes','اليوم العالمي للسمنة',''],[3,21,'mom','عيد الأم','هدايا الأم وصحتها'],[3,24,'tb','اليوم العالمي للسل',''],[4,7,'whd','يوم الصحة العالمي',''],[4,25,'sinai','عيد تحرير سيناء',''],[5,1,'labor','عيد العمال',''],[5,5,'hands','اليوم العالمي لنظافة اليدين',''],[5,17,'htn','اليوم العالمي لارتفاع ضغط الدم','قياس الضغط في الصيدلية'],[5,31,'tob','اليوم العالمي للامتناع عن التدخين',''],[6,14,'blood','اليوم العالمي للتبرع بالدم',''],[6,30,'j30','ذكرى 30 يونيو',''],[7,23,'j23','عيد ثورة يوليو',''],[7,28,'hep','اليوم العالمي لالتهاب الكبد',''],[8,1,'bf','أسبوع الرضاعة الطبيعية (1–7 أغسطس)',''],[9,25,'pharm','اليوم العالمي للصيادلة','عرّف الناس بدور الصيدلي'],[9,29,'heart','اليوم العالمي للقلب',''],[10,1,'pink','بداية شهر التوعية بسرطان الثدي','الفحص الذاتي'],[10,6,'oct6','عيد 6 أكتوبر',''],[10,10,'mh','اليوم العالمي للصحة النفسية',''],[10,20,'osteo','اليوم العالمي لهشاشة العظام',''],[11,4,'egval','عيد الحب المصري',''],[11,14,'diab','اليوم العالمي للسكري','قياس السكر'],[12,1,'aids','اليوم العالمي للإيدز','']];
+const GRANGE=[[11,1,2,28,'flu','موسم البرد والإنفلونزا','الوقاية، وإمتى تروح للدكتور، والمضاد الحيوي مش للفيروس'],[6,15,8,31,'summer','الصيف والحر','ضربة الشمس والجفاف وواقي الشمس'],[9,20,10,10,'school','بداية الدراسة (تقريبًا)','شنطة دوا المدرسة ومناعة الأطفال'],[1,5,1,25,'midexam','امتحانات نصف السنة (تقريبًا)','النوم والتركيز والأكل وقت المذاكرة'],[6,10,7,15,'thanaweya','امتحانات الثانوية العامة (تقريبًا)','القلق والنوم والمنبهات'],[11,18,11,24,'waaw','أسبوع التوعية بمقاومة المضادات الحيوية (18–24 نوفمبر)','المضاد الحيوي مش لكل برد']];
+const HIJ=[[8,20,'preram','الاستعداد لرمضان','مرضى السكر والضغط والصيام، وظبط مواعيد الأدوية مع الطبيب'],[9,1,'ram','أول رمضان','السحور والفطار الصحي ومواعيد الأدوية'],[9,21,'last10','العشر الأواخر',''],[10,1,'fitr','عيد الفطر','الكحك والسكر ومعدة العيد'],[12,9,'arafa','وقفة عرفات',''],[12,10,'adha','عيد الأضحى','اللحمة والهضم والضغط والنقرس'],[1,1,'hny','رأس السنة الهجرية',''],[3,12,'mawlid','المولد النبوي','حلاوة المولد والسكر']];
+function orthEaster(y){const a=y%4,b=y%7,c=y%19,d=(19*c+15)%30,e=(2*a+4*b-d+34)%7,m=Math.floor((d+e+114)/31),dd=((d+e+114)%31)+1;return addD(new Date(y,m-1,dd),13)}
+function nthWd(y,m,wd,n){if(n>0){const d=new Date(y,m-1,1);return new Date(y,m-1,1+((wd-d.getDay()+7)%7)+(n-1)*7)}const d=new Date(y,m,0);return new Date(y,m-1,d.getDate()-((d.getDay()-wd+7)%7))}
+const inRange=(d,r)=>{const md=(d.getMonth()+1)*100+d.getDate(),a=r[0]*100+r[1],b=r[2]*100+r[3];return a<=b?md>=a&&md<=b:md>=a||md<=b};
+function occasions(){const s=startDate(),n=+p().pDays||30,out=[],seen={};
+ const add=(d,key,name,tip,kind)=>{const k=key+'-'+d.getFullYear();if(seen[k])return;seen[k]=1;out.push({key:k,d,name,tip,kind})};
+ for(let i=0;i<n;i++){const d=addD(s,i),y=d.getFullYear(),m=d.getMonth()+1,dd=d.getDate(),same=x=>x.getMonth()===d.getMonth()&&x.getDate()===dd;
+  GFIX.forEach(g=>{if(g[0]===m&&g[1]===dd)add(d,g[2],g[3],g[4],/عالمي|أسبوع|شهر|الصحة/.test(g[3])?'🩺':'🇪🇬')});
+  if(same(nthWd(y,3,4,2)))add(d,'kidney','اليوم العالمي للكلى','','🩺');
+  if(same(nthWd(y,11,5,-1)))add(d,'whitefri','الجمعة البيضاء (عروض)','عروض حقيقية بأسعار واضحة','🛍️');
+  const ea=orthEaster(y);if(same(ea))add(d,'easter','عيد القيامة المجيد','','🇪🇬');if(same(addD(ea,1)))add(d,'sham','شم النسيم','الفسيخ والرنجة والتسمم الغذائي','🇪🇬');
+  if(HFMT){const h=hij(d);HIJ.forEach(x=>{if(x[0]===h.m&&x[1]===h.d)add(d,x[2],x[3]+' ≈',x[4],'🌙')})}
+  GRANGE.forEach(r=>{if(inRange(d,r))add(d,r[4],r[5],r[6],r[4]==='waaw'?'🩺':'📆')})}
+ return out}
+
+/* ================= الأوامر ================= */
+const ctxTxt=()=>{const P=p();return (P.idea||P.cTopic||P.rTopic||P.pName||'').slice(0,800)};
+const PR={
+ideas(){const P=p(),nk=P.iNiche||P.niche,h=CORE.pick(CORE.HOOKS,P.hook);
+ return `أنت أقوى مخطط محتوى في مجال «${nicheName(nk)}» في مصر والعالم العربي.\nاقترح ${P.iCount} فكرة محتوى أصلية للصفحة دي، ولكل فكرة هوك جاهز.\n${pageTxt()}\nالهدف: ${CORE.pick(GOALS,P.iGoal)[1]}.\nنوع الهوك المفضل: ${h[0]==='auto'?'نوّع بين الأنواع (سؤال صادم، رقم حقيقي، خطأ شائع، كواليس، عكس المتوقع، POV، تحذير، قصة)':h[1]}.\n${learnTxt()}\nقواعد الأفكار:\n- محددة مش عامة: بدل «نصايح للبشرة» اكتب «الغلطة اللي بتعمليها وإنتي بتغسلي وشك بالليل».\n- طالعة من أسئلة الجمهور الحقيقية ومشاكله اليومية في مصر، ومن اللي بيتقال عند الكاونتر.\n- متنوعة: تعليمي، قصة، كواليس، خطأ شائع، مقارنة، ترفيه، وبيع خفيف.\n- الهوك هو أول جملة تتقال أو تتكتب حرفيًا، أقل من 15 كلمة، ويتفهم من غير سياق.\n${p().health?HEALTH+'\n':''}اللغة: ${L()[2]}.\n\nاكتب الناتج سطر لكل فكرة بالشكل ده بالظبط ومن غير أي كلام قبله أو بعده:\nالفكرة | الهوك | نوع الهوك | الصيغة (ريلز/كاروسيل/بوست/ستوري)`},
+comp(){const P=p();if(!P.compIn.trim()){alert('الصق المنشور أو اوصف الفيديو الأول');return ''}
+ return `أنت محلل محتوى فيروسي وكاتب محتوى عالمي.\nده منشور أو فيديو ناجح لصفحة تانية:\n"""\n${P.compIn.trim().slice(0,4000)}\n"""\n\n1) فكّكه: نوع الهوك وليه شد، الهيكل خطوة بخطوة، المحفّز العاطفي، الإيقاع، الدعوة للإجراء، والسبب المحتمل لانتشاره.\n2) استخرج «القالب» اللي ينفع يتكرر، بفراغات بين قوسين.\n3) اكتب 3 نسخ جديدة لصفحتي بنفس القالب، بفكرة ومحتوى مختلفين تمامًا. ممنوع نسخ جمل أو أفكار الصفحة التانية، وممنوع ذكر اسمها.\n\n${base()}`},
+four(){const P=p();if(!P.idea.trim()){alert('اكتب الفكرة الأول');return ''}
+ return `أنت فريق محتوى عالمي: كاتب محتوى، وكاتب سكريبت ريلز، ومصمم كاروسيل، ومدير سوشيال ميديا.\nالفكرة: ${P.idea.trim()}\nالهدف: ${CORE.pick(GOALS,P.goal)[1]}.\n\nحوّل الفكرة لأربع صيغ بنفس الرسالة الأساسية. كل صيغة مكتوبة لطبيعة منصتها، مش نفس الكلام متقطع.\nابدأ بسطر «الرسالة الأساسية:» في جملة واحدة.\n\n## 1) ريلز (${P.fSec} ثانية، 9:16)\nالهوك في أول 3 ثواني (لفظي + بصري + سمعي)، وسكريبت التعليق بالتوقيت [00:00–00:03]، والنص على الشاشة، واللقطات. عدد الكلمات حوالي 2.5 كلمة في الثانية.\n## 2) كاروسيل (7 سلايدات)\nنص كل سلايد في سطرين بالكتير. الأول هوك يخلي الواحد يقلّب، وقبل الأخير أقوى معلومة، والأخير دعوة لإجراء واحد (احفظ، شارك، أو اكتب تعليق).\n## 3) بوست\n3 هوكات لأول سطر وعلّم الأقوى، والبوست بالأقوى في فقرات قصيرة جدًا للموبايل، ودعوة لإجراء، و5 لـ7 هاشتاجات.\n## 4) ستوري (3 شاشات)\nالكلام على كل شاشة، وستيكر تفاعل (استطلاع، سؤال، أو عداد)، والخطوة الأخيرة (رسالة أو رابط).\n\n${CORE.hookEmoTxt(P)}${base()}`},
+car(){const P=p(),t=(P.cTopic||P.idea).trim();if(!t){alert('اكتب موضوع الكاروسيل الأول');return ''}const clean=P.cText==='clean';
+ return `أنت فريق كاروسيل عالمي: كاتب محتوى ومصمم جرافيك.\nاعمل كاروسيل ${P.cN} سلايدات عن: ${t}\nالنوع: ${CORE.pick(CKINDS,P.cKind)[1]}. المقاس: ${P.cAspect}.\nالهوية البصرية الثابتة في كل السلايدات: ${P.identity.trim()||'اقترح هوية بسيطة (لونين أساسيين ولون تمييز بالكود، وخط عربي واضح) والتزم بيها'}.\n\nقواعد الكتابة: سلايد 1 هوك أقل من 10 كلمات وسطر فرعي صغير يخلي الواحد يقلّب. كل سلايد فكرة واحدة وأقل من 25 كلمة. السلايد قبل الأخير أقوى معلومة. الأخير دعوة لإجراء واحد.\nقواعد الصور: نفس الأسلوب والألوان والإضاءة في كل الأوامر عشان الكاروسيل يطلع حتة واحدة. ${clean?'الصورة من غير أي كلام أو حروف خالص، وسيب مساحة فاضية واضحة للنص (فوق أو تحت)، لأن النص هيتحط بعدين في تطبيق تصميم.':'النص العربي يتكتب جوه الصورة بالظبط بين علامتي تنصيص، بخط كبير واضح، ومساحة كافية حواليه.'}\n\nاكتب الناتج بالشكل ده بالظبط:\nالهوية: (الألوان بالكود، والخط، والأسلوب) في سطر واحد\nسلايد 1\nالنص: ...\nأمر الصورة: (English image prompt for Gemini / Nano Banana: subject, composition, colors, lighting, style, aspect ratio ${P.cAspect}${clean?', no text, no letters, empty space for text':''})\nسلايد 2\n...\nوبعد آخر سلايد:\nالكابشن: ...\nالهاشتاجات: ...\n\n${base()}`},
+reel(){const P=p(),t=(P.rTopic||P.idea).trim();if(!t){alert('اكتب موضوع الريلز الأول');return ''}const s=CORE.pick(RSTYLES,P.rStyle),words=Math.round(P.rSec*2.5);
+ const vo={mine:'توجيه أداء ليّا وأنا بسجّل بصوتي: فين أوقف، والكلمة اللي أضغط عليها، وفين أسرّع أو أبطّأ، ونبرة كل جزء. علّم الوقفة بـ / والضغط بخط تحت الكلمة.',ai:'وصف الصوت لتطبيق توليد الصوت: النوع، والسن، والنبرة، والسرعة، واللهجة، والإحساس، بالإنجليزي في سطر واحد جاهز للنسخ.',none:'من غير تعليق صوتي: الكلام كله نص على الشاشة على إيقاع الموسيقى.'}[P.rVoice];
+ return `أنت فريق ريلز عالمي: كاتب سكريبت، ومخرج، ومونتير، ومهندس صوت.\nاعمل ريلز من غير وش إنسان حقيقي${P.rStyle==='char'?' (المقدّم شخصية كرتون أو 3D)':''} عن: ${t}\nالستايل: ${s[1].replace(/^\S+\s/,'')} — ${s[2]}.\nالمدة: ${P.rSec} ثانية، مقاس 9:16.${P.rVoice!=='none'?` التعليق حوالي ${words} كلمة.`:''}\n${P.rStyle==='char'?CORE.castTxt(P):''}\nالناتج بالترتيب:\n1) الهوك (أول 3 ثواني): الكلام، والصورة، والصوت.\n2) ${P.rVoice==='none'?'النص على الشاشة':'سكريبت التعليق'} بالتوقيت: [00:00–00:03] …\n3) النص على الشاشة لكل جزء (كلمات قليلة كبيرة).\n4) اللقطات: لكل لقطة: المدة | الوصف بالعربي | Video prompt in English (vertical 9:16, ${P.rStyle==='char'?'the character keeps the same look and voice':'no human faces'}).\n5) ${vo}\n6) الموسيقى والمؤثرات الصوتية لكل جزء.\n7) الكابشن و5 هاشتاجات.\n\n${CORE.hookEmoTxt(P)}${base()}`},
+plan(){const P=p(),s=startDate(),n=+P.pDays,oc=occasions().filter(o=>!P.occOff.includes(o.key));
+ return `أنت مدير محتوى سوشيال ميديا عالمي، وفاهم السوق والجمهور المصري.\nاعمل خطة نشر ${n} يوم تبدأ ${iso(s)} (${dayName(s)}) لصفحة:\n${pageTxt()}\nعدد المنشورات في الأسبوع: ${P.pPerWeek} (الأيام الباقية من غير نشر، وما تكتبهاش).\n${P.pPillars.trim()?'محاور المحتوى: '+P.pPillars.trim()+'\n':'محاور المحتوى: اقترح 3 أو 4 محاور مناسبة واذكرها في سطر قبل الجدول.\n'}${P.pMix.trim()?'مزيج الصيغ: '+P.pMix.trim()+'\n':'مزيج الصيغ: الريلز أغلبية، ومعاه كاروسيل وبوست وستوري.\n'}\nالمناسبات في الفترة دي (استغلها في يومها أو قبلها بيوم أو اتنين، وتجاهل أي مناسبة ملهاش علاقة حقيقية بالجمهور، ومن غير ركوب مناسبة بشكل رخيص):\n${oc.length?oc.map(o=>`- ${iso(o.d)} (${dayName(o.d)}): ${o.name}${o.tip?' — '+o.tip:''}`).join('\n'):'- مفيش مناسبات كبيرة'}\n\nقواعد: نوّع الهوكات والمحاور ومتكررش نفس النوع يومين ورا بعض. أغلب المحتوى قيمة حقيقية والبيع خفيف. كل فكرة محددة ومش عامة. أقوى منشور في الأسبوع ييجي في أنسب يوم.\n${learnTxt()}${P.health?HEALTH+'\n':''}اللغة: ${L()[2]}.\n\nاكتب الجدول سطر لكل منشور بالشكل ده بالظبط:\nيوم 1 | ${iso(s)} | ريلز | الفكرة في جملة | الهوك (أول جملة حرفيًا) | المناسبة أو -`},
+day(i){const P=p(),r=P.plan[i];if(!r)return '';const f=r.fmt||'';
+ const how=/ريلز|فيديو/.test(f)?'سكريبت ريلز 30 ثانية 9:16: الهوك (لفظي + بصري + سمعي)، والتعليق بالتوقيت، والنص على الشاشة، واللقطات مع Video prompt بالإنجليزي لكل لقطة.':/كاروسيل/.test(f)?'كاروسيل 7 سلايدات: نص كل سلايد، وأمر صورة بالإنجليزي لكل سلايد بنفس الهوية.':/ستوري/.test(f)?'3 شاشات ستوري: الكلام على كل شاشة، وستيكر تفاعل، والخطوة الأخيرة.':'بوست: الهوك في أول سطر، وفقرات قصيرة للموبايل، ودعوة لإجراء، و5 لـ7 هاشتاجات، وفكرة الصورة في سطرين.';
+ return `أنت كاتب محتوى عالمي. اكتب منشور اليوم ده كامل وجاهز للنشر:\nاليوم: ${r.date||''} • الصيغة: ${f}\nالفكرة: ${r.idea}\nالهوك: ${r.hook}\n${r.occ&&r.occ!=='-'?'المناسبة: '+r.occ+'\n':''}\nالمطلوب: ${how}\nوفي الآخر: الكابشن، وأنسب وقت نشر.\n\n${base()}`},
+health(){const P=p();if(!P.hIn.trim()){alert('الصق النص اللي عايز تفحصه الأول');return ''}
+ return `أنت صيدلي مراجع ومسؤول عن مطابقة إعلانات المنتجات الصحية في مصر (ضوابط هيئة الدواء المصرية وأخلاقيات المهنة)، ومعاك كاتب محتوى محترف.\nراجع النص ده قبل النشر:\n"""\n${P.hIn.trim().slice(0,6000)}\n"""\n\nافحص: ادعاءات العلاج أو الشفاء أو الوقاية، والنتائج المضمونة والأرقام والنسب، والدراسات والمصادر المذكورة (موجودة فعلًا ولا لأ)، وقبل/بعد، والتخويف، والترويج لأدوية الروشتة أو المضادات الحيوية للاستخدام الذاتي، والجرعات في محتوى عام، والفئات الحساسة (أطفال، حوامل، مرضى مزمنين)، والمقارنات المطلقة، و«طبيعي يعني آمن»، وأي معلومة طبية غلط.\n\nالناتج:\n1) الحكم في سطر واحد: ✅ جاهز للنشر / ⚠️ محتاج تعديل / ⛔ ما ينفعش يتنشر.\n2) المشاكل: كل جملة فيها مشكلة، والسبب، والبديل الآمن (بحد أقصى 7، الأهم الأول).\n3) النسخة المصححة كاملة، بنفس الأسلوب والطول، وجاهزة للنشر.\nلو النص سليم قول كده وما تغيرش فيه حاجة. حكم واحد واضح، من غير اختيارات.`},
+reply(){const P=p();if(!P.rpNew.trim()){alert('اكتب الموقف الأول');return ''}
+ return `أنت مسؤول خدمة عملاء ومدير مجتمع لصفحة:\n${pageTxt()}\nاكتب 4 ردود جاهزة على الموقف ده في تعليقات فيسبوك أو رسايل واتساب:\n"${P.rpNew.trim()}"\nنبرات مختلفة: ودود رسمي، وخفيف الدم، ومختصر جدًا، ورد يحوّل للرسايل. كل رد إنساني وقصير (أقل من 40 كلمة)، ومن غير وعود طبية أو تشخيص، ولو فيه سؤال عن دوا أو جرعة يحوّل للصيدلي. استخدم {الاسم} و{المنتج} و{السعر} مكان البيانات المتغيرة.\nاللغة: ${L()[2]}.\nاكتب سطر لكل رد بالشكل ده بالظبط ومن غير أي كلام تاني:\nعنوان قصير | الرد`},
+perf(){const l=PERF.get();if(!l.length){alert('سجّل منشورات الأول');return ''}
+ return `أنت محلل أداء سوشيال ميديا. ده سجل منشوراتي (نسبة التفاعل = (تفاعل + حفظ + مشاركة) ÷ مشاهدات):\nالتاريخ | الصيغة | نوع الهوك | الهوك | مشاهدات | تفاعل | حفظ | مشاركة | متابعين جدد | النسبة\n${l.slice(0,80).map(e=>[e.d,CORE.pick(FMTS,e.fmt)[1],e.ht?CORE.pick(HT,e.ht)[1]:'-',e.hook||'-',e.views||0,e.eng||0,e.saves||0,e.shares||0,e.follows||0,rate(e).toFixed(1)+'%'].join(' | ')).join('\n')}\n\nقولي بصراحة وبأرقام من السجل:\n1) أنهي صيغة وأنهي نوع هوك بيجيبوا أعلى تفاعل، وأنهي بيجيب متابعين.\n2) أبطّل إيه.\n3) أحسن 3 هوكات عندي وليه نجحوا.\n4) 7 أفكار جاية مبنية على اللي نجح، كل فكرة بهوكها.\nلو السجل صغير (أقل من 10 منشورات) قول إن الحكم مبدئي.\n${pageTxt()}`}};
+
+/* ================= تحويل الردود ================= */
+const strip=s=>s.replace(/^\s*(?:[-•*▪︎●]|\d+[.)\-]|[٠-٩]+[.)\-])\s*/,'').replace(/\*\*/g,'').trim();
+function parseIdeas(){const P=p(),v=P.iPaste.trim();if(!v){alert('الصق الرد الأول');return}
+ const nk=P.iNiche||P.niche,l=LIB.get(),have=new Set(l.map(x=>x.hook));let n=0;
+ v.split('\n').forEach(line=>{if((line.match(/\|/g)||[]).length<1)return;const c=strip(line).split('|').map(x=>x.trim());if(!c[0]||/^الفكرة$/.test(c[0])||/^-+$/.test(c[0]))return;
+  const it={idea:c[0],hook:(c[1]||'').replace(/^[«"]|[»"]$/g,''),ht:c[2]||'',fmt:c[3]||'',niche:nk,ts:Date.now()+n};if(have.has(it.hook)&&it.hook)return;have.add(it.hook);l.unshift(it);n++});
+ if(!n){alert('مش لاقي أفكار. الرد لازم يكون سطر لكل فكرة: الفكرة | الهوك | النوع | الصيغة');return}
+ LIB.set(l.slice(0,600));P.iPaste='';st.save();toast('📚 اتضافت '+n+' فكرة للمكتبة ✓');render()}
+function parseSlides(src){const P=p(),v=(src||P.cPaste).trim();if(!v){alert('الصق الرد الأول');return false}
+ const id=(v.match(/^\s*\**الهوية\**\s*[:：]\s*(.+)$/m)||[])[1]||'',cap=(v.match(/^\s*\**الكابشن\**\s*[:：]\s*([\s\S]+?)(?=^\s*\**الهاشتاجات|\s*$(?![\s\S]))/m)||[])[1]||'',tags=(v.match(/^\s*\**الهاشتاجات\**\s*[:：]\s*(.+)$/m)||[])[1]||'';
+ const parts=v.split(/^\s*[#*]*\s*(?:سلايد|شريحة|Slide)\s*[0-9٠-٩]+\s*[:：*]*\s*$/im).slice(1),sl=[];
+ parts.forEach(b=>{b=b.split(/^\s*\**(?:الكابشن|الهاشتاجات)\**\s*[:：]/m)[0];const im=b.split(/^\s*\**(?:أمر الصورة|Image prompt)\**\s*[:：]/im);const text=(im[0]||'').replace(/^\s*\**النص\**\s*[:：]\s*/m,'').trim(),img=(im[1]||'').trim();if(text||img)sl.push({text,img,done:false})});
+ if(!sl.length){alert('مش لاقي سلايدات. الرد لازم يكون «سلايد 1» وتحته «النص:» و«أمر الصورة:»');return false}
+ st.snap('قبل تحويل الكاروسيل',true);P.slides=sl;P.cIdent=id.trim();P.cCap=(cap.trim()+(tags?'\n\n'+tags.trim():'')).trim();P.cPaste='';st.save();toast('🖼️ اتعمل '+sl.length+' سلايد ✓');render();return sl.length+' سلايد'}
+function parsePlan(src){const P=p(),v=(src||P.planPaste).trim();if(!v){alert('الصق الرد الأول');return false}const rows=[];
+ v.split('\n').forEach(line=>{const c=strip(line.replace(/^\s*\|/,'')).split('|').map(x=>x.trim());if(c.length<4)return;const m=c[0].match(/(?:يوم|Day)?\s*([0-9٠-٩]+)/i);if(!m)return;
+  rows.push({day:m[1],date:c[1]||'',fmt:c[2]||'',idea:c[3]||'',hook:(c[4]||'').replace(/^[«"]|[»"]$/g,''),occ:c[5]||'-',done:false,out:''})});
+ if(!rows.length){alert('مش لاقي أيام. كل سطر لازم يبدأ بـ «يوم 1 |»');return false}
+ st.snap('قبل تحويل الخطة',true);P.plan=rows;P.planPaste='';st.save();toast('🗓️ الخطة جاهزة: '+rows.length+' منشور ✓');render();return rows.length+' منشور'}
+function parseReplies(){const P=p(),v=P.rpOut.trim();if(!v){alert('الصق الرد الأول');return}const l=REP.get();let n=0;
+ v.split('\n').forEach(line=>{const i=line.indexOf('|');if(i<0)return;const t=strip(line.slice(0,i)),x=line.slice(i+1).trim();if(!t||!x||/^عنوان/.test(t))return;l.unshift({cat:'custom',title:t,text:x});n++});
+ if(!n){alert('مش لاقي ردود. كل سطر لازم يكون: العنوان | الرد');return}REP.set(l);P.rpOut='';st.save();rpF='custom';toast('💬 اتضاف '+n+' رد ✓');render()}
+function quickScan(t){const res=[];QRULES.forEach(([re,why,fix])=>{re.lastIndex=0;let m;const seen=new Set();while((m=re.exec(t))){if(seen.has(m[0]))continue;seen.add(m[0]);const a=Math.max(0,m.index-35),b=Math.min(t.length,m.index+m[0].length+35);
+  res.push({why,fix,snip:(a?'…':'')+esc(t.slice(a,m.index))+'<mark>'+esc(m[0])+'</mark>'+esc(t.slice(m.index+m[0].length,b))+(b<t.length?'…':'')})}});return res}
+
+/* ================= الواجهة ================= */
+const btns=(k,label)=>`<div class="pair"><button class="b g" data-a="pr:${k}">📋 ${label||'انسخ الأمر'}</button><button class="b" data-a="pr:${k}!" title="ابعته لتطبيق تختاره">📤</button><button class="b bl" data-a="ag:${k}" title="نفّذ بالإيجنت (Gemini)">🤖 نفّذ</button></div>`;
+const outBox=(f,label,apply,rows)=>`<label class="l">${label||'📥 الرد'}</label><textarea data-f="${f}" rows="${rows||7}" placeholder="الصق رد التطبيق هنا، أو اضغط 🤖 نفّذ">${esc(p()[f])}</textarea><div>${apply?`<button class="b g" data-a="apply:${apply[0]}">${apply[1]}</button>`:''}<button class="b" data-a="cp:${f}">📋 نسخ</button>${apply?'':`<button class="b" data-a="toH:${f}">✅ افحصه صحيًا</button>`}<button class="b r" data-a="clr:${f}">🗑️</button></div>`;
+const sel=(f,list,v)=>`<select data-f="${f}">${CORE.opts(list,String(v))}</select>`;
+const num=a=>a.map(x=>[String(x),String(x)]);
+
+function t0(){const P=p(),br=BR.get();
+ return `<div class="c"><h3>🧭 بيانات الصفحة</h3><div class="m">بتدخل في كل أوامر الاستوديو. اكتبها مرة واحفظها كبراند، وبدّل بين صفحاتك بضغطة.</div>
+ ${br.length?`<label class="l">براند محفوظ</label><div class="row"><div><select data-brand>${'<option value="">— اختار —</option>'+br.map((x,i)=>`<option value="${i}"${String(i)===brandSel?' selected':''}>${esc(x.pName)}</option>`).join('')}</select></div>${brandSel!==''?'<button class="b r" data-a="delBrand" style="margin:0">🗑️</button>':''}</div>`:''}
+ <label class="l">اسم الصفحة أو البراند</label><input data-f="pName" value="${esc(P.pName)}" placeholder="مثال: صيدلية دكتور اتش">
+ <label class="l">المجال</label>${sel('niche',NICHES,P.niche)}${P.niche==='custom'?`<input data-f="nicheCustom" value="${esc(P.nicheCustom)}" placeholder="اكتب مجالك" style="margin-top:6px">`:''}
+ <label class="l">الجمهور</label><textarea data-f="audience" rows="2" placeholder="مثال: أمهات وستات بيوت 25–45 سنة في المنطقة، بيدوروا على حلول سريعة وأسعار واضحة">${esc(P.audience)}</textarea>
+ <label class="l">المنتجات والخدمات والعروض</label><textarea data-f="offer" rows="2" placeholder="مثال: توصيل مجاني فوق 300 جنيه، قياس ضغط وسكر مجانًا، مستحضرات تجميل">${esc(P.offer)}</textarea>
+ <label class="l">الهوية (ألوان، خط، نبرة)</label><input data-f="identity" value="${esc(P.identity)}" placeholder="مثال: أخضر #0f766e وأبيض، خط Cairo، نبرة ودودة وموثوقة">
+ <div class="row"><div><label class="l">اللغة</label>${sel('lang',CORE.LANGS,P.lang)}</div><div><label class="l">السخرية</label>${sel('satire',CORE.SATIRE,P.satire)}</div></div>
+ <label class="l">البصمة (صوت الكاتب)</label>${sel('voice',CORE.VOICES,P.voice)}${P.voice==='custom'?`<textarea data-f="customVoice" rows="3" placeholder="الصق عينة نص بتحب أسلوبها" style="margin-top:6px">${esc(P.customVoice)}</textarea>`:''}
+ <label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:14px"><input type="checkbox" data-chk="health" ${P.health?'checked':''}>🩺 قواعد المحتوى الصحي في كل الأوامر</label>
+ <div><button class="b g" data-a="saveBrand">💾 احفظ كبراند</button><button class="b" data-a="impBrand">📥 هات براندات استوديو الإعلانات</button></div></div>
+ <div class="c"><h3>🚀 تبدأ منين؟</h3>
+ ${[['مفيش أفكار في دماغك؟',1,'💡 أفكار وهوكات'],['عندك فكرة واحدة؟',2,'♻️ حوّلها لـ٤ صيغ'],['عايز شهر كامل جاهز؟',5,'🗓️ خطة النشر'],['قبل أي نشر صحي',6,'✅ الفحص'],['بعد النشر بأسبوع',8,'📊 سجّل الأداء']].map(x=>`<div class="st"><span>${x[0]}</span><button class="b s" data-a="go" data-i="${x[1]}" style="margin:0">${x[2]}</button></div>`).join('')}
+ <div class="m" style="margin-top:6px">كل أداة فيها 📋 انسخ الأمر (للصق في أي تطبيق)، و📤 ابعته (تختار التطبيق)، و🤖 نفّذ (الإيجنت يكتب لوحده لو حاطط مفتاح Gemini).</div></div>`}
+
+function libItems(){const l=LIB.get(),q=libQ.trim();const f=l.map((x,i)=>[x,i]).filter(([x])=>(!libF||x.niche===libF)&&(!q||(x.idea+x.hook).includes(q)));
+ return f.slice(0,120).map(([x,i])=>`<div class="it"><b>${esc(x.idea)}</b><div class="hk">«${esc(x.hook)}»</div>${x.ht?`<span class="tag">${esc(x.ht)}</span>`:''}${x.fmt?`<span class="tag">${esc(x.fmt)}</span>`:''}<span class="tag">${esc(nicheName(x.niche))}</span>
+ <div class="chips"><button class="b s" data-a="lcp" data-i="${i}">📋 الهوك</button><button class="b s" data-a="l4" data-i="${i}">♻️ ٤ صيغ</button><button class="b s" data-a="lcar" data-i="${i}">🖼️</button><button class="b s" data-a="lreel" data-i="${i}">🎙️</button><button class="b s" data-a="lbank" data-i="${i}">🪝</button><button class="b s r" data-a="ldel" data-i="${i}">🗑️</button></div></div>`).join('')||'<div class="m">مفيش أفكار هنا لسه.</div>'}
+function t1(){const P=p(),l=LIB.get(),nk=[...new Set(l.map(x=>x.niche))];
+ return `<div class="c"><h3>💡 مولّد الأفكار والهوكات</h3><div class="m">أفكار محددة من مشاكل جمهورك الحقيقية، ولكل فكرة هوك جاهز. بيتعلم من الهوكات اللي نجحت معاك.</div>
+ <div class="row"><div><label class="l">المجال</label><select data-f="iNiche"><option value="">نفس مجال الصفحة</option>${CORE.opts(NICHES.filter(x=>x[0]!=='custom'),P.iNiche)}</select></div><div><label class="l">العدد</label>${sel('iCount',num([10,20,30,50]),P.iCount)}</div></div>
+ <label class="l">الهدف</label>${sel('iGoal',GOALS,P.iGoal)}
+ ${CORE.hookEmoHTML(P)}${btns('ideas','انسخ أمر الأفكار')}${outBox('iPaste','📥 الرد',['ideas','📚 ضيفها للمكتبة'])}</div>
+ <div class="c"><h3>📚 مكتبة الأفكار (${l.length})</h3>
+ <div class="row"><div><select data-lf><option value="">كل المجالات</option>${nk.map(k=>`<option value="${k}"${k===libF?' selected':''}>${esc(nicheName(k))}</option>`).join('')}</select></div><div><input data-lq value="${esc(libQ)}" placeholder="🔍 دوّر"></div></div>
+ <div class="m" style="margin-top:6px">♻️ تحوّلها لـ٤ صيغ • 🖼️ كاروسيل • 🎙️ ريلز • 🪝 بنك الهوكات</div><div id="libList">${libItems()}</div></div>
+ <div class="c"><h3>🪝 قوالب هوكات جاهزة (${HF.length})</h3><div class="m">املا اللي بين القوسين من شغلك. الأرقام لازم تكون حقيقية.</div>
+ <div class="chips"><button class="b s${hfT===''?' g':''}" data-a="hft" data-k="">الكل</button>${HT.filter(t=>HF.some(h=>h[0]===t[0])).map(t=>`<button class="b s${hfT===t[0]?' g':''}" data-a="hft" data-k="${t[0]}">${esc(t[1])}</button>`).join('')}</div>
+ ${HF.map((h,i)=>[h,i]).filter(([h])=>!hfT||h[0]===hfT).map(([h,i])=>`<div class="st it"><span>${esc(h[1])}</span><button class="b s" data-a="hfc" data-i="${i}" style="margin:0">📋</button></div>`).join('')}
+ <button class="b" data-a="bank" style="width:100%">🪝 افتح بنك الهوكات اللي نجحت معاك</button></div>
+ <div class="c"><h3>🔍 فكّك منشور ناجح</h3><div class="m">الصق منشور أو اوصف فيديو نجح عند صفحة تانية. هيطلعلك ليه نجح، والقالب، و3 نسخ لصفحتك من غير نسخ.</div>
+ <textarea data-f="compIn" rows="4" placeholder="الصق نص المنشور، أو اوصف الفيديو: أول جملة، وإيه اللي بيحصل، وعدد المشاهدات">${esc(P.compIn)}</textarea>${btns('comp','انسخ أمر التفكيك')}${outBox('compOut','📥 التحليل والنسخ الجديدة')}</div>`}
+
+function t2(){const P=p();
+ return `<div class="c"><h3>♻️ فكرة واحدة ← ٤ صيغ</h3><div class="m">تكتب الفكرة مرة، فتطلع ريلز وكاروسيل وبوست وستوري بنفس الرسالة، كل واحدة مكتوبة لمنصتها.</div>
+ <label class="l">الفكرة</label><textarea data-f="idea" rows="3" placeholder="مثال: ليه الدكتور مش بيكتب مضاد حيوي لكل برد">${esc(P.idea)}</textarea>
+ <div class="row"><div><label class="l">الهدف</label>${sel('goal',GOALS,P.goal)}</div><div><label class="l">مدة الريلز (ث)</label>${sel('fSec',num([15,20,30,45,60]),P.fSec)}</div></div>
+ ${CORE.hookEmoHTML(P)}${btns('four','انسخ أمر الـ٤ صيغ')}${outBox('fourOut','📥 الـ٤ صيغ',null,12)}
+ <div class="chips"><button class="b s" data-a="ideaTo" data-k="3">🖼️ اعمل الكاروسيل بالتفصيل</button><button class="b s" data-a="ideaTo" data-k="4">🎙️ اعمل الريلز بالتفصيل</button></div></div>${CORE.pubCard(P)}`}
+
+function t3(){const P=p(),sl=P.slides;
+ return `<div class="c"><h3>🖼️ صانع الكاروسيل</h3><div class="m">النص وأمر صورة لكل سلايد بهوية واحدة، عشان الكاروسيل يطلع حتة واحدة.</div>
+ <label class="l">الموضوع</label><textarea data-f="cTopic" rows="2" placeholder="مثال: 5 غلطات في استخدام واقي الشمس">${esc(P.cTopic)}</textarea>
+ <div class="row"><div><label class="l">النوع</label>${sel('cKind',CKINDS,P.cKind)}</div><div><label class="l">السلايدات</label>${sel('cN',num([5,6,7,8,10]),P.cN)}</div></div>
+ <div class="row"><div><label class="l">المقاس</label>${sel('cAspect',[['4:5','4:5 فيسبوك وإنستجرام'],['1:1','1:1 مربع'],['9:16','9:16 ستوري']],P.cAspect)}</div></div>
+ <label class="l">الكلام على الصورة</label>${sel('cText',CTEXT,P.cText)}
+ ${btns('car','انسخ أمر الكاروسيل')}${outBox('cPaste','📥 الرد',['car','🖼️ حوّله لسلايدات'])}</div>
+ ${sl.length?`<div class="c"><h3>🖼️ السلايدات (${sl.filter(s=>s.done).length}/${sl.length})</h3>${P.cIdent?`<div class="m">🎨 الهوية: ${esc(P.cIdent)}</div>`:''}
+ <div class="chips"><button class="b s g" data-a="carAll" data-k="text">📋 كل النصوص</button><button class="b s" data-a="carAll" data-k="img">🎨 كل أوامر الصور</button>${P.cCap?'<button class="b s" data-a="carCap">📋 الكابشن</button>':''}<button class="b s" data-a="carH">✅ افحص النصوص</button></div>
+ ${sl.map((s,i)=>`<div class="sl${s.done?' dn':''}"><div class="st"><b>سلايد ${i+1}</b><button class="b s" data-a="sUp" data-i="${i}" style="margin:0">⬆️</button><button class="b s" data-a="sDn" data-i="${i}" style="margin:0">⬇️</button><button class="b s${s.done?' g':''}" data-a="sDone" data-i="${i}" style="margin:0">✓</button><button class="b s r" data-a="sDel" data-i="${i}" style="margin:0">🗑️</button></div>
+ <label class="l">النص</label><textarea data-sl="${i}:text" rows="2">${esc(s.text)}</textarea>
+ <label class="l">أمر الصورة</label><textarea class="ltr" data-sl="${i}:img" rows="3">${esc(s.img)}</textarea>
+ <div class="pair"><button class="b" data-a="sTxt" data-i="${i}">📋 النص</button><button class="b bl" data-a="sImg" data-i="${i}">🎨 انسخ أمر الصورة</button><button class="b" data-a="sImg!" data-i="${i}">📤</button></div></div>`).join('')}
+ ${P.cCap?`<label class="l">الكابشن</label><textarea data-f="cCap" rows="4">${esc(P.cCap)}</textarea>`:''}
+ <button class="b" data-a="sAdd" style="width:100%">➕ سلايد</button></div>`:''}`}
+
+function t4(){const P=p(),s=CORE.pick(RSTYLES,P.rStyle);
+ return `<div class="c"><h3>🎙️ ريلز بدون وش وتعليق صوتي</h3><div class="m">سكريبت بالتوقيت، ونص الشاشة، وأمر فيديو بالإنجليزي لكل لقطة، وتوجيه الصوت.</div>
+ <label class="l">الموضوع</label><textarea data-f="rTopic" rows="2" placeholder="مثال: ليه الشاي بعد الأكل على طول بيقلل امتصاص الحديد">${esc(P.rTopic)}</textarea>
+ <label class="l">الستايل</label><div class="chips">${RSTYLES.map(x=>`<button class="b s${x[0]===P.rStyle?' g':''}" data-a="rst" data-k="${x[0]}">${x[1]}</button>`).join('')}</div><div class="m" style="margin-top:6px">${esc(s[2])}</div>
+ <div class="row"><div><label class="l">المدة (ث)</label>${sel('rSec',num([15,20,30,45,60,90]),P.rSec)}</div><div><label class="l">الصوت</label>${sel('rVoice',RVOICE,P.rVoice)}</div></div>
+ ${CORE.hookEmoHTML(P)}${btns('reel','انسخ أمر الريلز')}${outBox('rOut','📥 السكريبت واللقطات',null,12)}</div>
+ ${P.rStyle==='char'?CORE.castCard(P):''}`}
+
+function t5(){const P=p(),oc=occasions(),pl=P.plan;
+ return `<div class="c"><h3>🗓️ خطة النشر</h3><div class="m">جدول يومي بالفكرة والهوك والصيغة، والمناسبات المصرية والصحية والهجرية بتدخل لوحدها في وقتها.</div>
+ <div class="row"><div><label class="l">من يوم</label><input type="date" data-f="pStart" value="${esc(P.pStart||iso(new Date()))}"></div><div><label class="l">المدة</label>${sel('pDays',[['7','أسبوع'],['14','أسبوعين'],['30','30 يوم']],P.pDays)}</div></div>
+ <div class="row"><div><label class="l">منشورات في الأسبوع</label>${sel('pPerWeek',num([3,4,5,6,7]),P.pPerWeek)}</div></div>
+ <label class="l">محاور المحتوى (اختياري)</label><input data-f="pPillars" value="${esc(P.pPillars)}" placeholder="مثال: توعية صحية، كواليس الصيدلية، عروض، أسئلة الناس">
+ <label class="l">مزيج الصيغ (اختياري)</label><input data-f="pMix" value="${esc(P.pMix)}" placeholder="مثال: 3 ريلز، كاروسيل، بوست"></div>
+ <div class="c"><h3>📅 المناسبات في الفترة دي (${oc.length})</h3><div class="m">شيل العلامة من اللي مش عايزه. ≈ يعني التاريخ الهجري ممكن يفرق يوم حسب الرؤية.${HFMT?'':' (المتصفح ده مش بيحسب التاريخ الهجري)'}</div>
+ ${oc.map(o=>`<label class="st it" style="cursor:pointer"><span>${o.kind} <b>${esc(o.name)}</b><br><span class="m">${dayName(o.d)} ${iso(o.d)}${o.tip?' • '+esc(o.tip):''}</span></span><input type="checkbox" data-occ="${o.key}" ${P.occOff.includes(o.key)?'':'checked'}></label>`).join('')||'<div class="m">مفيش مناسبات في الفترة دي.</div>'}
+ ${btns('plan','انسخ أمر الخطة')}${outBox('planPaste','📥 الرد',['plan','🗓️ حوّله لخطة'])}</div>
+ ${pl.length?`<div class="c"><h3>✅ الخطة (${pl.filter(r=>r.done).length}/${pl.length} اتنشر)</h3>
+ ${pl.map((r,i)=>`<div class="sl${r.done?' dn':''}"><div class="st"><b>يوم ${esc(r.day)} • ${esc(r.fmt)}</b><span class="m">${esc(r.date)}</span></div>${r.occ&&r.occ!=='-'?`<span class="tag">📅 ${esc(r.occ)}</span>`:''}
+ <textarea data-pl="${i}:idea" rows="2">${esc(r.idea)}</textarea><div class="hk">«<input data-pl="${i}:hook" value="${esc(r.hook)}" style="display:inline;width:92%;padding:4px;font-size:14px;color:#fde68a">»</div>
+ <div class="chips"><button class="b s g" data-a="pr:day:${i}">✍️ اكتبه</button><button class="b s" data-a="pr:day:${i}!">📤</button><button class="b s bl" data-a="ag:day:${i}">🤖</button><button class="b s${r.done?' g':''}" data-a="pDone" data-i="${i}">✓ اتنشر</button><button class="b s" data-a="pLog" data-i="${i}">📊 سجّل</button></div>
+ ${r.out?`<details><summary class="m">📄 المنشور المكتوب</summary><textarea data-pl="${i}:out" rows="8">${esc(r.out)}</textarea><button class="b s" data-a="pOutC" data-i="${i}">📋 نسخ</button><button class="b s" data-a="pOutH" data-i="${i}">✅ افحصه</button></details>`:''}</div>`).join('')}
+ <div class="chips"><button class="b s" data-a="planCsv">📤 الخطة كملف (Excel)</button><button class="b s r" data-a="planClr">🗑️ امسح الخطة</button></div></div>`:''}`}
+
+function t6(){const P=p();
+ return `<div class="c"><h3>✅ فحص الصياغة الصحية</h3><div class="m">قبل ما تنشر أي حاجة عن دوا أو مكمل أو تجميل: فحص سريع على الموبايل بيلقط الكلمات الخطر، وفحص عميق بالذكاء بيرجعلك حكم ونسخة مصححة.</div>
+ <textarea data-f="hIn" rows="6" placeholder="الصق البوست أو السكريبت أو الكابشن">${esc(P.hIn)}</textarea>
+ <div class="chips"><span class="m">هات النص من:</span><button class="b s" data-a="hFrom" data-k="fourOut">♻️ الـ٤ صيغ</button><button class="b s" data-a="hFrom" data-k="rOut">🎙️ الريلز</button><button class="b s" data-a="hFrom" data-k="slides">🖼️ الكاروسيل</button><button class="b s" data-a="hFrom" data-k="compOut">🔍 التفكيك</button></div>
+ <button class="b g" data-a="quick" style="width:100%;margin-top:10px">⚡ فحص سريع (على الموبايل)</button>
+ ${qRes?(qRes.length?`<div class="m wr" style="margin-top:8px">⚠️ ${qRes.length} ملاحظة:</div>`+qRes.map(r=>`<div class="qr">${r.snip}<div><b>${esc(r.why)}</b> — ${esc(r.fix)}</div></div>`).join(''):'<div class="m ok" style="margin-top:8px">✓ ما لقيتش كلمات خطر شائعة. اعمل الفحص العميق للتأكد.</div>'):''}
+ <label class="l">🔎 الفحص العميق (حكم + نسخة مصححة)</label>${btns('health','انسخ أمر الفحص')}${outBox('hOut','📥 الحكم والنسخة المصححة',null,10)}
+ <div class="m" style="margin-top:8px">الفحص ده مساعدة، والقرار النهائي مسؤوليتك كصيدلي.</div></div>`}
+
+function t7(){const P=p(),l=REP.get(),v=VARS.get();
+ return `<div class="c"><h3>💬 ردود جاهزة للتعليقات والرسايل</h3><div class="m">املا البيانات مرة، وكل رد بيتنسخ بيها لوحده مكان {الاسم} و{المنتج}…</div>
+ <div class="row">${[['الاسم','اسم الشخص'],['المنتج','اسم المنتج']].map(x=>`<div><input data-v="${x[0]}" value="${esc(v[x[0]]||'')}" placeholder="${x[1]}"></div>`).join('')}</div>
+ <div class="row" style="margin-top:6px">${[['السعر','السعر'],['الرقم','رقم الصيدلية']].map(x=>`<div><input data-v="${x[0]}" value="${esc(v[x[0]]||'')}" placeholder="${x[1]}"></div>`).join('')}</div>
+ <div class="row" style="margin-top:6px">${[['من','بنفتح الساعة'],['إلى','بنقفل الساعة']].map(x=>`<div><input data-v="${x[0]}" value="${esc(v[x[0]]||'')}" placeholder="${x[1]}"></div>`).join('')}</div>
+ <div class="chips">${RCATS.map(c=>`<button class="b s${rpF===c[0]?' g':''}" data-a="rpf" data-k="${c[0]}">${c[1]}</button>`).join('')}</div>
+ ${l.map((r,i)=>[r,i]).filter(([r])=>rpF==='all'||r.cat===rpF).map(([r,i])=>`<div class="it"><div class="st"><b>${esc(r.title)}</b><button class="b s g" data-a="rpc" data-i="${i}" style="margin:0">📋 نسخ</button><button class="b s r" data-a="rpd" data-i="${i}" style="margin:0">🗑️</button></div><textarea data-rp="${i}" rows="2" style="font-size:14px">${esc(r.text)}</textarea></div>`).join('')||'<div class="m">مفيش ردود هنا.</div>'}
+ <button class="b" data-a="rpAdd" style="width:100%">➕ رد جديد بإيدي</button><button class="b" data-a="rpReset" style="width:100%">↩️ رجّع الردود الأصلية</button></div>
+ <div class="c"><h3>✍️ موقف جديد؟</h3><textarea data-f="rpNew" rows="2" placeholder="مثال: واحد كاتب في التعليقات إن الأسعار عندنا غالية">${esc(P.rpNew)}</textarea>${btns('reply','انسخ أمر الردود')}${outBox('rpOut','📥 الرد',['reply','💬 ضيفها للردود'])}</div>`}
+
+function t8(){const P=p(),l=PERF.get();
+ const grp=fn=>{const g={};l.forEach(e=>{if(!+e.views)return;const k=fn(e);if(!k)return;(g[k]=g[k]||[]).push(rate(e))});return Object.entries(g).map(([k,a])=>({k,n:a.length,avg:a.reduce((x,y)=>x+y,0)/a.length})).sort((a,b)=>b.avg-a.avg)};
+ const stat=(title,rows,nm)=>{if(!rows.length)return '';const mx=Math.max(...rows.map(r=>r.avg))||1;return `<label class="l">${title}</label>`+rows.map(r=>`<div class="st"><span>${esc(nm(r.k))} <span class="m">(${r.n})</span></span><span style="width:40%"><div class="bar" style="width:${Math.max(4,r.avg/mx*100)}%"></div></span><b style="width:52px;text-align:left">${r.avg.toFixed(1)}%</b></div>`).join('')};
+ const th=topHooks(5),tv=l.reduce((a,e)=>a+(+e.views||0),0),tf=l.reduce((a,e)=>a+(+e.follows||0),0);
+ return `<div class="c"><h3>📊 سجّل منشور</h3><div class="m">بعد النشر بيومين أو تلاتة، اكتب الأرقام من الإحصائيات. التفاعل = لايكات + تعليقات.</div>
+ <div class="row"><div><label class="l">التاريخ</label><input type="date" data-pf="d" value="${esc(pf.d||iso(new Date()))}"></div><div><label class="l">الصيغة</label><select data-pf="fmt">${CORE.opts(FMTS,pf.fmt)}</select></div></div>
+ <label class="l">الهوك (أول جملة)</label><input data-pf="hook" value="${esc(pf.hook)}">
+ <label class="l">نوع الهوك</label><select data-pf="ht"><option value="">—</option>${CORE.opts(HT,pf.ht)}</select>
+ <div class="row">${[['views','مشاهدات'],['eng','تفاعل']].map(x=>`<div><label class="l">${x[1]}</label><input type="number" inputmode="numeric" data-pf="${x[0]}" value="${esc(pf[x[0]])}"></div>`).join('')}</div>
+ <div class="row">${[['saves','حفظ'],['shares','مشاركة'],['follows','متابعين جدد']].map(x=>`<div><label class="l">${x[1]}</label><input type="number" inputmode="numeric" data-pf="${x[0]}" value="${esc(pf[x[0]])}"></div>`).join('')}</div>
+ <button class="b g" data-a="pfAdd" style="width:100%">➕ سجّل</button></div>
+ ${l.length?`<div class="c"><h3>📈 اللي بينجح معاك</h3><div class="m">${l.length} منشور • ${tv.toLocaleString('ar-EG')} مشاهدة • ${tf.toLocaleString('ar-EG')} متابع جديد${l.length<10?' • الحكم مبدئي لحد 10 منشورات':''}</div>
+ ${stat('حسب الصيغة',grp(e=>e.fmt),k=>CORE.pick(FMTS,k)[1])}${stat('حسب نوع الهوك',grp(e=>e.ht),k=>CORE.pick(HT,k)[1])}
+ ${th.length?'<label class="l">🏆 أقوى الهوكات</label>'+th.map(e=>`<div class="st it"><span>«${esc(e.hook)}» <span class="m">${rate(e).toFixed(1)}%</span></span><button class="b s" data-a="pfBank" data-k="${esc(e.hook)}" style="margin:0">🪝</button></div>`).join(''):''}
+ ${btns('perf','انسخ أمر التحليل')}${outBox('perfOut','📥 التحليل',null,8)}</div>
+ <div class="c"><h3>🗂️ السجل</h3>${l.slice(0,60).map((e,i)=>`<div class="st it"><span>${esc(e.d)} • ${CORE.pick(FMTS,e.fmt)[1]}<br><span class="m">${esc(e.hook||'')} — ${(+e.views||0).toLocaleString('ar-EG')} مشاهدة • ${rate(e).toFixed(1)}%</span></span><button class="b s r" data-a="pfDel" data-i="${i}" style="margin:0">🗑️</button></div>`).join('')}
+ <button class="b s" data-a="pfCsv">📤 السجل كملف (Excel)</button></div>`:''}`}
+
+function render(){const P=p();if(!(P.step>=0&&P.step<TABS.length))P.step=0;
+ document.getElementById('nav').innerHTML=TABS.map((t,k)=>`<button class="b${k===P.step?' g':''}" data-a="go" data-i="${k}" style="margin:0">${t}</button>`).join('');
+ document.getElementById('app').innerHTML=[t0,t1,t2,t3,t4,t5,t6,t7,t8][P.step]();
+ const nb=document.querySelector('#nav .g');nb&&nb.scrollIntoView({inline:'center',block:'nearest'})}
+
+/* ================= التفاعل ================= */
+const OUT={ideas:o=>{p().iPaste=o;st.save();parseIdeas()},comp:o=>{p().compOut=o},four:o=>{p().fourOut=o},car:o=>{p().cPaste=o;st.save();parseSlides()},reel:o=>{p().rOut=o},plan:o=>{p().planPaste=o;st.save();parsePlan()},day:(o,i)=>{const r=p().plan[i];if(r)r.out=o},health:o=>{p().hOut=o},reply:o=>{p().rpOut=o;st.save();parseReplies()},perf:o=>{p().perfOut=o}};
+async function runAg(k,arg){if(!CORE.gemKey()){CORE.agentKeyBox();return}if(busy){toast('استنى، الفريق لسه شغال…');return}const t=PR[k](arg);if(!t)return;busy=true;st.snap('قبل '+k,true);
+ try{const o=await CORE.gemRun([t],s=>toast(s,90000));OUT[k](String(o||'').trim(),arg);st.save();toast('✓ الرد وصل');render()}catch(x){toast('⚠️ '+x.message,5000)}busy=false}
+const csv=(name,head,rows)=>{const q=x=>'"'+String(x==null?'':x).replace(/"/g,'""')+'"',t='\ufeff'+[head].concat(rows).map(r=>r.map(q).join(',')).join('\n'),f=new File([t],name,{type:'text/csv'});
+ (async()=>{try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==='AbortError')return}const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=name;a.click()})()};
+const go=k=>{p().step=k;st.save();render();window.scrollTo(0,0)};
+
+document.addEventListener('input',e=>{const t=e.target,P=p();if(!t.dataset)return;
+ if(t.dataset.f&&t.tagName!=='SELECT'&&t.type!=='date'){P[t.dataset.f]=t.type==='number'?(+t.value||0):t.value;st.save();return}
+ if(t.dataset.sl){const [i,f]=t.dataset.sl.split(':'),s=P.slides[+i];if(s){s[f]=t.value;st.save()}return}
+ if(t.dataset.pl){const [i,f]=t.dataset.pl.split(':'),r=P.plan[+i];if(r){r[f]=t.value;st.save()}return}
+ if(t.dataset.rp!==undefined){const l=REP.get(),r=l[+t.dataset.rp];if(r){r.text=t.value;REP.set(l)}return}
+ if(t.dataset.v){const v=VARS.get();v[t.dataset.v]=t.value;VARS.set(v);return}
+ if(t.dataset.pf&&t.tagName!=='SELECT'){pf[t.dataset.pf]=t.value;return}
+ if(t.dataset.lq!==undefined){libQ=t.value;const b=document.getElementById('libList');if(b)b.innerHTML=libItems()}});
+document.addEventListener('change',e=>{const t=e.target,P=p();if(!t.dataset)return;
+ if(t.dataset.f&&(t.tagName==='SELECT'||t.type==='date')){const f=t.dataset.f;P[f]=/^(iCount|fSec|cN|rSec|pDays|pPerWeek)$/.test(f)?+t.value:t.value;if(f==='niche'&&HEALTHY.includes(t.value))P.health=true;st.save();if(/^(niche|voice|pStart|pDays)$/.test(f))render();return}
+ if(t.dataset.pf&&t.tagName==='SELECT'){pf[t.dataset.pf]=t.value;return}
+ if(t.dataset.chk){P[t.dataset.chk]=t.checked;st.save();return}
+ if(t.dataset.occ){const k=t.dataset.occ,i=P.occOff.indexOf(k);if(t.checked&&i>=0)P.occOff.splice(i,1);if(!t.checked&&i<0)P.occOff.push(k);st.save();return}
+ if(t.hasAttribute('data-lf')){libF=t.value;const b=document.getElementById('libList');if(b)b.innerHTML=libItems();return}
+ if(t.hasAttribute('data-brand')){brandSel=t.value;if(t.value!==''){const b=BR.get()[+t.value];if(b){st.snap('قبل تغيير البراند',true);Object.assign(P,b);st.save();toast('اتحمّل «'+b.pName+'» ✓')}}render()}});
+
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;let a=b.dataset.a;const P=p(),i=+b.dataset.i,k=b.dataset.k;
+ if(a==='home'){CORE.leaveOk().then(ok=>{if(ok)location.href='./'});return}
+ if(a==='hist'){CORE.histBox(st,render);return}
+ if(a==='go'){go(i);return}
+ if(a.startsWith('pr:')){const snd=a.endsWith('!'),[fn,arg]=a.slice(3).replace(/!$/,'').split(':');if(!PR[fn])return;const t=PR[fn](arg===undefined?undefined:+arg);if(!t)return;st.snap('قبل '+fn);snd?CORE.send(t):CORE.copy(t,'اتنسخ الأمر ✓ الصقه في التطبيق');return}
+ if(a.startsWith('ag:')){const [fn,arg]=a.slice(3).split(':');runAg(fn,arg===undefined?undefined:+arg);return}
+ if(a.startsWith('apply:')){({ideas:parseIdeas,car:()=>parseSlides(),plan:()=>parsePlan(),reply:parseReplies})[a.slice(6)]();return}
+ if(a.startsWith('cp:')){const v=P[a.slice(3)]||'';if(!v.trim()){toast('فاضي');return}CORE.copy(v,'اتنسخ ✓');return}
+ if(a.startsWith('clr:')){if(!P[a.slice(4)]||confirm('تمسح الخانة دي؟')){st.snap('قبل المسح',true);P[a.slice(4)]='';st.save();render()}return}
+ if(a.startsWith('toH:')){const v=P[a.slice(4)]||'';if(!v.trim()){toast('فاضي');return}P.hIn=v;qRes=null;go(6);return}
+ /* الصفحة */
+ if(a==='saveBrand'){if(!P.pName.trim()){alert('اكتب اسم الصفحة الأول');return}const o={};['pName','niche','nicheCustom','audience','offer','identity','lang','voice','customVoice','satire','health'].forEach(f=>o[f]=P[f]);const l=BR.get(),j=l.findIndex(x=>x.pName===o.pName);if(j>=0)l[j]=o;else l.push(o);BR.set(l);brandSel=String(j>=0?j:l.length-1);toast('💾 اتحفظ البراند ✓');render();return}
+ if(a==='delBrand'){if(brandSel!==''&&confirm('تمسح البراند ده؟')){const l=BR.get();l.splice(+brandSel,1);BR.set(l);brandSel='';render()}return}
+ if(a==='impBrand'){let ad={};try{ad=JSON.parse(localStorage.getItem('hs_ad')||'{}')}catch(x){}const src=(ad.brands||[]).filter(x=>x.bName);if(!src.length){toast('مفيش براندات محفوظة في استوديو الإعلانات');return}const l=BR.get();let n=0;
+  src.forEach(x=>{if(l.some(y=>y.pName===x.bName))return;l.push({pName:x.bName,niche:'custom',nicheCustom:x.bCat||'',audience:x.bAudience||'',offer:x.bOffer||'',identity:x.bIdentity||'',lang:P.lang,voice:P.voice,customVoice:'',satire:P.satire,health:!!x.health});n++});BR.set(l);toast(n?'📥 اتضاف '+n+' براند ✓':'كلهم موجودين');render();return}
+ /* الأفكار */
+ if(a==='lcp'){const x=LIB.get()[i];x&&CORE.copy(x.hook,'اتنسخ الهوك ✓');return}
+ if(a==='lbank'){const x=LIB.get()[i];x&&addBank(x.hook);return}
+ if(a==='ldel'){const l=LIB.get();l.splice(i,1);LIB.set(l);const bx=document.getElementById('libList');if(bx)bx.innerHTML=libItems();return}
+ if(a==='l4'||a==='lcar'||a==='lreel'){const x=LIB.get()[i];if(!x)return;const t=x.idea+(x.hook?'\nالهوك: '+x.hook:'');if(a==='l4')P.idea=t;if(a==='lcar')P.cTopic=t;if(a==='lreel')P.rTopic=t;st.save();go(a==='l4'?2:a==='lcar'?3:4);return}
+ if(a==='hft'){hfT=k;render();return}
+ if(a==='hfc'){CORE.copy(HF[i][1],'اتنسخ القالب ✓');return}
+ if(a==='bank'){CORE.hookBank();return}
+ if(a==='ideaTo'){if(!P.idea.trim()){toast('اكتب الفكرة الأول');return}if(k==='3')P.cTopic=P.idea;else P.rTopic=P.idea;st.save();go(+k);return}
+ /* الكاروسيل */
+ const s=P.slides[i];
+ if(a==='sTxt'&&s){CORE.copy(s.text,'اتنسخ النص ✓');return}
+ if((a==='sImg'||a==='sImg!')&&s){if(!s.img.trim()){toast('مفيش أمر صورة');return}a==='sImg!'?CORE.send(s.img):CORE.copy(s.img,'اتنسخ أمر الصورة ✓');return}
+ if(a==='sDone'&&s){s.done=!s.done;st.save();render();return}
+ if(a==='sDel'&&s){if(confirm('تمسح السلايد '+(i+1)+'؟')){st.snap('قبل حذف سلايد',true);P.slides.splice(i,1);st.save();render()}return}
+ if(a==='sUp'||a==='sDn'){const j=a==='sUp'?i-1:i+1;if(j<0||j>=P.slides.length)return;[P.slides[i],P.slides[j]]=[P.slides[j],P.slides[i]];st.save();render();return}
+ if(a==='sAdd'){P.slides.push({text:'',img:'',done:false});st.save();render();return}
+ if(a==='carAll'){const t=P.slides.map((x,j)=>(k==='img'?'Slide '+(j+1)+': ':'سلايد '+(j+1)+'\n')+(k==='img'?x.img:x.text)).join('\n\n');CORE.copy(t,'اتنسخ ✓');return}
+ if(a==='carCap'){CORE.copy(P.cCap,'اتنسخ الكابشن ✓');return}
+ if(a==='carH'){P.hIn=P.slides.map(x=>x.text).join('\n')+(P.cCap?'\n\n'+P.cCap:'');qRes=null;go(6);return}
+ /* الريلز */
+ if(a==='rst'){P.rStyle=k;st.save();render();return}
+ /* الخطة */
+ const r=P.plan[i];
+ if(a==='pDone'&&r){r.done=!r.done;st.save();render();return}
+ if(a==='pLog'&&r){pf=Object.assign(pf,{d:/^\d{4}-\d\d-\d\d$/.test(r.date)?r.date:iso(new Date()),fmt:/كاروسيل/.test(r.fmt)?'car':/ستوري/.test(r.fmt)?'story':/بوست/.test(r.fmt)?'post':'reel',hook:r.hook,views:'',eng:'',saves:'',shares:'',follows:''});go(8);return}
+ if(a==='pOutC'&&r){CORE.copy(r.out,'اتنسخ ✓');return}
+ if(a==='pOutH'&&r){P.hIn=r.out;qRes=null;go(6);return}
+ if(a==='planCsv'){csv('خطة-النشر.csv',['اليوم','التاريخ','الصيغة','الفكرة','الهوك','المناسبة','اتنشر'],P.plan.map(x=>[x.day,x.date,x.fmt,x.idea,x.hook,x.occ,x.done?'✓':'']));return}
+ if(a==='planClr'){if(confirm('تمسح الخطة كلها؟')){st.snap('قبل مسح الخطة',true);P.plan=[];st.save();render()}return}
+ /* الفحص */
+ if(a==='hFrom'){const v=k==='slides'?P.slides.map(x=>x.text).join('\n'):P[k]||'';if(!v.trim()){toast('الخانة دي فاضية');return}P.hIn=v;qRes=null;st.save();render();return}
+ if(a==='quick'){if(!P.hIn.trim()){toast('الصق النص الأول');return}qRes=quickScan(P.hIn);render();return}
+ /* الردود */
+ if(a==='rpf'){rpF=k;render();return}
+ if(a==='rpc'){const x=REP.get()[i];if(!x)return;const t=fillVars(x.text);CORE.copy(t,/\{/.test(t)?'اتنسخ ✓ (فيه خانات لسه فاضية)':'اتنسخ الرد ✓');return}
+ if(a==='rpd'){if(confirm('تمسح الرد ده؟')){const l=REP.get();l.splice(i,1);REP.set(l);render()}return}
+ if(a==='rpAdd'){const t=(prompt('عنوان الرد (مثال: سؤال عن العروض):')||'').trim();if(!t)return;const l=REP.get();l.unshift({cat:rpF==='all'?'custom':rpF,title:t,text:''});REP.set(l);render();setTimeout(()=>{const x=document.querySelector('[data-rp="0"]');x&&x.focus()},50);return}
+ if(a==='rpReset'){if(confirm('ترجّع الردود الأصلية؟ الردود اللي ضفتها هتفضل.')){const l=REP.get().filter(x=>x.cat==='custom');REP.set(l.concat(RDEF.map(x=>({cat:x[0],title:x[1],text:x[2]}))));render()}return}
+ /* الأداء */
+ if(a==='pfAdd'){if(!(+pf.views)){alert('اكتب عدد المشاهدات');return}const l=PERF.get();l.unshift(Object.assign({},pf,{d:pf.d||iso(new Date())}));PERF.set(l.slice(0,500));pf={d:pf.d,fmt:pf.fmt,hook:'',ht:'',views:'',eng:'',saves:'',shares:'',follows:''};toast('📊 اتسجل ✓');render();return}
+ if(a==='pfDel'){if(confirm('تمسح التسجيل ده؟')){const l=PERF.get();l.splice(i,1);PERF.set(l);render()}return}
+ if(a==='pfBank'){addBank(k);return}
+ if(a==='pfCsv'){csv('سجل-الأداء.csv',['التاريخ','الصيغة','نوع الهوك','الهوك','مشاهدات','تفاعل','حفظ','مشاركة','متابعين','النسبة %'],PERF.get().map(x=>[x.d,CORE.pick(FMTS,x.fmt)[1],x.ht?CORE.pick(HT,x.ht)[1]:'',x.hook,x.views,x.eng,x.saves,x.shares,x.follows,rate(x).toFixed(1)]));return}});
+
+CORE.bindCast(p,()=>st.save(),render);
+CORE.bindPub(p,()=>st.save(),render,ctxTxt);
+const TEAMTXT=()=>'كاتب محتوى عالمي، ومخطط محتوى سوشيال ميديا، وكاتب سكريبت ريلز، ومصمم جرافيك، ومعلّق صوتي'+(p().health?'، وصيدلي مراجع للصياغة الصحية':'');
+const CHK={2:'fourOut',4:'rOut',6:'hIn',1:'compOut'};
+CORE.work({ns:'content',st,def:DEF,render,ctx:ctxTxt,
+ presets:[{name:'💊 صيدلية — توعية',set:{niche:'pharmacy',health:true,voice:'friend',satire:'light',lang:'eg',iGoal:'aware'}},{name:'🛍️ صيدلية — عروض',set:{niche:'pharmacy',health:true,voice:'sales',satire:'light',iGoal:'sell'}},{name:'🧴 عناية بالشعر',set:{niche:'hair',health:true,voice:'friend',iGoal:'mix'}},{name:'🌸 عطور',set:{niche:'perfume',health:false,voice:'mine',satire:'none',iGoal:'trust'}},{name:'🕯️ غموض وحكايات',set:{niche:'mystery',health:false,voice:'storyteller',satire:'light',iGoal:'viral'}}],
+ check:{team:TEAMTXT(),text:()=>{const P=p();if(P.step===3)return P.slides.map((s,i)=>'سلايد '+(i+1)+'\nالنص: '+s.text+'\nأمر الصورة: '+s.img).join('\n\n')+(P.cCap?'\n\nالكابشن: '+P.cCap:'');if(P.step===5)return P.plan.map(r=>['يوم '+r.day,r.date,r.fmt,r.idea,r.hook,r.occ].join(' | ')).join('\n');const f=CHK[P.step];return (f&&P[f])||P.fourOut||P.idea||''},
+  apply:v=>{const P=p();if(P.step===3)return parseSlides(v);if(P.step===5)return parsePlan(v);const f=CHK[P.step]||'fourOut';P[f]=v.trim();st.save();render();return 'النص'}}});
+window.addEventListener('hs-store',e=>{if(e.detail==='content')render()});
+st.snap('عند الفتح');render();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>

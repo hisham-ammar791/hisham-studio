@@ -1,6 +1,6 @@
 /* core.js — القلب المشترك للاستوديوهات الجديدة (صغير وآمن: ما بيلمسش الاستوديو القديم) */
 (function(){
-const CORE=window.CORE={};CORE.VER='html75';
+const CORE=window.CORE={};CORE.VER='html76';
 const $=CORE.$=id=>document.getElementById(id);
 CORE.esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 CORE.toast=function(m,ms){let t=$('coreToast');if(!t){t=document.createElement('div');t.id='coreToast';t.style.cssText='pointer-events:none;position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#0f172a;border:1px solid #38bdf8;color:#fff;padding:9px 14px;border-radius:12px;z-index:99;font-size:14px;max-width:90vw;text-align:center';document.body.appendChild(t)}
@@ -228,7 +228,7 @@ C.backupCollect=async function(){const d={type:'hisham-studios-backup',v:2,at:ne
  for(const k of await C.idb.keys()){if(/^hs_(?!trc|dirty|media_)/.test(k)&&!(k in d.keys)){const r=await C.idb.get(k);if(r&&r.raw)d.keys[k]=r.raw}}
  try{const g=JSON.parse(localStorage.getItem(GDK)||'{}');d.keys[GDK]=JSON.stringify({cid:g.cid})}catch(e){}
  return d};
-C.backupApply=async function(d){Object.entries(d.keys||{}).forEach(([k,v])=>{if(/^hs_(film|ad|song|doc|montage|lib)$/.test(k))C.persist(k,v);else try{localStorage.setItem(k,v)}catch(x){}});await new Promise(r=>setTimeout(r,400))};
+C.backupApply=async function(d){Object.entries(d.keys||{}).forEach(([k,v])=>{if(/^hs_(film|ad|song|doc|montage|content|lib)$/.test(k))C.persist(k,v);else try{localStorage.setItem(k,v)}catch(x){}});await new Promise(r=>setTimeout(r,400))};
 /* رفع: كل الشغل + (اختياري) ملفات المونتاج */
 C.backupToDrive=async function(withMedia,log){log=log||(()=>{});if(!(await C.gdConnect()))return false;const fid=await folder();const d=await C.backupCollect();d.media=[];
  if(withMedia){let M=[];try{const J=JSON.parse(d.keys.hs_montage||'{}');M=(J.media||[]).slice();if(J.logo)M.push({id:'logo',name:'logo-'+(J.logo.name||'')})}catch(e){}const up=await C.gdFind("appProperties has { key='hsm' and value='1' }");
