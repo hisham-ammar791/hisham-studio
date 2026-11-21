@@ -1,6 +1,6 @@
 /* core.js — القلب المشترك للاستوديوهات الجديدة (صغير وآمن: ما بيلمسش الاستوديو القديم) */
 (function(){
-const CORE=window.CORE={};CORE.VER='html77';
+const CORE=window.CORE={};CORE.VER='html78';
 const $=CORE.$=id=>document.getElementById(id);
 CORE.esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 CORE.toast=function(m,ms){let t=$('coreToast');if(!t){t=document.createElement('div');t.id='coreToast';t.style.cssText='pointer-events:none;position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#0f172a;border:1px solid #38bdf8;color:#fff;padding:9px 14px;border-radius:12px;z-index:99;font-size:14px;max-width:90vw;text-align:center';document.body.appendChild(t)}
@@ -301,6 +301,7 @@ C.work=function(o){const {ns,st,render}=o,P=()=>st.get();C._page={st,def:o.def,r
  document.addEventListener('input',e=>{if(e.target.id==='wName'){P().wname=e.target.value;st.save()}});
  document.addEventListener('click',e=>{const b=e.target.closest('[data-w]');if(!b)return;const a=b.dataset.w;if(a==='save')save();if(a==='open')openBox();if(a==='new')nw();if(a==='check')check();if(a==='tools')C.toolsMenu(o,st,render,bar);if(a==='wipe')C.wipeBox();if(a==='lessons')C.lessonsBox();if(a==='pub'){const t=C.pubPrompt(o.ctx?o.ctx():'');C.copy(t,'اتنسخ أمر حزمة النشر ✓')}});
  bar();
+ try{const h=JSON.parse(localStorage.getItem('hs_handoff')||'null');if(h&&h.ns===ns&&Date.now()-h.at<15*60000){localStorage.removeItem('hs_handoff');setTimeout(async()=>{if(!(await C.leaveOk()))return;st.snap('قبل فكرة من '+(h.from||'المحتوى السريع'),true);st.reset();Object.assign(P(),h.set);st.save();clean();bar();render();C.toast('📥 وصلت الفكرة من '+(h.from||'المحتوى السريع')+' ✓ والعمل القديم في سجل النسخ 🕘',4500)},350)}}catch(e){}
  const qo=new URLSearchParams(location.search).get('open');
  if(qo)setTimeout(async()=>{history.replaceState(null,'',location.pathname);if(!(await C.leaveOk()))return;if(!(await C.gdConnect()))return;try{C.toast('⏳ بفتح العمل…',8000);const d=C.unpackWork(await C.gdLoad(qo));st.snap('قبل فتح عمل من Drive',true);st.set(d);clean();render();C.toast('اتفتح ✓')}catch(x){C.toast('⚠️ '+x.message,4000)}},300)};
 })();
@@ -786,11 +787,11 @@ const G=[['works','🎬 الأعمال الحالية في كل الاستودي
  ['lib','👥 مكتبة الشخصيات والأماكن والأدوات والكادرات','بصورها وأصواتها',1],
  ['content','⚡ أفكار وردود وسجل أداء وبراندات المحتوى السريع','',1],
  ['learn','🪝 بنك الهوكات وسجل الدروس','',1],
- ['old','🧰 الاستوديو الكامل القديم','حلقاته وصوره، ومش بتدخل في نسخة Drive، يعني مش هترجع',0]];
+ ['old','🧰 الاستوديو الكامل القديم','حلقاته وشخصياته وصوره. مش بتدخل في النسخة دي؛ احفظها الأول من زر 🧹 الأحمر جوه الاستوديو القديم',0]];
 const RX={works:/^hs_(film|ad|song|doc|montage|content)$|^hs_(hist_|dirty_|ts~|media_)/,lib:/^hs_lib$/,content:/^hs_cs_/,learn:/^hs_(hooks|lessons)$/,
- old:/^(studio5s_v2|ez_cur|ez_paste|ez_projlist|ez_step|ez_undo|studio_shortundo|studio_bkProg|studio_bkSnooze|studio_lastBackup)$/};
+ old:/^(studio5s_v2|ez_cur|ez_paste|ez_projlist|ez_step|ez_undo|studio_shortundo|studio_bkProg|studio_bkSnooze|studio_lastBackup|studio_(?:charlib|proplib|placelib)_v1)$/};
 const OLDDB=['ez_state','studio_charimg','ez_imgs','ez_projs'];
-const delDb=n=>new Promise(r=>{try{const q=indexedDB.deleteDatabase(n);q.onsuccess=q.onerror=q.onblocked=()=>r()}catch(e){r()}});
+const delDb=function(n){return new Promise(r=>{try{const q=indexedDB.open(n);q.onupgradeneeded=()=>{try{q.transaction.abort()}catch(e){}};q.onerror=()=>r(0);q.onblocked=()=>r(0);q.onsuccess=()=>{const d=q.result,ns=[...d.objectStoreNames];if(!ns.length){d.close();return r(0)}const t=d.transaction(ns,'readwrite');ns.forEach(s=>t.objectStore(s).clear());t.oncomplete=()=>{d.close();r(1)};t.onerror=t.onabort=()=>{d.close();r(0)}}}catch(e){r(0)}})};
 C.wipe=async function(sel){const rx=sel.map(k=>RX[k]).filter(Boolean),hit=k=>rx.some(r=>r.test(k));let n=0;
  Object.keys(localStorage).filter(hit).forEach(k=>{localStorage.removeItem(k);n++});
  for(const k of await C.idb.keys())if(hit(k)){await C.idb.del(k);n++}

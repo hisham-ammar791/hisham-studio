@@ -93,7 +93,7 @@ const HF=[['shock','لو [المشكلة] بتحصلك كل يوم… إمتى �
  ['warn','وقّف! ما تعملش [الحاجة] قبل ما تشوف ده.'],['warn','لو بتاخد [حاجة] مع [حاجة]، خلي بالك.'],['warn','العلامة دي على [المنتج] معناها إنه مش أصلي.'],['warn','الغلطة دي بتبوّظ [النتيجة] وإنت مش واخد بالك.']];
 
 /* ردود جاهزة أولية (تتعدل وتتمسح) */
-const RCATS=[['all','الكل'],['price','سعر'],['avail','توفّر'],['delivery','توصيل ومواعيد'],['consult','استشارة'],['complaint','شكوى'],['thanks','شكر'],['engage','تفاعل'],['custom','مخصص']];
+const RCATS=[['all','الكل'],['wa','📲 واتساب'],['price','سعر'],['avail','توفّر'],['delivery','توصيل ومواعيد'],['consult','استشارة'],['complaint','شكوى'],['thanks','شكر'],['engage','تفاعل'],['custom','مخصص']];
 const RDEF=[['price','سؤال عن السعر','أهلًا يا {الاسم} 🌿 سعر {المنتج} النهارده {السعر}. تحب نجهزهولك ونبعته، ولا هتعدي علينا؟'],
  ['price','السعر في التعليقات','بعتنالك التفاصيل والسعر في الرسائل يا {الاسم} 💬'],
  ['avail','متوفر','متوفر يا {الاسم} ✓ ولو حابب نحجزهولك باسمك لحد ما تيجي، ابعتلنا رقمك.'],
@@ -108,6 +108,15 @@ const RDEF=[['price','سؤال عن السعر','أهلًا يا {الاسم} �
  ['thanks','شكر','تسلم يا {الاسم} ❤️ كلامك ده بيفرق معانا جدًا.'],
  ['thanks','تقييم حلو','إحنا اللي بنشكرك 🌿 مستنيينك دايمًا، وأي سؤال إحنا موجودين.'],
  ['engage','منشن لصاحبه','منوّر يا {الاسم} 👋 ولو صاحبك محتاج نصيحة، إحنا هنا.']];
+/* واتساب بيزنس: ترحيب وغياب وردود سريعة باختصار */
+const WADEF=[['wa','رسالة الترحيب','أهلًا بيك في {الصفحة} 🌿\nابعت طلبك أو صورة الروشتة، وهنرد عليك بالمتوفر والسعر في دقايق.\nللطوارئ كلمنا على {الرقم}.','ترحيب'],
+ ['wa','رسالة الغياب','أهلًا يا {الاسم} 🌙 إحنا قافلين دلوقتي، ومواعيدنا من {من} لـ {إلى}.\nسيب طلبك وهنرد عليك أول ما نفتح. لو الحالة طارئة روح أقرب مستشفى.','غياب'],
+ ['wa','ابعت الروشتة','ابعتلنا صورة الروشتة واضحة 📸 وهنقولك المتوفر والسعر والبدائل لو فيه حاجة ناقصة.','روشتة'],
+ ['wa','استلمنا الطلب','استلمنا طلبك يا {الاسم} ✓ بنجهزه دلوقتي، والإجمالي {السعر}. هنبعتلك أول ما يخرج للتوصيل.','طلب'],
+ ['wa','الطلب خرج','طلبك خرج مع المندوب 🛵 ويوصلك في خلال نص ساعة تقريبًا. لو محتاج حاجة تانية قولنا.','خرج'],
+ ['wa','تذكير تجديد العلاج','أهلًا يا {الاسم} 🌿 علاجك الشهري ({المنتج}) قرّب يخلص. نجهزهولك ونبعته زي كل مرة؟','تجديد'],
+ ['wa','العنوان','عنوان الصيدلية: {العنوان} 📍\nولو حابب نوصّلك الطلب ابعت العنوان بتاعك.','عنوان'],
+ ['wa','طريقة الدفع','بنقبل الدفع كاش عند الاستلام، أو تحويل على {الدفع}. ابعت صورة التحويل بعد ما تحوّل.','دفع']];
 
 /* فحص سريع على الجهاز: كلمات خطر شائعة في المحتوى الصحي */
 const QRULES=[[/(بيعالج|يعالج|تعالج|علاج نهائي|علاج جذري|يقضي على|بيقضي على|هيقضي على)/g,'ادعاء علاج','قول «يساعد في» أو «يخفف» واذكر إن النتيجة بتختلف حسب الحالة'],
@@ -136,12 +145,13 @@ const DEF={step:0,wname:'',
  idea:'',goal:'aware',fSec:30,fourOut:'',
  cTopic:'',cKind:'tips',cN:7,cAspect:'4:5',cText:'clean',cPaste:'',slides:[],cIdent:'',cCap:'',
  rTopic:'',rStyle:'broll',rSec:30,rVoice:'mine',rOut:'',
- pStart:'',pDays:30,pPerWeek:5,pMix:'',pPillars:'',occOff:[],planPaste:'',plan:[],
+ pStart:'',pTime:'20:00',pDays:30,pPerWeek:5,pMix:'',pPillars:'',occOff:[],planPaste:'',plan:[],
  hIn:'',hOut:'',rpNew:'',rpOut:'',perfOut:''};
 const st=CORE.store('content',DEF);const p=()=>st.get();
 const LS=(k,d)=>({get(){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d():v}catch(e){return d()}},set(v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast('⚠️ مساحة الجهاز مليانة')}}});
 const LIB=LS('hs_cs_lib',()=>[]),PERF=LS('hs_cs_perf',()=>[]),BR=LS('hs_cs_brands',()=>[]),VARS=LS('hs_cs_vars',()=>({}));
-const REP=LS('hs_cs_replies',()=>RDEF.map(x=>({cat:x[0],title:x[1],text:x[2]})));
+const REP=LS('hs_cs_replies',()=>WADEF.concat(RDEF).map(x=>({cat:x[0],title:x[1],text:x[2],sc:x[3]||''})));
+(()=>{try{if(!localStorage.getItem('hs_cs_wa1')){localStorage.setItem('hs_cs_wa1','1');const l=REP.get();if(!l.some(x=>x.cat==='wa'))REP.set(WADEF.map(x=>({cat:x[0],title:x[1],text:x[2],sc:x[3]})).concat(l))}}catch(e){}})();
 let libF='',libQ='',hfT='',rpF='all',qRes=null,pf={d:'',fmt:'reel',hook:'',ht:'',views:'',eng:'',saves:'',shares:'',follows:''},brandSel='',busy=false;
 
 /* ================= أدوات مساعدة ================= */
@@ -158,7 +168,8 @@ const rate=e=>{const v=+e.views||0;return v?((+e.eng||0)+(+e.saves||0)+(+e.share
 const topHooks=n=>PERF.get().filter(e=>e.hook&&+e.views).sort((a,b)=>rate(b)-rate(a)).slice(0,n);
 const learnTxt=()=>{const l=[...new Set(topHooks(5).map(x=>x.hook).concat(CORE.hooks().slice(0,8)))].slice(0,10);return l.length?'\nهوكات نجحت معايا قبل كده (اتعلم من نوعها وإيقاعها وما تكررهاش):\n'+l.map(x=>'- '+x).join('\n')+'\n':''};
 const addBank=h=>{h=(h||'').trim();if(!h)return;const l=CORE.hooks();if(!l.includes(h)){l.unshift(h);try{localStorage.setItem('hs_hooks',JSON.stringify(l.slice(0,60)))}catch(e){}}toast('🪝 اتحفظ في بنك الهوكات ✓')};
-const fillVars=t=>{const v=VARS.get();return t.replace(/\{(الاسم|المنتج|السعر|الرقم|من|إلى)\}/g,(m,k)=>(v[k]||'').trim()||m)};
+const fillVars=t=>{const v=VARS.get();return t.replace(/\{(الاسم|المنتج|السعر|الرقم|من|إلى|العنوان|الدفع|الصفحة)\}/g,(m,k)=>(k==='الصفحة'?(v[k]||p().pName||''):(v[k]||'')).trim()||m)};
+const waNum=s=>{s=String(s||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g,'');if(s.startsWith('00'))s=s.slice(2);if(s.startsWith('0'))s='20'+s.slice(1);return s};
 
 /* المناسبات: مصرية وصحية وهجرية ومواسم */
 let HFMT=null;try{HFMT=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{day:'numeric',month:'numeric'});if(!/islamic/.test(HFMT.resolvedOptions().calendar))HFMT=null}catch(e){HFMT=null}
@@ -276,7 +287,7 @@ function t2(){const P=p();
  <label class="l">الفكرة</label><textarea data-f="idea" rows="3" placeholder="مثال: ليه الدكتور مش بيكتب مضاد حيوي لكل برد">${esc(P.idea)}</textarea>
  <div class="row"><div><label class="l">الهدف</label>${sel('goal',GOALS,P.goal)}</div><div><label class="l">مدة الريلز (ث)</label>${sel('fSec',num([15,20,30,45,60]),P.fSec)}</div></div>
  ${CORE.hookEmoHTML(P)}${btns('four','انسخ أمر الـ٤ صيغ')}${outBox('fourOut','📥 الـ٤ صيغ',null,12)}
- <div class="chips"><button class="b s" data-a="ideaTo" data-k="3">🖼️ اعمل الكاروسيل بالتفصيل</button><button class="b s" data-a="ideaTo" data-k="4">🎙️ اعمل الريلز بالتفصيل</button></div></div>${CORE.pubCard(P)}`}
+ <div class="chips"><button class="b s" data-a="ideaTo" data-k="3">🖼️ اعمل الكاروسيل بالتفصيل</button><button class="b s" data-a="ideaTo" data-k="4">🎙️ اعمل الريلز بالتفصيل</button><button class="b s" data-a="fourVid">🎬 لقطات في استوديو</button></div></div>${CORE.pubCard(P)}`}
 
 function t3(){const P=p(),sl=P.slides;
  return `<div class="c"><h3>🖼️ صانع الكاروسيل</h3><div class="m">النص وأمر صورة لكل سلايد بهوية واحدة، عشان الكاروسيل يطلع حتة واحدة.</div>
@@ -314,9 +325,13 @@ function t5(){const P=p(),oc=occasions(),pl=P.plan;
  ${pl.length?`<div class="c"><h3>✅ الخطة (${pl.filter(r=>r.done).length}/${pl.length} اتنشر)</h3>
  ${pl.map((r,i)=>`<div class="sl${r.done?' dn':''}"><div class="st"><b>يوم ${esc(r.day)} • ${esc(r.fmt)}</b><span class="m">${esc(r.date)}</span></div>${r.occ&&r.occ!=='-'?`<span class="tag">📅 ${esc(r.occ)}</span>`:''}
  <textarea data-pl="${i}:idea" rows="2">${esc(r.idea)}</textarea><div class="hk">«<input data-pl="${i}:hook" value="${esc(r.hook)}" style="display:inline;width:92%;padding:4px;font-size:14px;color:#fde68a">»</div>
- <div class="chips"><button class="b s g" data-a="pr:day:${i}">✍️ اكتبه</button><button class="b s" data-a="pr:day:${i}!">📤</button><button class="b s bl" data-a="ag:day:${i}">🤖</button><button class="b s${r.done?' g':''}" data-a="pDone" data-i="${i}">✓ اتنشر</button><button class="b s" data-a="pLog" data-i="${i}">📊 سجّل</button></div>
+ <div class="chips"><button class="b s g" data-a="pr:day:${i}">✍️ اكتبه</button><button class="b s" data-a="pr:day:${i}!">📤</button><button class="b s bl" data-a="ag:day:${i}">🤖</button><button class="b s${r.done?' g':''}" data-a="pDone" data-i="${i}">✓ اتنشر</button><button class="b s" data-a="pLog" data-i="${i}">📊 سجّل</button><button class="b s" data-a="pCal" data-i="${i}" title="حطه في تقويم جوجل بتنبيه">📅</button><button class="b s" data-a="pVid" data-i="${i}" title="حوّله لقطات في استوديو">🎬 لقطات</button></div>
  ${r.out?`<details><summary class="m">📄 المنشور المكتوب</summary><textarea data-pl="${i}:out" rows="8">${esc(r.out)}</textarea><button class="b s" data-a="pOutC" data-i="${i}">📋 نسخ</button><button class="b s" data-a="pOutH" data-i="${i}">✅ افحصه</button></details>`:''}</div>`).join('')}
- <div class="chips"><button class="b s" data-a="planCsv">📤 الخطة كملف (Excel)</button><button class="b s r" data-a="planClr">🗑️ امسح الخطة</button></div></div>`:''}`}
+ <div class="chips"><button class="b s" data-a="planCsv">📤 الخطة كملف (Excel)</button><button class="b s r" data-a="planClr">🗑️ امسح الخطة</button></div></div>
+ <div class="c"><h3>⏰ تذكير يومي بمنشور اليوم</h3><div class="m">كل يوم في الخطة يبقى موعد في تقويم الموبايل بتنبيه، فيه الفكرة والهوك. ومنشور النهارده بيظهر كمان في الصفحة الرئيسية.</div>
+ <div class="row"><div><label class="l">ساعة التنبيه</label><input type="time" data-f="pTime" value="${esc(P.pTime||'20:00')}"></div></div>
+ <button class="b g" data-a="planIcs" style="width:100%">📅 كل الأيام في ملف تقويم (مرة واحدة)</button>
+ <div class="m" style="margin-top:6px">على الموبايل: افتح الملف بتطبيق التقويم. ولو تقويم جوجل ما فتحوش: على اللاب افتح calendar.google.com ← ⚙️ الإعدادات ← استيراد وتصدير ← اختار الملف، والتنبيهات هتوصلك على الموبايل. أو استخدم زر 📅 جنب كل يوم.</div></div>`:''}`}
 
 function t6(){const P=p();
  return `<div class="c"><h3>✅ فحص الصياغة الصحية</h3><div class="m">قبل ما تنشر أي حاجة عن دوا أو مكمل أو تجميل: فحص سريع على الموبايل بيلقط الكلمات الخطر، وفحص عميق بالذكاء بيرجعلك حكم ونسخة مصححة.</div>
@@ -328,13 +343,18 @@ function t6(){const P=p();
  <div class="m" style="margin-top:8px">الفحص ده مساعدة، والقرار النهائي مسؤوليتك كصيدلي.</div></div>`}
 
 function t7(){const P=p(),l=REP.get(),v=VARS.get();
- return `<div class="c"><h3>💬 ردود جاهزة للتعليقات والرسايل</h3><div class="m">املا البيانات مرة، وكل رد بيتنسخ بيها لوحده مكان {الاسم} و{المنتج}…</div>
+ return `<div class="c"><h3>💬 ردود جاهزة للتعليقات والرسايل</h3><div class="m">املا البيانات مرة، وكل رد بيتنسخ بيها لوحده مكان {الاسم} و{المنتج}… وزرار 📲 يفتح واتساب والرد جاهز.</div>
  <div class="row">${[['الاسم','اسم الشخص'],['المنتج','اسم المنتج']].map(x=>`<div><input data-v="${x[0]}" value="${esc(v[x[0]]||'')}" placeholder="${x[1]}"></div>`).join('')}</div>
  <div class="row" style="margin-top:6px">${[['السعر','السعر'],['الرقم','رقم الصيدلية']].map(x=>`<div><input data-v="${x[0]}" value="${esc(v[x[0]]||'')}" placeholder="${x[1]}"></div>`).join('')}</div>
  <div class="row" style="margin-top:6px">${[['من','بنفتح الساعة'],['إلى','بنقفل الساعة']].map(x=>`<div><input data-v="${x[0]}" value="${esc(v[x[0]]||'')}" placeholder="${x[1]}"></div>`).join('')}</div>
+ <div class="row" style="margin-top:6px">${[['العنوان','العنوان أو رابط اللوكيشن'],['الدفع','رقم المحفظة أو إنستاباي']].map(x=>`<div><input data-v="${x[0]}" value="${esc(v[x[0]]||'')}" placeholder="${x[1]}"></div>`).join('')}</div>
+ <label class="l">📲 رقم العميل على واتساب (اختياري)</label><input data-v="عميل" inputmode="tel" value="${esc(v['عميل']||'')}" placeholder="01xxxxxxxxx — لو فاضي هتختار الشات بنفسك">
  <div class="chips">${RCATS.map(c=>`<button class="b s${rpF===c[0]?' g':''}" data-a="rpf" data-k="${c[0]}">${c[1]}</button>`).join('')}</div>
- ${l.map((r,i)=>[r,i]).filter(([r])=>rpF==='all'||r.cat===rpF).map(([r,i])=>`<div class="it"><div class="st"><b>${esc(r.title)}</b><button class="b s g" data-a="rpc" data-i="${i}" style="margin:0">📋 نسخ</button><button class="b s r" data-a="rpd" data-i="${i}" style="margin:0">🗑️</button></div><textarea data-rp="${i}" rows="2" style="font-size:14px">${esc(r.text)}</textarea></div>`).join('')||'<div class="m">مفيش ردود هنا.</div>'}
+ ${l.map((r,i)=>[r,i]).filter(([r])=>rpF==='all'||r.cat===rpF).map(([r,i])=>`<div class="it"><div class="st"><b>${esc(r.title)}${r.sc?` <span class="tag">/${esc(r.sc)}</span>`:''}</b><button class="b s g" data-a="rpc" data-i="${i}" style="margin:0">📋 نسخ</button><button class="b s" data-a="rpw" data-i="${i}" style="margin:0;background:#15803d;border-color:#15803d">📲</button><button class="b s r" data-a="rpd" data-i="${i}" style="margin:0">🗑️</button></div><textarea data-rp="${i}" rows="${r.text.length>110?3:2}" style="font-size:14px">${esc(r.text)}</textarea></div>`).join('')||'<div class="m">مفيش ردود هنا.</div>'}
  <button class="b" data-a="rpAdd" style="width:100%">➕ رد جديد بإيدي</button><button class="b" data-a="rpReset" style="width:100%">↩️ رجّع الردود الأصلية</button></div>
+ <div class="c"><h3>📲 جهّز واتساب بيزنس في دقيقة</h3><div class="m">رسالة الترحيب والغياب والردود السريعة جاهزة في فلتر «📲 واتساب». الرد السريع بتكتب اختصاره (زي <b>/روشتة</b>) في الشات فيطلع كامل.</div>
+ <ol class="m" style="padding-right:18px;margin:6px 0"><li>واتساب بيزنس ← ⋮ ← الإعدادات ← أدوات الأعمال.</li><li>«رسالة الترحيب» و«رسالة الغياب»: الصق الرسالتين من هنا.</li><li>«الردود السريعة» ← ➕: الصق الرد واكتب الاختصار اللي جنبه.</li></ol>
+ <button class="b g" data-a="waAll" style="width:100%">📋 انسخ كل ردود واتساب بالاختصارات</button></div>
  <div class="c"><h3>✍️ موقف جديد؟</h3><textarea data-f="rpNew" rows="2" placeholder="مثال: واحد كاتب في التعليقات إن الأسعار عندنا غالية">${esc(P.rpNew)}</textarea>${btns('reply','انسخ أمر الردود')}${outBox('rpOut','📥 الرد',['reply','💬 ضيفها للردود'])}</div>`}
 
 function t8(){const P=p(),l=PERF.get();
@@ -367,9 +387,19 @@ async function runAg(k,arg){if(!CORE.gemKey()){CORE.agentKeyBox();return}if(busy
 const csv=(name,head,rows)=>{const q=x=>'"'+String(x==null?'':x).replace(/"/g,'""')+'"',t='\ufeff'+[head].concat(rows).map(r=>r.map(q).join(',')).join('\n'),f=new File([t],name,{type:'text/csv'});
  (async()=>{try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==='AbortError')return}const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=name;a.click()})()};
 const go=k=>{p().step=k;st.save();render();window.scrollTo(0,0)};
+const SENDTO=[['ad','📣 استوديو الإعلانات','عرض أو منتج أو بيع'],['film','🎬 الأفلام والمسلسلات','مشهد أو قصة بشخصياتك (زي عمو فهيم)'],['doc','🎙️ الوثائقي والشرح','توعية وشرح بصوت راوي']];
+function sendTo(text,name){let o=document.getElementById('stBox');if(o)o.remove();o=document.createElement('div');o.id='stBox';o.style.cssText='position:fixed;inset:0;z-index:98;background:#000c;display:flex;align-items:flex-end';
+ o.innerHTML=`<div style="background:#0f172a;border:1px solid #38bdf8;border-radius:16px 16px 0 0;width:100%;padding:12px;color:#fff"><b>🎬 تحوّله لقطات في أنهي استوديو؟</b><div class="m">الفكرة هتتحط في عمل جديد هناك، والعمل اللي مفتوح هناك يتحفظ في سجل النسخ 🕘 (ولو مش محفوظ على Drive هيسألك).</div>${SENDTO.map(x=>`<button class="b" data-st="${x[0]}" style="width:100%;text-align:right;margin:8px 0 0">${x[1]}<div class="m" style="font-size:12px">${x[2]}</div></button>`).join('')}<button class="b" data-st="x" style="width:100%;margin-top:10px">إلغاء</button></div>`;
+ document.body.appendChild(o);o.onclick=e=>{const b=e.target.closest('[data-st]');if(e.target===o||(b&&b.dataset.st==='x')){o.remove();return}if(!b)return;const k=b.dataset.st,P=p();
+  const set=k==='doc'?{topic:text,wname:name}:k==='ad'?{idea:text,bName:P.pName,bAudience:P.audience,bOffer:P.offer,bIdentity:P.identity,health:P.health,wname:name}:{idea:text,wname:name};
+  try{localStorage.setItem('hs_handoff',JSON.stringify({ns:k,set,at:Date.now(),from:'المحتوى السريع'}))}catch(x){}o.remove();CORE.leaveOk().then(ok=>{if(ok)location.href=k+'.html'})}}
+const rowTxt=r=>r.idea+(r.hook?'\nالهوك (أول جملة): '+r.hook:'')+(r.occ&&r.occ!=='-'?'\nالمناسبة: '+r.occ:'')+(r.out?'\n\nالسكريبت المكتوب:\n'+r.out:'');
+const calStamp=(date,time,add)=>{const d=new Date(date+'T'+(time||'20:00')+':00');if(isNaN(d))return '';d.setMinutes(d.getMinutes()+(add||0));return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'T'+pad(d.getHours())+pad(d.getMinutes())+'00'};
+const rowDate=r=>{const m=String(r.date||'').match(/\d{4}-\d\d-\d\d/);if(m)return m[0];return iso(addD(startDate(),(+String(r.day).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d))||1)-1))};
+const icsEsc=s=>String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n');
 
 document.addEventListener('input',e=>{const t=e.target,P=p();if(!t.dataset)return;
- if(t.dataset.f&&t.tagName!=='SELECT'&&t.type!=='date'){P[t.dataset.f]=t.type==='number'?(+t.value||0):t.value;st.save();return}
+ if(t.dataset.f&&t.tagName!=='SELECT'&&t.type!=='date'&&t.type!=='time'){P[t.dataset.f]=t.type==='number'?(+t.value||0):t.value;st.save();return}
  if(t.dataset.sl){const [i,f]=t.dataset.sl.split(':'),s=P.slides[+i];if(s){s[f]=t.value;st.save()}return}
  if(t.dataset.pl){const [i,f]=t.dataset.pl.split(':'),r=P.plan[+i];if(r){r[f]=t.value;st.save()}return}
  if(t.dataset.rp!==undefined){const l=REP.get(),r=l[+t.dataset.rp];if(r){r.text=t.value;REP.set(l)}return}
@@ -377,7 +407,7 @@ document.addEventListener('input',e=>{const t=e.target,P=p();if(!t.dataset)retur
  if(t.dataset.pf&&t.tagName!=='SELECT'){pf[t.dataset.pf]=t.value;return}
  if(t.dataset.lq!==undefined){libQ=t.value;const b=document.getElementById('libList');if(b)b.innerHTML=libItems()}});
 document.addEventListener('change',e=>{const t=e.target,P=p();if(!t.dataset)return;
- if(t.dataset.f&&(t.tagName==='SELECT'||t.type==='date')){const f=t.dataset.f;P[f]=/^(iCount|fSec|cN|rSec|pDays|pPerWeek)$/.test(f)?+t.value:t.value;if(f==='niche'&&HEALTHY.includes(t.value))P.health=true;st.save();if(/^(niche|voice|pStart|pDays)$/.test(f))render();return}
+ if(t.dataset.f&&(t.tagName==='SELECT'||t.type==='date'||t.type==='time')){const f=t.dataset.f;P[f]=/^(iCount|fSec|cN|rSec|pDays|pPerWeek)$/.test(f)?+t.value:t.value;if(f==='niche'&&HEALTHY.includes(t.value))P.health=true;st.save();if(/^(niche|voice|pStart|pDays)$/.test(f))render();return}
  if(t.dataset.pf&&t.tagName==='SELECT'){pf[t.dataset.pf]=t.value;return}
  if(t.dataset.chk){P[t.dataset.chk]=t.checked;st.save();return}
  if(t.dataset.occ){const k=t.dataset.occ,i=P.occOff.indexOf(k);if(t.checked&&i>=0)P.occOff.splice(i,1);if(!t.checked&&i<0)P.occOff.push(k);st.save();return}
@@ -427,6 +457,16 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='pLog'&&r){pf=Object.assign(pf,{d:/^\d{4}-\d\d-\d\d$/.test(r.date)?r.date:iso(new Date()),fmt:/كاروسيل/.test(r.fmt)?'car':/ستوري/.test(r.fmt)?'story':/بوست/.test(r.fmt)?'post':'reel',hook:r.hook,views:'',eng:'',saves:'',shares:'',follows:''});go(8);return}
  if(a==='pOutC'&&r){CORE.copy(r.out,'اتنسخ ✓');return}
  if(a==='pOutH'&&r){P.hIn=r.out;qRes=null;go(6);return}
+ if(a==='pVid'&&r){sendTo(rowTxt(r),'يوم '+r.day+' - '+r.idea.slice(0,30));return}
+ if(a==='fourVid'){if(!P.idea.trim()){toast('اكتب الفكرة الأول');return}sendTo(P.idea+(P.fourOut?'\n\nالصيغ المكتوبة:\n'+P.fourOut.slice(0,3000):''),P.idea.slice(0,35));return}
+ if(a==='pCal'&&r){const d=rowDate(r),s=calStamp(d,P.pTime),e2=calStamp(d,P.pTime,20);if(!s){toast('تاريخ اليوم ده مش واضح');return}
+  window.open('https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('📌 منشور اليوم: '+r.fmt+' — '+(r.hook||r.idea).slice(0,60))+'&dates='+s+'/'+e2+'&details='+encodeURIComponent(rowTxt(r).slice(0,1500)+'\n\nافتح: استوديو المحتوى السريع ← 🗓️ الخطة'),'_blank');return}
+ if(a==='planIcs'){const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//hisham-studio//content//AR','CALSCALE:GREGORIAN'];let n=0;
+  P.plan.filter(x=>!x.done).forEach((x,j)=>{const d=rowDate(x),s=calStamp(d,P.pTime),e2=calStamp(d,P.pTime,20);if(!s)return;n++;
+   L.push('BEGIN:VEVENT','UID:hs-plan-'+d+'-'+j+'@hisham-studio','DTSTAMP:'+calStamp(iso(new Date()),'00:00'),'DTSTART:'+s,'DTEND:'+e2,'SUMMARY:'+icsEsc('📌 منشور اليوم: '+x.fmt+' — '+(x.hook||x.idea).slice(0,60)),'DESCRIPTION:'+icsEsc(rowTxt(x).slice(0,1500)),'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc('منشور اليوم: '+(x.hook||x.idea).slice(0,60)),'TRIGGER:PT0M','END:VALARM','END:VEVENT')});
+  L.push('END:VCALENDAR');if(!n){toast('مفيش أيام لسه ما اتنشرتش');return}
+  const f=new File([L.join('\r\n')],'خطة-النشر.ics',{type:'text/calendar'});try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(x){if(x&&x.name==='AbortError')return}
+  const l=document.createElement('a');l.href=URL.createObjectURL(f);l.download='خطة-النشر.ics';l.click();toast('📅 اتعمل ملف التقويم ('+n+' يوم) ✓');return}
  if(a==='planCsv'){csv('خطة-النشر.csv',['اليوم','التاريخ','الصيغة','الفكرة','الهوك','المناسبة','اتنشر'],P.plan.map(x=>[x.day,x.date,x.fmt,x.idea,x.hook,x.occ,x.done?'✓':'']));return}
  if(a==='planClr'){if(confirm('تمسح الخطة كلها؟')){st.snap('قبل مسح الخطة',true);P.plan=[];st.save();render()}return}
  /* الفحص */
@@ -435,9 +475,11 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  /* الردود */
  if(a==='rpf'){rpF=k;render();return}
  if(a==='rpc'){const x=REP.get()[i];if(!x)return;const t=fillVars(x.text);CORE.copy(t,/\{/.test(t)?'اتنسخ ✓ (فيه خانات لسه فاضية)':'اتنسخ الرد ✓');return}
+ if(a==='rpw'){const x=REP.get()[i];if(!x)return;const t=fillVars(x.text),n=waNum(VARS.get()['عميل']);window.open((n?'https://wa.me/'+n:'https://wa.me/')+'?text='+encodeURIComponent(t),'_blank');return}
+ if(a==='waAll'){const l=REP.get().filter(x=>x.cat==='wa');if(!l.length){toast('مفيش ردود واتساب');return}CORE.copy(l.map(x=>'【'+x.title+'】'+(x.sc?'  الاختصار: /'+x.sc:'')+'\n'+fillVars(x.text)).join('\n\n'),'اتنسخت ردود واتساب ✓');return}
  if(a==='rpd'){if(confirm('تمسح الرد ده؟')){const l=REP.get();l.splice(i,1);REP.set(l);render()}return}
  if(a==='rpAdd'){const t=(prompt('عنوان الرد (مثال: سؤال عن العروض):')||'').trim();if(!t)return;const l=REP.get();l.unshift({cat:rpF==='all'?'custom':rpF,title:t,text:''});REP.set(l);render();setTimeout(()=>{const x=document.querySelector('[data-rp="0"]');x&&x.focus()},50);return}
- if(a==='rpReset'){if(confirm('ترجّع الردود الأصلية؟ الردود اللي ضفتها هتفضل.')){const l=REP.get().filter(x=>x.cat==='custom');REP.set(l.concat(RDEF.map(x=>({cat:x[0],title:x[1],text:x[2]}))));render()}return}
+ if(a==='rpReset'){if(confirm('ترجّع الردود الأصلية؟ الردود اللي ضفتها هتفضل.')){const l=REP.get().filter(x=>x.cat==='custom');REP.set(l.concat(WADEF.concat(RDEF).map(x=>({cat:x[0],title:x[1],text:x[2],sc:x[3]||''}))));render()}return}
  /* الأداء */
  if(a==='pfAdd'){if(!(+pf.views)){alert('اكتب عدد المشاهدات');return}const l=PERF.get();l.unshift(Object.assign({},pf,{d:pf.d||iso(new Date())}));PERF.set(l.slice(0,500));pf={d:pf.d,fmt:pf.fmt,hook:'',ht:'',views:'',eng:'',saves:'',shares:'',follows:''};toast('📊 اتسجل ✓');render();return}
  if(a==='pfDel'){if(confirm('تمسح التسجيل ده؟')){const l=PERF.get();l.splice(i,1);PERF.set(l);render()}return}
@@ -453,6 +495,7 @@ CORE.work({ns:'content',st,def:DEF,render,ctx:ctxTxt,
  check:{team:TEAMTXT(),text:()=>{const P=p();if(P.step===3)return P.slides.map((s,i)=>'سلايد '+(i+1)+'\nالنص: '+s.text+'\nأمر الصورة: '+s.img).join('\n\n')+(P.cCap?'\n\nالكابشن: '+P.cCap:'');if(P.step===5)return P.plan.map(r=>['يوم '+r.day,r.date,r.fmt,r.idea,r.hook,r.occ].join(' | ')).join('\n');const f=CHK[P.step];return (f&&P[f])||P.fourOut||P.idea||''},
   apply:v=>{const P=p();if(P.step===3)return parseSlides(v);if(P.step===5)return parsePlan(v);const f=CHK[P.step]||'fourOut';P[f]=v.trim();st.save();render();return 'النص'}}});
 window.addEventListener('hs-store',e=>{if(e.detail==='content')render()});
+(()=>{const q=new URLSearchParams(location.search).get('tab');if(q!==null&&+q>=0&&+q<TABS.length){p().step=+q;history.replaceState(null,'',location.pathname)}})();
 st.snap('عند الفتح');render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>

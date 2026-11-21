@@ -98,7 +98,7 @@ body.simple #stFrame,body.simple #stPrompt{max-height:170px;overflow:auto}
 <header>
  <h1>🎬 استوديو الإخراج الذكي</h1>
  <p>مدة لكل لقطة (من 1 ثانية حتى دقيقتين أو أكثر) • قوالب جاهزة لأدوات الفيديو • مراجعة السكريبت والفيديو عبر ChatGPT وGemini • حفظ تلقائي</p>
- <button class="mini" onclick="ugOpen()" style="margin:6px 0">📖 دليل الاستخدام</button>
+ <button class="mini" onclick="ugOpen()" style="margin:6px 0">📖 دليل الاستخدام</button> <button class="mini" onclick="owOpen()" style="margin:6px 0;background:#b91c1c;color:#fff;border-color:#b91c1c;font-weight:700">🧹 امسح القديم وابدأ جديد</button>
  <p style="color:#10b981;font-weight:700">الإصدار 51 — 13 نوفمبر: اختصار الجملة بنفس المعنى (الجملة الأساسية ظاهرة + الصياغة المعدلة في خانة مستقلة + «اختصر إلى») + اختصار الحوار للحلقة كلها + مسح النصوص + نسخ الحلقة كاملة</p>
 </header>
 
@@ -569,11 +569,11 @@ function emoOpts(sel){return Object.keys(EMO).map(k=>`<option value="${k}" ${k==
 const OLD_PAIRS=[['styleAr','style'],['ambientAr','ambient']];
 const SV={ok:true,err:'',at:0,idb:0,idbErr:''};
 function svDb(){return SV.db||(SV.db=new Promise((r,j)=>{try{const q=indexedDB.open('ez_state',1);q.onupgradeneeded=()=>q.result.createObjectStore('s');q.onsuccess=()=>r(q.result);q.onerror=()=>j(q.error)}catch(e){j(e)}}))}
-function svPutIdb(raw){return svDb().then(d=>new Promise((r,j)=>{const t=d.transaction('s','readwrite');t.objectStore('s').put(raw,'cur');t.oncomplete=()=>r(true);t.onerror=()=>j(t.error);t.onabort=()=>j(t.error)}))}
+function svPutIdb(raw){if(window.__wiped)return Promise.resolve(true);return svDb().then(d=>new Promise((r,j)=>{const t=d.transaction('s','readwrite');t.objectStore('s').put(raw,'cur');t.oncomplete=()=>r(true);t.onerror=()=>j(t.error);t.onabort=()=>j(t.error)}))}
 function svGetIdb(){return svDb().then(d=>new Promise(r=>{const q=d.transaction('s').objectStore('s').get('cur');q.onsuccess=()=>r(q.result);q.onerror=()=>r(null)})).catch(()=>null)}
 function svSetRaw(raw){try{const o=JSON.parse(raw);o._ts=Date.now();raw=JSON.stringify(o)}catch(e){}try{localStorage.setItem(LS,raw)}catch(e){}return svPutIdb(raw).catch(()=>{})}
 let svT=0;function svQueue(){clearTimeout(svT);svT=setTimeout(svFlush,700)}
-async function svFlush(){clearTimeout(svT);if(!SV.ready){svT=setTimeout(svFlush,400);return}try{await svPutIdb(JSON.stringify(S));SV.idb=Date.now();SV.idbErr=''}catch(e){SV.idbErr=String((e&&e.message)||e||'خطأ')}svChip();if(!SV.ok&&SV.idbErr&&!SV.warned){SV.warned=1;try{ezBusy('⚠️ الحفظ على الموبايل فشل — احفظ نسخة كاملة دلوقتي (خطوة الشخصيات ← 📦 نسخة كاملة)',12000)}catch(x){}}}
+async function svFlush(){clearTimeout(svT);if(window.__wiped)return;if(!SV.ready){svT=setTimeout(svFlush,400);return}try{await svPutIdb(JSON.stringify(S));SV.idb=Date.now();SV.idbErr=''}catch(e){SV.idbErr=String((e&&e.message)||e||'خطأ')}svChip();if(!SV.ok&&SV.idbErr&&!SV.warned){SV.warned=1;try{ezBusy('⚠️ الحفظ على الموبايل فشل — احفظ نسخة كاملة دلوقتي (خطوة الشخصيات ← 📦 نسخة كاملة)',12000)}catch(x){}}}
 function svChip(){const e=document.getElementById('svChip');if(!e)return;const c=(typeof gdCfg==='function')?gdCfg():{};let h='',col='#86efac',t='';
  if(!SV.ok&&SV.idbErr){h='⚠️ الحفظ فشل';col='#fca5a5'}else h='💾 ✓';
  if(c.cid){if(typeof gdOK==='function'&&gdOK())t=GD.busy?' ☁️ ⏳':(c.lastUp?' ☁️ ✓ '+new Date(c.lastUp).toLocaleTimeString('ar-EG',{hour:'2-digit',minute:'2-digit'}):' ☁️ ✓');else{t=' ☁️ اضغط للربط';if(!SV.ok||GD.dirty)col=col==='#fca5a5'?col:'#fcd34d'}}
@@ -728,7 +728,7 @@ function impProj(inp){
   svSetRaw(JSON.stringify(o)).then(()=>location.reload())}catch(e){toast('ملف غير صالح')}};
  r.readAsText(f);inp.value='';
 }
-function save(){try{if(typeof gdDirty==='function')gdDirty();ensureUids();S._ts=Date.now();localStorage.setItem(LS,JSON.stringify(S));SV.ok=true;SV.err=''}catch(e){SV.ok=false;SV.err=String((e&&e.name)||e)}SV.at=Date.now();try{SV.ok?svQueue():svFlush()}catch(e){}svChip()}
+function save(){if(window.__wiped)return;try{if(typeof gdDirty==='function')gdDirty();ensureUids();S._ts=Date.now();localStorage.setItem(LS,JSON.stringify(S));SV.ok=true;SV.err=''}catch(e){SV.ok=false;SV.err=String((e&&e.name)||e)}SV.at=Date.now();try{SV.ok?svQueue():svFlush()}catch(e){}svChip()}
 function getKey(){try{return localStorage.getItem(KS)||''}catch(e){return window.__k||''}}
 function setKey(v){try{localStorage.setItem(KS,v)}catch(e){window.__k=v}}
 // Media URLs put into the page: only our own image/video/audio data, blob or https links, quote-safe.
@@ -1121,6 +1121,39 @@ async function fullRestore(el){const f=el.files[0];el.value='';if(!f)return;let 
  await restoreData(d);toast('تم الاسترجاع ✓');setTimeout(()=>location.reload(),700)}
 
 /* ---------- Google Drive auto-save ---------- */
+/* ===== 🧹 مسح الاستوديو القديم (بعد أرشيف منفصل على Drive) ===== */
+const OW_LS=['studio5s_v2','ez_cur','ez_paste','ez_projlist','ez_step','ez_undo','studio_shortundo','studio_bkProg','studio_bkSnooze','studio_lastBackup','studio_charlib_v1','studio_proplib_v1','studio_placelib_v1'];
+const OW_DB=['ez_state','studio_charimg','ez_imgs','ez_projs'];const OW={arch:false};
+const owClear=function(n){return new Promise(r=>{try{const q=indexedDB.open(n);q.onupgradeneeded=()=>{try{q.transaction.abort()}catch(e){}};q.onerror=()=>r(0);q.onblocked=()=>r(0);q.onsuccess=()=>{const d=q.result,ns=[...d.objectStoreNames];if(!ns.length){d.close();return r(0)}const t=d.transaction(ns,'readwrite');ns.forEach(s=>t.objectStore(s).clear());t.oncomplete=()=>{d.close();r(1)};t.onerror=t.onabort=()=>{d.close();r(0)}}}catch(e){r(0)}})};
+function owMsg(t){const e=$('owMsg');if(e)e.textContent=t}
+async function owArchive(){if(!(gdCfg().cid||'').trim()){owMsg('⚠️ ربط Drive مش متظبط هنا. استخدم «💾 نزّلها كملف» واحفظ الملف على Drive بإيدك.');return}
+ if(!gdOK()&&!(await gdConnect()))return;const b=$('owArch');b.disabled=true;
+ try{owMsg('⏳ بجهز كل الحلقات والصور…');const d=await backupData(),body=new Blob([JSON.stringify(d)],{type:'application/json'});
+  const nm='أرشيف-الاستوديو-القديم-'+new Date().toISOString().slice(0,16).replace('T','_').replace(':','-')+'.json',meta={name:nm,mimeType:'application/json',description:'أرشيف كامل قبل مسح الاستوديو القديم'};
+  owMsg('⏳ برفع الأرشيف ('+(body.size/1048576).toFixed(1)+' MB)…');
+  const init=await gdFetch(GDAPI+'/upload/drive/v3/files?uploadType=resumable&fields=id',{method:'POST',headers:{'Content-Type':'application/json; charset=UTF-8','X-Upload-Content-Type':'application/json','X-Upload-Content-Length':String(body.size)},body:JSON.stringify(meta)});
+  const loc=init.headers.get('Location');
+  if(loc){const r=await fetch(loc,{method:'PUT',headers:{'Content-Type':'application/json'},body});if(!r.ok)throw new Error('Drive '+r.status)}
+  else{const bd='arch'+Date.now(),mp=new Blob([`--${bd}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${bd}\r\nContent-Type: application/json\r\n\r\n`,body,`\r\n--${bd}--`]);await gdFetch(GDAPI+'/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+bd},body:mp})}
+  OW.arch=true;owMsg('✓ اتحفظ على Drive باسم «'+nm+'». لو احتجته: نزّله من Drive وافتحه من «⬆️ استرجاع نسخة».')}
+ catch(e){owMsg('⚠️ الحفظ ما نجحش: '+(e.message==='401'?'الجلسة انتهت، اضغط تاني':e.message))}b.disabled=false}
+function owOpen(){let o=$('owBox');if(o)o.remove();o=document.createElement('div');o.id='owBox';o.style.cssText='position:fixed;inset:0;z-index:9999;background:#000d;display:flex;align-items:flex-end;font-family:inherit';
+ const B='width:100%;padding:11px;border-radius:10px;border:1px solid #334155;font-family:inherit;font-size:15px;margin-top:8px;cursor:pointer;';
+ o.innerHTML=`<div style="background:#0f172a;border:1px solid #ef4444;border-radius:16px 16px 0 0;width:100%;max-height:92vh;overflow:auto;padding:14px;color:#fff">
+ <b style="font-size:17px">🧹 امسح الاستوديو القديم وابدأ جديد</b>
+ <div style="color:#94a3b8;font-size:13px;line-height:1.7;margin:6px 0">هيتمسح من الجهاز ده: الحلقة الحالية، وكل الحلقات والمشاريع المحفوظة، ومكتبة الشخصيات والأماكن والأدوات، وكل الصور.<br>هيفضلوا: ربط Drive، ومفتاح الذكاء، والقوالب، والقواعد، والإعدادات.</div>
+ <div style="background:#422006;color:#fcd34d;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.7">⚠️ <b>سجّل على Drive الأول.</b> النسخة دي بتتحفظ في ملف جديد بالتاريخ، منفصل عن الحفظ التلقائي، عشان ما يتكتبش فوقها بعد المسح.</div>
+ <button id="owArch" onclick="owArchive()" style="${B}background:#10b981;border-color:#10b981;color:#04130d;font-weight:700">☁️ احفظ أرشيف كامل على Drive</button>
+ <button onclick="fullBackup();OW.arch=true;owMsg('✓ اتجهز ملف النسخة. احفظه على Drive أو في مكان أمين.')" style="${B}background:#1e293b;color:#fff">💾 أو نزّلها كملف</button>
+ <div id="owMsg" style="color:#94a3b8;font-size:13px;margin-top:6px;line-height:1.7"></div>
+ <label style="display:block;font-size:13px;color:#cbd5e1;margin:12px 0 4px">اكتب كلمة <b>امسح</b> للتأكيد</label><input id="owOk" autocomplete="off" style="width:100%;box-sizing:border-box;background:#0b1220;color:#fff;border:1px solid #334155;border-radius:10px;padding:9px;font-family:inherit;font-size:15px">
+ <button onclick="owGo(this)" style="${B}background:#b91c1c;border-color:#b91c1c;color:#fff;font-weight:700">🗑️ امسح القديم وابدأ من الصفر</button>
+ <button onclick="$('owBox').remove()" style="${B}background:#1e293b;color:#fff">إلغاء</button></div>`;document.body.appendChild(o)}
+async function owGo(b){if(($('owOk').value||'').trim()!=='امسح'){toast('اكتب «امسح» في الخانة للتأكيد');$('owOk').focus();return}
+ if(!OW.arch&&!confirm('ما سجّلتش أرشيف على Drive ولا نزّلت ملف، والمسح مالوش رجوع. تمسح برضه؟'))return;
+ b.disabled=true;b.textContent='⏳ بمسح…';window.__wiped=true;try{GD.busy=true}catch(e){}clearTimeout(svT);
+ OW_LS.forEach(k=>{try{localStorage.removeItem(k)}catch(e){}});for(const n of OW_DB)await owClear(n);
+ toast('🧹 اتمسح القديم. بداية جديدة ✓');setTimeout(()=>location.reload(),700)}
 const GDK='studio_gdrive_v1',GDN='استوديو-الإخراج-نسخة-تلقائية.json',GDAPI='https://www.googleapis.com';
 let GD={tok:'',exp:0,client:null,busy:false,dirty:false};
 function gdCfg(){try{return JSON.parse(localStorage.getItem(GDK)||'{}')}catch(e){return{}}}
@@ -3188,7 +3221,7 @@ function ezMethod(){const o=document.createElement('div');o.style.cssText='posit
  o.innerHTML=`<div style="max-width:520px;margin:auto;background:#0f172a;border:1px solid #334155;border-radius:14px;padding:12px"><b style="font-size:16px">📘 منهج ما قبل التنفيذ</b><div style="font-size:12px;color:#94a3b8;margin:4px 0 8px">المبدأ: اقفل كل حاجة في الصور الأول، وما تصرفش رصيد فيديو على صورة فيها خطأ مؤثر.</div>${EZ_METHOD.map(m=>`<div style="margin:9px 0"><b style="font-size:14px">${m[0]}</b><div style="font-size:13px;color:#cbd5e1;line-height:1.6">${m[1]}</div></div>`).join('')}<button class="ezb" style="width:100%">تمام</button></div>`;
  o.querySelector('button').onclick=()=>o.remove();document.body.appendChild(o)}
 function ezRender(){
- if(EZ.step===1)EZ.step=2;$('ezSteps').innerHTML=EZST.map((t,k)=>k===1?'':`<button class="${k===EZ.step?'on':''}" onclick="ezGo(${k})">${ezGate(k)?'✅':(k>1?k:k+1)} ${t}</button>`).join('')+`<button title="المنهج" onclick="ezMethod()">📘 المنهج</button><button title="دليل الاستخدام" onclick="ugOpen()">📖 دليل الاستخدام</button><span class="ezm" style="font-size:11px;align-self:center;padding:0 4px;white-space:nowrap">${APPV}</span><button title="الرئيسية" onclick="location.href='./'">🏠</button><button title="سجل النسخ" onclick="snOpen()">🕘</button><button id="svChip" title="حالة الحفظ" onclick="svInfo()" style="font-size:12px"></button><button class="ezadv" title="الوضع المتقدم" onclick="ezAdv()">⚙️</button>`;
+ if(EZ.step===1)EZ.step=2;$('ezSteps').innerHTML=EZST.map((t,k)=>k===1?'':`<button class="${k===EZ.step?'on':''}" onclick="ezGo(${k})">${ezGate(k)?'✅':(k>1?k:k+1)} ${t}</button>`).join('')+`<button title="المنهج" onclick="ezMethod()">📘 المنهج</button><button title="دليل الاستخدام" onclick="ugOpen()">📖 دليل الاستخدام</button><span class="ezm" style="font-size:11px;align-self:center;padding:0 4px;white-space:nowrap">${APPV}</span><button title="الرئيسية" onclick="location.href='./'">🏠</button><button title="سجل النسخ" onclick="snOpen()">🕘</button><button title="امسح القديم وابدأ جديد" onclick="owOpen()" style="background:#b91c1c;color:#fff;border-color:#b91c1c">🧹</button><button id="svChip" title="حالة الحفظ" onclick="svInfo()" style="font-size:12px"></button><button class="ezadv" title="الوضع المتقدم" onclick="ezAdv()">⚙️</button>`;
  $('ezBody').innerHTML='<div class="ezdo">'+EZDO[EZ.step]+'</div>'+[ez0,ez1,ez2,ez3,ez4,ez5][EZ.step]();ezDeco();
  try{svChip()}catch(e){}const on=$('ezSteps').querySelector('.on');if(on)on.scrollIntoView({inline:'center',block:'nearest'});
 }
