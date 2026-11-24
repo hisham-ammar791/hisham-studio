@@ -55,12 +55,13 @@ input[type=checkbox]{width:22px;height:22px;flex:0 0 auto}
 <main id="app"></main>
 <script src="core.js"></script>
 <script src="fieldtools.js"></script>
+<script src="ideas-lib.js"></script>
 <script>
 const {esc,toast}=CORE;
 
 /* ================= ثوابت ================= */
-const NICHES=[['pharmacy','صيدلية وصحة'],['nutrition','تغذية ودايت'],['skin','تجميل وعناية بالبشرة'],['hair','عناية بالشعر'],['mom','أمومة وأطفال'],['fitness','لياقة ورياضة'],['food','مطاعم وأكل'],['perfume','عطور'],['fashion','موضة وملابس'],['realestate','عقارات'],['edu','تعليم ودروس'],['tech','تكنولوجيا وتطبيقات'],['biz','تسويق وبيزنس'],['cars','سيارات'],['travel','سفر وسياحة'],['decor','ديكور وأثاث'],['clinic','عيادات وطب أسنان'],['self','تنمية ذاتية'],['fun','ترفيه وألعاب'],['mystery','غموض وحكايات'],['custom','✏️ مجال تكتبه أنت']];
-const HEALTHY=['pharmacy','nutrition','skin','hair','mom','fitness','clinic'];
+const NICHES=[['pharmacy','صيدلية وصحة'],['nutrition','تغذية ودايت'],['skin','تجميل وعناية بالبشرة'],['hair','عناية بالشعر'],['mom','أمومة وأطفال'],['fitness','لياقة ورياضة'],['food','مطاعم وأكل'],['perfume','عطور'],['fashion','موضة وملابس'],['realestate','عقارات'],['edu','تعليم ودروس'],['tech','تكنولوجيا وتطبيقات'],['biz','تسويق وبيزنس'],['cars','سيارات'],['travel','سفر وسياحة'],['decor','ديكور وأثاث'],['clinic','عيادات وطب أسنان'],['dental','أسنان'],['doctor','عيادات طب بشري'],['self','تنمية ذاتية'],['fun','ترفيه وألعاب'],['mystery','غموض وحكايات'],['custom','✏️ مجال تكتبه أنت']];
+const HEALTHY=['pharmacy','nutrition','skin','hair','mom','fitness','clinic','dental','doctor'];
 const TABS=['🧭 الصفحة','💡 أفكار وهوكات','♻️ فكرة ← ٤ صيغ','🖼️ كاروسيل','🎙️ ريلز بدون وش','🗓️ خطة النشر','✅ فحص صحي','💬 ردود جاهزة','📊 الأداء'];
 const GOALS=[['mix','مزيج متوازن'],['aware','توعية وقيمة'],['sell','بيع'],['engage','تفاعل وتعليقات'],['trust','ثقة وكواليس'],['viral','انتشار ومشاركة']];
 const FMTS=[['reel','ريلز'],['car','كاروسيل'],['post','بوست'],['story','ستوري'],['video','فيديو طويل'],['live','لايف']];
@@ -260,10 +261,19 @@ function t0(){const P=p(),br=BR.get();
  <label class="l">البصمة (صوت الكاتب)</label>${sel('voice',CORE.VOICES,P.voice)}${P.voice==='custom'?`<textarea data-f="customVoice" rows="3" placeholder="الصق عينة نص بتحب أسلوبها" style="margin-top:6px">${esc(P.customVoice)}</textarea>`:''}
  <label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:14px"><input type="checkbox" data-chk="health" ${P.health?'checked':''}>🩺 قواعد المحتوى الصحي في كل الأوامر</label>
  <div><button class="b g" data-a="saveBrand">💾 احفظ كبراند</button><button class="b" data-a="impBrand">📥 هات براندات استوديو الإعلانات</button></div></div>
+ <div class="c" style="border-color:#f59e0b"><h3>💼 من الوكالة</h3><div class="m">هات بيانات العميل وهويته البصرية (ألوان وخطوط وممنوعات) من صفحة الوكالة بضغطة، فتدخل في كل أوامر المحتوى والإعلان.</div>
+ ${(()=>{const c=agencyClient();return c?`<div class="m" style="margin-top:4px">العميل الحالي: <b>${esc(c.name||'بدون اسم')}</b></div>`:'<div class="m" style="margin-top:4px">مفيش عميل محفوظ في الوكالة لسه.</div>'})()}
+ <button class="b g" data-a="impAg" style="width:100%">📥 هات العميل الحالي من الوكالة</button>
+ <a class="b" href="agency.html" style="display:block;text-align:center;text-decoration:none;margin-top:6px">💼 افتح الوكالة</a></div>
  <div class="c"><h3>🚀 تبدأ منين؟</h3>
  ${[['مفيش أفكار في دماغك؟',1,'💡 أفكار وهوكات'],['عندك فكرة واحدة؟',2,'♻️ حوّلها لـ٤ صيغ'],['عايز شهر كامل جاهز؟',5,'🗓️ خطة النشر'],['قبل أي نشر صحي',6,'✅ الفحص'],['بعد النشر بأسبوع',8,'📊 سجّل الأداء']].map(x=>`<div class="st"><span>${x[0]}</span><button class="b s" data-a="go" data-i="${x[1]}" style="margin:0">${x[2]}</button></div>`).join('')}
  <div class="m" style="margin-top:6px">كل أداة فيها 📋 انسخ الأمر (للصق في أي تطبيق)، و📤 ابعته (تختار التطبيق)، و🤖 نفّذ (الإيجنت يكتب لوحده لو حاطط مفتاح Gemini).</div></div>`}
 
+const seedKey=x=>x.d+'|'+x.h;
+const seedLeft=()=>{const have=new Set(LIB.get().map(x=>x.idea+'|'+x.hook));return (window.HEALTH_IDEAS||[]).filter(x=>!have.has(x.d+'|'+x.h)).length};
+const SEGNICHE={pharmacy:'pharmacy',supp:'pharmacy',equip:'pharmacy',derma:'skin',dental:'dental',nutri:'nutrition'};
+function agencyClient(){try{const d=JSON.parse(localStorage.getItem('agencyOS_v1')||'{}');return d.clients&&d.clients[d.current]||null}catch(e){return null}}
+function agencyIdentity(c){const b=[];if(c.cPri)b.push('ألوان: أساسي '+c.cPri+(c.cSec?'، ثانوي '+c.cSec:'')+(c.cAcc?'، مميز '+c.cAcc:'')+(c.cBg?'، خلفية '+c.cBg:'')+(c.cTxt?'، نص '+c.cTxt:''));if(c.fHead||c.fBody)b.push('خطوط: عناوين '+(c.fHead||'Cairo')+'، نصوص '+(c.fBody||'Tajawal'));if(c.imgStyle)b.push('أسلوب الصور: '+c.imgStyle);if(c.feel)b.push('الإحساس: '+c.feel);if(c.tone)b.push('النبرة: '+c.tone);if(c.logo)b.push('الشعار: '+c.logo);if(c.visualDont)b.push('ممنوع بصريًا: '+c.visualDont);return b.join('؛ ')}
 function libItems(){const l=LIB.get(),q=libQ.trim();const f=l.map((x,i)=>[x,i]).filter(([x])=>(!libF||x.niche===libF)&&(!q||(x.idea+x.hook).includes(q)));
  return f.slice(0,120).map(([x,i])=>`<div class="it"><b>${esc(x.idea)}</b><div class="hk">«${esc(x.hook)}»</div>${x.ht?`<span class="tag">${esc(x.ht)}</span>`:''}${x.fmt?`<span class="tag">${esc(x.fmt)}</span>`:''}<span class="tag">${esc(nicheName(x.niche))}</span>
  <div class="chips"><button class="b s" data-a="lcp" data-i="${i}">📋 الهوك</button><button class="b s" data-a="l4" data-i="${i}">♻️ ٤ صيغ</button><button class="b s" data-a="lcar" data-i="${i}">🖼️</button><button class="b s" data-a="lreel" data-i="${i}">🎙️</button><button class="b s" data-a="lbank" data-i="${i}">🪝</button><button class="b s r" data-a="ldel" data-i="${i}">🗑️</button></div></div>`).join('')||'<div class="m">مفيش أفكار هنا لسه.</div>'}
@@ -272,6 +282,9 @@ function t1(){const P=p(),l=LIB.get(),nk=[...new Set(l.map(x=>x.niche))];
  <div class="row"><div><label class="l">المجال</label><select data-f="iNiche"><option value="">نفس مجال الصفحة</option>${CORE.opts(NICHES.filter(x=>x[0]!=='custom'),P.iNiche)}</select></div><div><label class="l">العدد</label>${sel('iCount',num([10,20,30,50]),P.iCount)}</div></div>
  <label class="l">الهدف</label>${sel('iGoal',GOALS,P.iGoal)}
  ${CORE.hookEmoHTML(P)}${btns('ideas','انسخ أمر الأفكار')}${outBox('iPaste','📥 الرد',['ideas','📚 ضيفها للمكتبة'])}</div>
+ <div class="c" style="border-color:#f59e0b"><h3>🩺 مكتبة القطاع الصحي الجاهزة (${(window.HEALTH_IDEAS||[]).length})</h3><div class="m">40 فكرة للصيدليات، و30 لعيادات الأسنان، و30 لعيادات الطب البشري. تنضاف لمكتبتك تحت، وبعدها تحوّل أي فكرة لـ٤ صيغ أو كاروسيل أو ريلز، أو تبعتها لاستوديو الإعلانات للتنفيذ.</div>
+ <div class="m" style="margin-top:4px">${seedLeft()?`لسه ${seedLeft()} فكرة ما اتضافتش.`:'✅ كل الأفكار الجاهزة موجودة في مكتبتك.'}</div>
+ ${seedLeft()?'<button class="b g" data-a="seedLib" style="width:100%">➕ أضف الأفكار الجاهزة لمكتبتي</button>':''}</div>
  <div class="c"><h3>📚 مكتبة الأفكار (${l.length})</h3>
  <div class="row"><div><select data-lf><option value="">كل المجالات</option>${nk.map(k=>`<option value="${k}"${k===libF?' selected':''}>${esc(nicheName(k))}</option>`).join('')}</select></div><div><input data-lq value="${esc(libQ)}" placeholder="🔍 دوّر"></div></div>
  <div class="m" style="margin-top:6px">♻️ تحوّلها لـ٤ صيغ • 🖼️ كاروسيل • 🎙️ ريلز • 🪝 بنك الهوكات</div><div id="libList">${libItems()}</div></div>
@@ -425,6 +438,8 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a.startsWith('clr:')){if(!P[a.slice(4)]||confirm('تمسح الخانة دي؟')){st.snap('قبل المسح',true);P[a.slice(4)]='';st.save();render()}return}
  if(a.startsWith('toH:')){const v=P[a.slice(4)]||'';if(!v.trim()){toast('فاضي');return}P.hIn=v;qRes=null;go(6);return}
  /* الصفحة */
+ if(a==='seedLib'){const l=LIB.get(),have=new Set(l.map(x=>x.idea+'|'+x.hook));let n=0;(window.HEALTH_IDEAS||[]).forEach(x=>{if(have.has(x.d+'|'+x.h))return;l.unshift({idea:x.d,hook:x.h,ht:'',fmt:x.t,niche:x.n,src:'health100'});n++});LIB.set(l);toast('📚 اتضافت '+n+' فكرة ✓');render();return}
+ if(a==='impAg'){const c=agencyClient();if(!c){toast('مفيش عميل في الوكالة. افتح الوكالة وأضف عميل أولًا');return}st.snap('قبل استيراد عميل من الوكالة',true);if(c.name)P.pName=c.name;const nk=SEGNICHE[c.seg]||(c.seg?'doctor':'');if(nk)P.niche=nk;if(c.audience)P.audience=c.audience;const off=[c.products,c.goal&&('الهدف: '+c.goal),c.saleDef&&('البيعة الفعلية: '+c.saleDef)].filter(Boolean).join('\n');if(off)P.offer=off;const idn=agencyIdentity(c);if(idn)P.identity=idn;P.health=true;st.save();toast('📥 اتجاب العميل: '+(c.name||'')+' ✓');render();return}
  if(a==='saveBrand'){if(!P.pName.trim()){alert('اكتب اسم الصفحة الأول');return}const o={};['pName','niche','nicheCustom','audience','offer','identity','lang','voice','customVoice','satire','health'].forEach(f=>o[f]=P[f]);const l=BR.get(),j=l.findIndex(x=>x.pName===o.pName);if(j>=0)l[j]=o;else l.push(o);BR.set(l);brandSel=String(j>=0?j:l.length-1);toast('💾 اتحفظ البراند ✓');render();return}
  if(a==='delBrand'){if(brandSel!==''&&confirm('تمسح البراند ده؟')){const l=BR.get();l.splice(+brandSel,1);BR.set(l);brandSel='';render()}return}
  if(a==='impBrand'){let ad={};try{ad=JSON.parse(localStorage.getItem('hs_ad')||'{}')}catch(x){}const src=(ad.brands||[]).filter(x=>x.bName);if(!src.length){toast('مفيش براندات محفوظة في استوديو الإعلانات');return}const l=BR.get();let n=0;
