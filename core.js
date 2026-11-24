@@ -224,7 +224,7 @@ C.gdUpload=async function(name,blob,props,parentId){const meta={name,parents:[pa
 C.gdFind=async function(q){const l=await (await f(API+'/drive/v3/files?q='+encodeURIComponent(q+' and trashed=false')+'&orderBy=modifiedTime desc&pageSize=50&fields=files(id,name,modifiedTime,size,appProperties)')).json();return l.files||[]};
 C.gdBlob=async function(id){return await (await f(API+'/drive/v3/files/'+id+'?alt=media')).blob()};
 C.backupCollect=async function(){const d={type:'hisham-studios-backup',v:2,at:new Date().toISOString(),device:/Android|iPhone|Mobile/i.test(navigator.userAgent)?'موبايل':'لاب/كمبيوتر',keys:{}};
- for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^hs_(?!trc|dirty|ts~|gemkey|gemmodel)/.test(k))d.keys[k]=localStorage.getItem(k)}
+ for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^hs_(?!trc|dirty|ts~|gemkey|gemmodel)/.test(k)||k==='agencyOS_v1')d.keys[k]=localStorage.getItem(k)}
  for(const k of await C.idb.keys()){if(/^hs_(?!trc|dirty|media_)/.test(k)&&!(k in d.keys)){const r=await C.idb.get(k);if(r&&r.raw)d.keys[k]=r.raw}}
  try{const g=JSON.parse(localStorage.getItem(GDK)||'{}');d.keys[GDK]=JSON.stringify({cid:g.cid})}catch(e){}
  return d};
