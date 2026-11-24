@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090d16">
+<link rel="manifest" href="agency.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/agency-192.png">
+<link rel="apple-touch-icon" href="icons/agency-180.png">
 <title>وضع الوكالة — دراسة السوق والخطة والتسعير</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Tajawal:wght@400;700&family=Almarai:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;700&family=Noto+Kufi+Arabic:wght@400;700&family=Readex+Pro:wght@400;700&family=El+Messiri:wght@400;700&family=Alexandria:wght@400;700&family=Changa:wght@400;700&family=Lalezar&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0f1115;--card:#181b22;--line:#2a2f3a;--txt:#e9ecf1;--mut:#9aa3b2;--acc:#d4a24c;--ok:#3fb27f;--bad:#e0565b;--warn:#e7a33e}
 *{box-sizing:border-box}
@@ -45,7 +51,10 @@ td input{padding:5px}
 </head>
 <body>
 <header>
-  <h1>وضع الوكالة — Marketing OS</h1>
+  <div class="row" style="justify-content:space-between;margin-bottom:8px">
+    <h1 style="margin:0">وضع الوكالة — Marketing OS</h1>
+    <a href="index.html" style="background:linear-gradient(135deg,#f5d27a,#d4a24c 55%,#b8862f);color:#1a1300;font-weight:700;text-decoration:none;padding:8px 16px;border-radius:20px;box-shadow:0 2px 8px rgba(212,162,76,.35);white-space:nowrap">🎬 افتح الاستوديو</a>
+  </div>
   <div class="row">
     <select id="clientSel" style="flex:1;min-width:140px"></select>
     <button class="sm" onclick="newClient()">+ عميل</button>
@@ -60,6 +69,8 @@ td input{padding:5px}
     <button data-t="t3">3 SWOT والخطة</button>
     <button data-t="t4">4 التسعير</button>
     <button data-t="t5">5 الربح الفعلي</button>
+    <button data-t="t6">6 الأفكار والهوكات</button>
+    <button data-t="t7">7 الهوية البصرية</button>
   </nav>
 </header>
 
@@ -209,6 +220,59 @@ td input{padding:5px}
     <div id="logSum"></div>
   </div>
 </section>
+
+<!-- 6 الأفكار -->
+<section id="t6">
+  <div class="card"><h2>مكتبة الأفكار والهوكات (100)</h2>
+    <p class="hint">مبنية على أنماط محتوى ناجحة عالميًا (توعية، خرافات وحقائق، خلف الكواليس، تجارب حقيقية، مواسم) ومكيّفة للسوق المصري وقواعد الإعلان الصحي. راجع كل فكرة مع بوابة الامتثال قبل النشر.</p>
+    <div class="g3">
+      <select id="fSeg"><option value="">كل الشرائح</option><option value="ph">صيدليات</option><option value="de">أسنان</option><option value="cl">عيادات طب بشري</option></select>
+      <select id="fType"><option value="">كل الأنواع</option></select>
+      <input id="fQ" placeholder="بحث...">
+    </div>
+    <div id="ideasCount" class="hint" style="margin-top:6px"></div>
+  </div>
+  <div id="ideasBox"></div>
+</section>
+
+<!-- 7 الهوية البصرية -->
+<section id="t7">
+  <div class="card"><h2>الألوان</h2>
+    <div class="row" style="margin-bottom:6px" id="palBtns"></div>
+    <div class="g3">
+      <div><label>أساسي</label><input type="color" data-k="cPri" value="#0f766e"></div>
+      <div><label>ثانوي</label><input type="color" data-k="cSec" value="#e6f4f1"></div>
+      <div><label>مميز (للأزرار والعروض)</label><input type="color" data-k="cAcc" value="#f59e0b"></div>
+      <div><label>الخلفية</label><input type="color" data-k="cBg" value="#ffffff"></div>
+      <div><label>النص</label><input type="color" data-k="cTxt" value="#1f2937"></div>
+    </div>
+    <div id="contrast"></div>
+  </div>
+  <div class="card"><h2>الخطوط (مجانية من Google Fonts)</h2>
+    <div class="g2">
+      <div><label>خط العناوين</label><select data-k="fHead" id="fHead"></select></div>
+      <div><label>خط النصوص</label><select data-k="fBody" id="fBody"></select></div>
+    </div>
+  </div>
+  <div class="card"><h2>عناصر الهوية</h2>
+    <label>الشعار (وصفه أو ملاحظاته)</label><input data-k="logo">
+    <label>أسلوب الصور</label>
+    <select data-k="imgStyle"><option>تصوير حقيقي دافئ</option><option>تصوير منتجات نظيف بخلفية فاتحة</option><option>رسوم مسطحة (Flat)</option><option>3D ناعم</option><option>مزيج: تصوير + عناصر جرافيك</option></select>
+    <label>إحساس الهوية</label><input data-k="feel" placeholder="ثقة، نظافة، دفء، عصرية...">
+    <label>ممنوعات بصرية</label><textarea data-k="visualDont" placeholder="مثال: لا صور دم أو إبر، لا ألوان صارخة، لا صور مرضى..."></textarea>
+  </div>
+  <div class="card"><h2>معاينة بوست</h2>
+    <label>نص العنوان</label><input id="pvHead" value="التوصيل لحد باب البيت">
+    <label>النص الفرعي</label><input id="pvSub" value="اطلب على واتساب وإحنا نوصلك لحد الساعة 2 بالليل">
+    <label>زر الدعوة</label><input id="pvCta" value="اطلب دلوقتي">
+    <div id="preview" style="margin-top:10px"></div>
+  </div>
+  <div class="card"><h2>برومبتات</h2>
+    <button class="p" onclick="copyPrompt('identity')">برومبت هوية بصرية كاملة</button>
+    <button class="p" style="margin-top:6px" onclick="copyPrompt('image')">برومبت صورة إعلان (إنجليزي، بدون نص)</button>
+    <p class="hint">النص العربي يضيفه المصمم فوق الصورة يدويًا، لأن مولدات الصور تخطئ في الحروف العربية.</p>
+  </div>
+</section>
 </main>
 <div class="toast" id="toast"></div>
 
@@ -253,8 +317,8 @@ function renderSel(){const s=$("clientSel");s.innerHTML="";for(const id in db.cl
 $("clientSel").onchange=e=>{db.current=e.target.value;save();renderAll()};
 
 function bindFields(){document.querySelectorAll("[data-k]").forEach(el=>{const k=el.dataset.k,c=C();
-  if(c[k]!==undefined)el.value=c[k];else if(el.tagName==="INPUT"&&el.dataset.n!==undefined){el.value=el.defaultValue;c[k]=+el.defaultValue||0}else if(el.tagName==="SELECT"){el.selectedIndex=0;c[k]=el.value}else el.value="";
-  el.oninput=el.onchange=()=>{C()[k]=el.dataset.n!==undefined?(+el.value||0):el.value;save();if(k==="name")renderSel();if(k==="seg")renderSeg();if(k==="planStatus")renderCompl();calc()}})}
+  if(c[k]!==undefined)el.value=c[k];else if(el.type==="color"){el.value=el.defaultValue;c[k]=el.value}else if(el.tagName==="INPUT"&&el.dataset.n!==undefined){el.value=el.defaultValue;c[k]=+el.defaultValue||0}else if(el.tagName==="SELECT"){el.selectedIndex=0;c[k]=el.value}else el.value="";
+  el.oninput=el.onchange=()=>{C()[k]=el.dataset.n!==undefined?(+el.value||0):el.value;save();if(k==="name")renderSel();if(k==="seg"){renderSeg();autoSegFilter()}if(k==="planStatus")renderCompl();if(/^(c[A-Z]|f[HB]|name)/.test(k))renderPreview();calc()}})}
 
 function renderSeg(){const s=SEG[C().seg],o=$("segInfo");if(!s){o.innerHTML="";return}
  o.innerHTML=`<div class="res" style="margin-top:10px"><span>مؤشر النجاح</span><b style="direction:rtl;text-align:right">${s.kpi}</b><span>البيعة الفعلية</span><b style="direction:rtl;text-align:right">${s.sale}</b></div>
@@ -347,6 +411,26 @@ ${ctx()}
 5. التموضع المقترح: جملة واحدة تميّز العميل.
 6. أهم 5 فرص سريعة.
 قواعد صارمة: لا تخترع أرقامًا. أي رقم بلا مصدر من البيانات أعلاه اكتب بجانبه «تقدير» أو احذفه. افصل بين ما هو مؤكد من البيانات وما هو استنتاج.`;
+ else if(type==="identity")p=`أنت مصمم هوية بصرية عالمي متخصص في القطاع الصحي في مصر. صمّم دليل هوية بصرية مختصر لهذا النشاط:
+
+${ctx()}
+
+الألوان المقترحة حاليًا: أساسي ${c.cPri}، ثانوي ${c.cSec}، مميز ${c.cAcc}، خلفية ${c.cBg}، نص ${c.cTxt}
+الخطوط: عناوين ${c.fHead}، نصوص ${c.fBody}
+الشعار: ${c.logo||"—"}
+أسلوب الصور: ${c.imgStyle||"—"}
+الإحساس المطلوب: ${c.feel||"—"}
+ممنوعات: ${c.visualDont||"—"}
+
+المطلوب:
+1. تقييم الألوان والخطوط وهل تناسب الشريحة والجمهور، مع بدائل لو لزم (بأكواد HEX).
+2. قواعد استخدام كل لون ونسبه في التصميم.
+3. تدرج أحجام الخطوط للبوست والستوري والريلز.
+4. قواعد الشعار: الأماكن والمسافات والأحجام.
+5. أسلوب الصور والأيقونات، وما يُمنع بصريًا في الإعلان الصحي.
+6. 3 قوالب ثابتة (عرض، توعية، تجربة عميل) بوصف تخطيطها.
+اكتب بلغة مهنية بشرية، ولا تبالغ في الوعود.`;
+ else if(type==="image")p=`Professional healthcare advertising photo for a ${({ph:"pharmacy",de:"dental clinic",cl:"medical clinic"})[SEGMAP[c.seg]]||"healthcare business"} in Egypt. Style: ${({"تصوير حقيقي دافئ":"warm natural photography","تصوير منتجات نظيف بخلفية فاتحة":"clean product photography on a light background","رسوم مسطحة (Flat)":"flat vector illustration","3D ناعم":"soft 3D render","مزيج: تصوير + عناصر جرافيك":"photography with subtle graphic elements"})[c.imgStyle]||"clean modern photography"}. Brand color palette: primary ${c.cPri}, secondary ${c.cSec}, accent ${c.cAcc}, background ${c.cBg}. Mood: trustworthy, clean, calm, welcoming. Composition: leave clear empty space in the upper third for text overlay. Middle-Eastern Egyptian people if people appear, modest clothing, natural expressions. No text, no letters, no logos, no watermarks. No blood, no needles, no patients in distress, no before/after. Square 1:1 for feed (also make a 9:16 version for stories).`;
  else p=`أنت مدير حساب تسويق خبير في السوق المصري. اعتمادًا على:
 
 ${ctx()}
@@ -392,8 +476,147 @@ function renderLog(){const t=$("logRows"),c=C();t.innerHTML="";let rec=0,cost=0,
 function addLog(){C().log.push({m:"",rec:0,ad:0,oth:0,w:""});save();renderLog()}
 
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("on"));document.querySelectorAll("section").forEach(s=>s.classList.remove("on"));b.classList.add("on");$(b.dataset.t).classList.add("on");window.scrollTo(0,0)});
-function renderAll(){renderSel();bindFields();renderSeg();renderCompl();renderComps();renderWaste();renderTeam();renderLog();save();calc()}
-load();renderAll();
+/* ===== مكتبة الأفكار ===== */
+const IDEAS_RAW={
+ph:`ريلز|الـ3 حاجات دي ماتتحطش في الحمام أبدًا|أدوية ومستحضرات تتأثر بالرطوبة والحرارة، وفين المكان الصح لحفظها.
+كاروسيل|شنطة إسعافات البيت: 10 حاجات لازم تكون عندك|قائمة مصورة لكل عنصر واستخدامه، وفي الآخر: «نجهزهالك ونوصلها».
+ريلز|ليه الصيدلي بيسألك «بتاخد إيه تاني؟»|شرح بسيط لفكرة التداخلات بين الأدوية والأكل بشكل عام، بدون أسماء أدوية.
+عرض|شنطة الشتا جاهزة|باقة عناية للشتا (مناديل، ترمومتر، مستلزمات ترطيب) بسعر واحد ومنتجات لا تحتاج روشتة.
+قصة|سؤال النهارده للصيدلي|ستوري أسئلة، والرد بفيديو 15 ثانية من الصيدلي.
+ريلز|الساعة 1 بالليل… ولسه فاتحين|مشهد طلب متأخر يوصل بسرعة. يبني الثقة في التوصيل ومواعيد العمل.
+توعية|إمتى تروح للدكتور بدل ما تيجي الصيدلية؟|علامات عامة تستدعي طبيب. تبني ثقة لأن الصيدلية مش بتبيع وخلاص.
+كاروسيل|روتين بشرة بـ3 خطوات حسب نوعها|دهنية / جافة / مختلطة، منتج لكل خطوة.
+ريلز|الفرق بين واقي شمس وواقي شمس|SPF وPA وإزاي تختار، بلغة بسيطة.
+خلف الكواليس|إزاي بنتأكد إن الدوا وصلك سليم|التخزين ودرجات الحرارة ومراجعة تاريخ الصلاحية.
+هوك|«مرتين في اليوم» مش معناها الصبح وبالليل وخلاص|توقيت الجرعات وأهمية سؤال الصيدلي.
+خدمة|قياس ضغط وسكر مجانًا في الصيدلية|يوم ثابت في الأسبوع، يجيب زيارات ويبني علاقة.
+كاروسيل|شنطة الأم الجديدة|مستلزمات المولود والأم في أول شهر.
+خدمة|نفكرك بميعاد دواك على واتساب|خدمة تذكير مجانية للأدوية المزمنة، بتبني ولاء.
+ريلز|حاجات ماتديهاش لطفلك قبل ما تسأل|رسالة سلامة عامة للأهل، بدون أسماء أدوية.
+مسابقة|خمّن المنتج من الصورة|صورة مقربة لمنتج عناية، والفايز ياخده هدية.
+موسمي|رمضان: نظّم دواك بين الفطار والسحور|نصيحة عامة: استشر طبيبك أو الصيدلي في المواعيد.
+موسمي|الامتحانات: نوم وأكل ومكملات؟|الصيدلي يجاوب على أشهر أسئلة الأهل.
+موسمي|شنطة المصيف|واقي شمس، مرطب بعد الشمس، إسعافات بسيطة، طارد حشرات.
+موسمي|هدية عيد الأم من الصيدلية|بوكس عناية جاهز بأسعار مختلفة.
+تجربة حقيقية|عميل بيحكي تجربة التوصيل|فيديو قصير بموافقة مكتوبة، بدون أي معلومة صحية عنه.
+خرافات وحقائق|3 خرافات عن المضاد الحيوي|توعية عامة: ليه ماينفعش بدون روشتة، وليه تكمل الكورس.
+كاروسيل|تعمل إيه بالأدوية القديمة في البيت؟|التخلص الآمن ومراجعة الصلاحية كل 6 شهور.
+وجه إنساني|تعرّف على صيدلي الوردية|اسمه وخبرته وأكتر سؤال بيجيله.
+ريلز|أغرب سؤال جالنا النهارده|كوميديا خفيفة بدون سخرية من العميل.
+خدمة|اشتراك شهري لاحتياجاتك المتكررة بالتوصيل|طلب ثابت كل شهر يوصل في ميعاده.
+هوك|الغلطة اللي أغلب الناس بتعملها مع الترمومتر|طريقة القياس الصح.
+ريلز|قبل ما تشتري أي مكمل: 3 أسئلة|ليه محتاجه؟ هل مسجل؟ هل يتعارض مع أدويتك؟
+مقارنة|شامبو القشرة ولا شامبو التساقط؟|مقارنة مبسطة تساعد العميل يختار.
+وعي بالقيمة|إحنا مش بنبيع بس، إحنا بنسأل|قيمة الاستشارة في الصيدلية مقارنة بالشراء أونلاين.
+تحدي|تحدي الـ60 ثانية: نجهّز طلبك|فيديو سرعة تجهيز الطلب بعدّاد على الشاشة.
+هوك|ده اللي بيحصل لكريم الوش لو سبته في العربية|الحرارة وتأثيرها على مستحضرات العناية.
+قصة|توصيل ولا تيجي بنفسك؟|استطلاع تفاعلي يعرّفك جمهورك.
+موسمي|شنطة الحج والعمرة|قائمة السفر الصحية.
+موسمي|شنطة المدرسة الصحية|معقم، مناديل، زجاجة مياه، لاصق جروح.
+ريلز|الصيدلي يقيّم روتين متابع|متابع يبعت روتينه (بموافقته) والصيدلي يعلق.
+عرض|عروض العناية بالشعر|عرض على منتجات العناية بالشعر (مستحضرات تجميل لا أدوية).
+كاروسيل|موسم الحساسية: نصائح عامة للبيت|تهوية، تنظيف، فلاتر، وإمتى تستشير.
+بوست|رقم واتساب واحد لكل اللي محتاجه|الرقم، المواعيد، منطقة التوصيل.
+ريلز|في 10 ثواني: إزاي تقرأ تاريخ الصلاحية|معنى EXP و MFG وأشكال كتابة التاريخ.`,
+de:`ريلز|الخوف من دكتور الأسنان طبيعي… ده اللي بنعمله عشانه|خطوات العيادة لتقليل القلق: شرح قبل أي خطوة، إشارة توقف، موسيقى.
+هوك|الصوت ده مش أول حاجة هتسمعها عندنا|فيديو يبدأ بصوت الجهاز ثم يتحول لترحيب هادئ وشرح.
+كاروسيل|5 غلطات في تفريش الأسنان|الضغط الزيادة، المدة، تغيير الفرشاة، إلخ.
+ريلز|فرشاة كهربا ولا عادية؟|مقارنة سريعة بدون ترويج لماركة.
+توعية|أول زيارة لطفلك عند دكتور الأسنان: إمتى وإزاي تجهزه|نصائح للأهل.
+خلف الكواليس|التعقيم عندنا خطوة بخطوة|جولة قصيرة في غرفة التعقيم.
+عرض|كشف + خطة علاج مكتوبة بالتكلفة قبل ما تبدأ|الشفافية في التكلفة كميزة تنافسية.
+هوك|ليه سعر الزرعة بيختلف من مكان لمكان؟|شرح العوامل بدون مهاجمة منافسين.
+كاروسيل|أنواع التقويم ببساطة|معدني، شفاف، متحرك: الفروق العامة.
+ريلز|يوم في حياة دكتور أسنان|يبني وجه إنساني وثقة.
+موسمي|قبل الفرح: ابتسامتك جاهزة؟|تنظيف وتلميع وفحص قبل المناسبة.
+موسمي|العودة للمدارس: كشف أسنان الأطفال|باقة كشف للأطفال.
+خدمة|تقسيط العلاج|نظام التقسيط المتاح وشروطه بوضوح.
+خرافات وحقائق|التبييض بيضعف الأسنان؟|إجابة متوازنة من الطبيب.
+كاروسيل|إيه اللي بيحصل في حشو العصب؟|الخطوات ببساطة تقلل الخوف.
+تجربة حقيقية|مريض بيحكي عن قلقه قبل الزيارة|بموافقة مكتوبة، بدون صور قبل/بعد.
+ريلز|الأكلات والمشروبات اللي بتصبغ الأسنان|شاي، قهوة، وإزاي تقلل أثرها.
+قصة|اسأل الدكتور|ستوري أسئلة أسبوعية.
+هوك|خيط الأسنان: 30 ثانية بتفرق|طريقة الاستخدام الصحيحة.
+وجه إنساني|تعرف على الفريق|الأطباء والمساعدين وأدوارهم.
+ريلز|إزاي بنخلي الطفل يضحك في الكرسي|لقطات لطيفة بموافقة الأهل.
+عرض|باقة العيلة: كشف لكل الأسرة|سعر واحد لأفراد الأسرة.
+كاروسيل|علامات تستدعي زيارة بدري|علامات عامة تحتاج كشف.
+ريلز|الزرعة بتعمّر قد إيه؟|إجابة عامة من الطبيب عن العوامل المؤثرة.
+موسمي|رمضان: عناية الأسنان مع الصيام|توقيت التفريش ونصائح عامة.
+هوك|مش كل نزيف لثة سببه التفريش الجامد|توعية تشجع على الكشف بدون تخويف.
+بوست|مواعيد مسائية ويوم الجمعة|ميزة للموظفين.
+خلف الكواليس|صوت تعقيم الأدوات (ASMR)|فيديو هادئ يبني الإحساس بالنظافة.
+مسابقة|أحلى ابتسامة طفل|صور يرسلها الأهل بموافقتهم، وجوائز عناية بالأسنان.
+كاروسيل|دليل تكلفة تقريبي للخدمات|راجع قواعد النقابة قبل نشر أي أسعار.`,
+cl:`ريلز|دقيقة مع الدكتور: معلومة واحدة|فيديو أسبوعي قصير بمعلومة عامة من التخصص.
+هوك|احجز… وادخل في ميعادك|ميزة الحجز وتقليل وقت الانتظار.
+كاروسيل|جهّز لكشفك: الورقة دي هتفرق|قائمة: الأدوية الحالية، التحاليل، الأسئلة.
+وجه إنساني|تعرف على الدكتور|التخصص والخبرة والفلسفة في التعامل مع المرضى.
+خرافات وحقائق|3 خرافات شائعة في التخصص|توعية بلغة بسيطة.
+موسمي|حساسية الربيع: نصائح عامة|وإمتى تحتاج كشف.
+موسمي|برد ولا إنفلونزا؟ الفرق ببساطة|معلومات عامة وإمتى تكشف.
+موسمي|رمضان والأمراض المزمنة: استشر قبل الصيام|رسالة سلامة وحجز كشف قبل رمضان.
+ريلز|سؤال المتابعين الأسبوعي|الدكتور يجاوب سؤال واحد.
+بوست|احجز أونلاين في 3 خطوات|شرح طريقة الحجز.
+كاروسيل|فحوصات دورية حسب العمر|إرشادات عامة، مع التأكيد على سؤال الطبيب.
+ريلز|يوم في العيادة|كواليس اليوم بدون ظهور مرضى.
+هوك|ليه الدكتور بيسألك السؤال ده في الكشف؟|شرح أسباب أسئلة التاريخ المرضي.
+خدمة|متابعة أونلاين بعد الكشف|ميزة توفر الوقت.
+توعية|إمتى تروح الطوارئ وإمتى تحجز كشف؟|علامات عامة للطوارئ.
+كاروسيل|ليه ماتفسرش نتيجة تحليلك لوحدك؟|توعية تشجع على مراجعة الطبيب.
+تجربة حقيقية|تجربة مريض مع المتابعة|بموافقة مكتوبة، بدون تفاصيل مرضية.
+ريلز|الدكتور يجاوب في 15 ثانية|أسئلة سريعة متتالية.
+موسمي|المدارس: كشف قبل الرياضة|فحص عام للأطفال الرياضيين.
+بوست|المواعيد والعنوان بخريطة|معلومات عملية واضحة.
+خلف الكواليس|التحضير قبل استقبال المرضى|نظافة وتنظيم.
+هوك|3 أسئلة اسألها لدكتورك في أي كشف|تمكين المريض يبني ثقة.
+كاروسيل|أسطورة vs حقيقة|تصميم مقارنة سهل المشاركة.
+لايف|لايف أسئلة شهري مع الدكتور|موعد ثابت شهريًا.
+بوست|شركات التأمين المتعاقدين معها|معلومة تزيل عائقًا للحجز.
+ريلز|النصيحة اللي بيقولها الدكتور لأهله|زاوية إنسانية جذابة.
+موسمي|الصيف: ضربة الشمس والجفاف|علامات عامة ونصائح وقاية.
+كاروسيل|دليل أول زيارة للعيادة|من الحجز للمتابعة.
+ريلز|الدكتور يعلّق على ترند صحي|تصحيح معلومات منتشرة بهدوء.
+عرض|باقة متابعة دورية|لو مسموح بها حسب قواعد النقابة والتخصص.`
+};
+const SEGNAME={ph:"صيدليات",de:"أسنان",cl:"عيادات"};
+const IDEAS=[];for(const s in IDEAS_RAW)IDEAS_RAW[s].trim().split("\n").forEach((l,i)=>{const[t,h,d]=l.split("|");IDEAS.push({id:s+i,s,t:t.trim(),h:h.trim(),d:(d||"").trim()})});
+const SEGMAP={pharmacy:"ph",supp:"ph",dental:"de",clinic:"cl",hospital:"cl",eye:"cl",derma:"cl",lab:"cl",radio:"cl",physio:"cl",nutri:"cl",ivf:"cl",psych:"cl",homecare:"cl"};
+function initIdeas(){const ft=$("fType");[...new Set(IDEAS.map(x=>x.t))].forEach(t=>ft.insertAdjacentHTML("beforeend",`<option>${t}</option>`));["fSeg","fType","fQ"].forEach(id=>$(id).oninput=renderIdeas)}
+function renderIdeas(){const s=$("fSeg").value,t=$("fType").value,q=$("fQ").value.trim();
+ const list=IDEAS.filter(x=>(!s||x.s===s)&&(!t||x.t===t)&&(!q||(x.h+x.d).includes(q)));
+ $("ideasCount").textContent=list.length+" فكرة";
+ $("ideasBox").innerHTML=list.map(x=>`<div class="card" style="padding:10px"><div class="hint">${SEGNAME[x.s]} • ${x.t}</div><div style="font-weight:700;margin:4px 0">${x.h}</div><div style="font-size:14px">${x.d}</div><div class="row" style="margin-top:6px"><button class="sm" onclick="copyIdea('${x.id}')">نسخ</button><button class="sm" onclick="addIdea('${x.id}')">أضف للخطة</button></div></div>`).join("")}
+function ideaTxt(id){const x=IDEAS.find(i=>i.id===id);return`[${x.t}] ${x.h}\n${x.d}`}
+function copyIdea(id){copy(ideaTxt(id),"تم النسخ")}
+function addIdea(id){const c=C();c.plan=(c.plan?c.plan+"\n\n":"")+ideaTxt(id);save();bindFields();toast("أُضيفت للخطة")}
+function autoSegFilter(){const m=SEGMAP[C().seg];$("fSeg").value=m||"";renderIdeas()}
+
+/* ===== الهوية البصرية ===== */
+const FONTS=["Cairo","Tajawal","Almarai","IBM Plex Sans Arabic","Noto Kufi Arabic","Readex Pro","El Messiri","Alexandria","Changa","Lalezar"];
+const PALS={"صيدلية (ثقة وصحة)":["#0f766e","#e6f4f1","#f59e0b","#ffffff","#1f2937"],"أسنان (نظافة وهدوء)":["#0369a1","#e0f2fe","#22c55e","#ffffff","#0f172a"],"عيادة (احترافية)":["#1e3a8a","#eef2ff","#06b6d4","#ffffff","#111827"],"تجميل وجلدية (رقي)":["#9d4e6e","#fbeff3","#c9a227","#fffdfb","#2b1d22"],"أطفال (دفء)":["#2563eb","#fff7ed","#f97316","#ffffff","#1f2937"]};
+const CK=["cPri","cSec","cAcc","cBg","cTxt"];
+function initIdentity(){["fHead","fBody"].forEach(id=>{const s=$(id);FONTS.forEach(f=>s.insertAdjacentHTML("beforeend",`<option value="${f}" style="font-family:'${f}'">${f}</option>`))});
+ const pb=$("palBtns");for(const n in PALS)pb.insertAdjacentHTML("beforeend",`<button class="sm" onclick="applyPal('${n}')"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${PALS[n][0]}"></span> ${n}</button>`);
+ ["pvHead","pvSub","pvCta"].forEach(id=>$(id).oninput=renderPreview)}
+function applyPal(n){const c=C();CK.forEach((k,i)=>c[k]=PALS[n][i]);save();bindFields();renderPreview()}
+function lum(h){const v=[1,3,5].map(i=>parseInt(h.substr(i,2),16)/255).map(x=>x<=0.03928?x/12.92:Math.pow((x+0.055)/1.055,2.4));return .2126*v[0]+.7152*v[1]+.0722*v[2]}
+function ratio(a,b){const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)}
+function renderPreview(){const c=C();if(!c)return;const g=k=>c[k]||$$(k);
+ const pri=g("cPri"),sec=g("cSec"),acc=g("cAcc"),bg=g("cBg"),tx=g("cTxt"),fh=c.fHead||"Cairo",fb=c.fBody||"Tajawal";
+ $("preview").innerHTML=`<div style="aspect-ratio:1/1;max-width:360px;margin:auto;background:${bg};border-radius:12px;overflow:hidden;display:flex;flex-direction:column;border:1px solid var(--line)">
+  <div style="background:${pri};color:#fff;padding:10px 14px;font-family:'${fh}';font-weight:700;font-size:15px">${c.name||"اسم النشاط"}</div>
+  <div style="flex:1;background:${sec};margin:12px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:${tx};opacity:.6;font-size:13px">مكان الصورة</div>
+  <div style="padding:0 14px;font-family:'${fh}';font-weight:700;font-size:22px;color:${pri}">${$("pvHead").value}</div>
+  <div style="padding:4px 14px;font-family:'${fb}';font-size:14px;color:${tx}">${$("pvSub").value}</div>
+  <div style="padding:10px 14px 14px"><span style="background:${acc};color:${lum(acc)>.4?"#111":"#fff"};padding:8px 18px;border-radius:20px;font-family:'${fh}';font-weight:700;font-size:14px;display:inline-block">${$("pvCta").value}</span></div></div>`;
+ const r1=ratio(tx,bg),r2=ratio("#ffffff",pri),r3=ratio(pri,bg);
+ const line=(n,r,min)=>`<span>${n}</span><b style="color:${r>=min?"var(--ok)":"var(--bad)"}">${r.toFixed(1)} ${r>=min?"✓":"✗ ضعيف"}</b>`;
+ $("contrast").innerHTML=`<label>فحص وضوح القراءة (التباين)</label><div class="res">${line("النص على الخلفية",r1,4.5)}${line("نص أبيض على اللون الأساسي",r2,4.5)}${line("عناوين بالأساسي على الخلفية",r3,3)}</div><p class="hint">المطلوب 4.5 للنص العادي و3 للعناوين الكبيرة، حتى تُقرأ الإعلانات بوضوح على الموبايل.</p>`}
+function $$(k){const e=document.querySelector(`[data-k="${k}"]`);return e?e.value:"#000000"}
+
+function renderAll(){renderSel();bindFields();renderSeg();renderCompl();renderComps();autoSegFilter();renderPreview();renderWaste();renderTeam();renderLog();save();calc()}
+initIdeas();initIdentity();load();renderAll();
 </script>
 </body>
 </html>
