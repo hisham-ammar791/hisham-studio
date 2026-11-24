@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>وضع الوكالة — دراسة السوق والخطة والتسعير</title>
+<style>
+:root{--bg:#0f1115;--card:#181b22;--line:#2a2f3a;--txt:#e9ecf1;--mut:#9aa3b2;--acc:#d4a24c;--ok:#3fb27f;--bad:#e0565b;--warn:#e7a33e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:"Segoe UI",Tahoma,Arial,sans-serif;font-size:15px;line-height:1.6}
+header{position:sticky;top:0;z-index:5;background:#12151b;border-bottom:1px solid var(--line);padding:10px 12px}
+h1{font-size:17px;margin:0 0 8px;color:var(--acc)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+select,input,textarea,button{font:inherit;color:var(--txt);background:#0c0e12;border:1px solid var(--line);border-radius:8px;padding:8px}
+textarea{width:100%;min-height:80px;resize:vertical}
+input{width:100%}
+button{background:#232833;cursor:pointer}
+button.p{background:var(--acc);color:#1a1300;border:none;font-weight:600}
+button.sm{padding:4px 10px;font-size:13px}
+nav{display:flex;gap:4px;overflow-x:auto;margin-top:8px}
+nav button{white-space:nowrap;border-radius:20px;padding:6px 12px;font-size:14px}
+nav button.on{background:var(--acc);color:#1a1300;border-color:var(--acc)}
+main{padding:12px;max-width:900px;margin:auto}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+.card h2{font-size:15px;margin:0 0 8px;color:var(--acc)}
+label{display:block;font-size:13px;color:var(--mut);margin:8px 0 3px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:560px){.g2,.g3{grid-template-columns:1fr 1fr}}
+.comp{border:1px dashed var(--line);border-radius:10px;padding:8px;margin-bottom:8px}
+.hint{font-size:12px;color:var(--mut)}
+.res{display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:14px}
+.res b{text-align:left;direction:ltr}
+.big{font-size:22px;color:var(--acc);font-weight:700}
+.alert{border-radius:10px;padding:10px;margin-top:10px;font-size:14px}
+.alert.bad{background:#3a1517;border:1px solid var(--bad)}
+.alert.ok{background:#12301f;border:1px solid var(--ok)}
+.alert.warn{background:#3a2a10;border:1px solid var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{border-bottom:1px solid var(--line);padding:5px;text-align:right}
+td input{padding:5px}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--acc);color:#1a1300;padding:8px 16px;border-radius:20px;display:none;z-index:9}
+</style>
+</head>
+<body>
+<header>
+  <h1>وضع الوكالة — Marketing OS</h1>
+  <div class="row">
+    <select id="clientSel" style="flex:1;min-width:140px"></select>
+    <button class="sm" onclick="newClient()">+ عميل</button>
+    <button class="sm" onclick="delClient()">حذف</button>
+    <button class="sm" onclick="exportData()">تصدير</button>
+    <button class="sm" onclick="document.getElementById('imp').click()">استيراد</button>
+    <input type="file" id="imp" accept=".json" style="display:none" onchange="importData(this)">
+  </div>
+  <nav id="tabs">
+    <button data-t="t1" class="on">1 العميل</button>
+    <button data-t="t2">2 السوق والمنافسون</button>
+    <button data-t="t3">3 SWOT والخطة</button>
+    <button data-t="t4">4 التسعير</button>
+    <button data-t="t5">5 الربح الفعلي</button>
+  </nav>
+</header>
+
+<main>
+<!-- 1 العميل -->
+<section id="t1" class="on">
+  <div class="card"><h2>ملف العميل (الذاكرة التجارية)</h2>
+    <div class="g2">
+      <div><label>اسم العميل / النشاط</label><input data-k="name"></div>
+      <div><label>نوع النشاط</label><input data-k="type" placeholder="صيدلية، عيادة، مطعم..."></div>
+      <div><label>المنطقة / المدينة</label><input data-k="area"></div>
+      <div><label>روابط الصفحات</label><input data-k="links"></div>
+    </div>
+    <label>المنتجات / الخدمات والأسعار</label><textarea data-k="products"></textarea>
+    <label>هدف العميل (رسائل، حجوزات، مبيعات...)</label><textarea data-k="goal"></textarea>
+    <label>الجمهور المستهدف</label><textarea data-k="audience"></textarea>
+    <label>نبرة البراند وقواعده الثابتة</label><textarea data-k="tone"></textarea>
+    <label>تعريف «البيعة الفعلية» لهذا العميل</label><input data-k="saleDef" placeholder="مثال: طلب مؤكد بالتوصيل">
+    <label>ملاحظات</label><textarea data-k="notes"></textarea>
+  </div>
+  <div class="card"><h2>الشريحة الصحية</h2>
+    <select data-k="seg" style="width:100%">
+      <option value="">— اختر الشريحة —</option>
+      <option value="pharmacy">صيدلية</option>
+      <option value="derma">مركز تجميل وجلدية</option>
+      <option value="dental">عيادة أسنان</option>
+      <option value="clinic">عيادة خاصة</option>
+      <option value="lab">معمل تحاليل</option>
+      <option value="radio">مركز أشعة</option>
+      <option value="physio">علاج طبيعي</option>
+      <option value="nutri">تغذية علاجية</option>
+      <option value="hospital">مستشفى خاص / مركز طبي متكامل</option>
+      <option value="eye">عيون وبصريات</option>
+      <option value="ivf">خصوبة وحقن مجهري</option>
+      <option value="psych">صحة نفسية</option>
+      <option value="homecare">رعاية وتمريض منزلي</option>
+      <option value="supp">مكملات ومستحضرات تجميل</option>
+      <option value="equip">أجهزة ومستلزمات طبية</option>
+      <option value="vet">عيادة بيطرية</option>
+      <option value="other">أخرى (اكتبها في نوع النشاط)</option>
+    </select>
+    <div id="segInfo"></div>
+  </div>
+</section>
+
+<!-- 2 السوق -->
+<section id="t2">
+  <div class="card"><h2>خريطة السوق</h2>
+    <label>المواسم والمناسبات المؤثرة</label><textarea data-k="seasons"></textarea>
+    <label>الأسعار السائدة وحجم الطلب (من مصادر حقيقية فقط)</label><textarea data-k="marketPrices"></textarea>
+  </div>
+  <div class="card"><h2>المنافسون (3–5)</h2>
+    <p class="hint">المصدر العملي: مكتبة إعلانات ميتا وصفحات المنافسين. اجمع البيانات بنفسك ثم ولّد البرومبت.</p>
+    <div id="comps"></div>
+    <button class="sm" onclick="addComp()">+ منافس</button>
+  </div>
+  <div class="card"><h2>برومبت دراسة السوق</h2>
+    <button class="p" onclick="copyPrompt('market')">نسخ البرومبت لـ ChatGPT / Gemini</button>
+    <label>الصق رد الذكاء الاصطناعي هنا</label><textarea data-k="marketReply" style="min-height:140px"></textarea>
+  </div>
+</section>
+
+<!-- 3 SWOT والخطة -->
+<section id="t3">
+  <div class="card"><h2>SWOT (بعد مراجعتك لرد الدراسة)</h2>
+    <div class="g2">
+      <div><label>نقاط القوة</label><textarea data-k="S"></textarea></div>
+      <div><label>نقاط الضعف</label><textarea data-k="W"></textarea></div>
+      <div><label>الفرص</label><textarea data-k="O"></textarea></div>
+      <div><label>التهديدات</label><textarea data-k="T"></textarea></div>
+    </div>
+    <label>التموضع: لماذا يختار الزبون هذا العميل؟</label><textarea data-k="position"></textarea>
+  </div>
+  <div class="card"><h2>الأهداف (3 سيناريوهات شهرية)</h2>
+    <div class="g3">
+      <div><label>محافظ</label><input data-k="goalLow"></div>
+      <div><label>متوسط</label><input data-k="goalMid"></div>
+      <div><label>طموح</label><input data-k="goalHigh"></div>
+    </div>
+  </div>
+  <div class="card"><h2>برومبت الخطة الشهرية</h2>
+    <button class="p" onclick="copyPrompt('plan')">نسخ برومبت الخطة</button>
+    <label>الخطة المعتمدة (بعد تعديلك)</label><textarea data-k="plan" style="min-height:160px"></textarea>
+    <label>حالة الاعتماد</label>
+    <select data-k="planStatus"><option>مسودة</option><option>مراجعة داخلية</option><option>أُرسلت للعميل</option><option>معتمدة</option><option>طلب تعديل</option></select>
+  </div>
+  <div class="card"><h2>بوابة الامتثال (قبل أي اعتماد أو نشر)</h2>
+    <p class="hint">قائمة عامة. راجع قواعد نقابة الأطباء/الصيادلة ووزارة الصحة وسياسات ميتا الحالية وأضف ما يلزم.</p>
+    <div id="complBox"></div>
+  </div>
+</section>
+
+<!-- 4 التسعير -->
+<section id="t4">
+  <div class="card"><h2>الصرف الإعلاني</h2>
+    <div class="g2">
+      <div><label>مدة الحملة (أيام)</label><input type="number" data-k="days" data-n value="30"></div>
+      <div><label>أيام الاختبار</label><input type="number" data-k="testDays" data-n value="10"></div>
+      <div><label>ميزانية يومية — اختبار</label><input type="number" data-k="testDaily" data-n value="0"></div>
+      <div><label>ميزانية يومية — تضخيم</label><input type="number" data-k="scaleDaily" data-n value="0"></div>
+      <div><label>عملة الميزانية</label><select data-k="cur"><option value="EGP">جنيه</option><option value="USD">دولار</option></select></div>
+      <div><label>سعر الدولار (إن كانت بالدولار)</label><input type="number" data-k="usd" data-n value="0"></div>
+      <div><label>ضرائب/رسوم على الإعلانات %</label><input type="number" data-k="adTax" data-n value="0"></div>
+    </div>
+  </div>
+  <div class="card"><h2>الهدر (% من الصرف) — متوقع / أسوأ</h2>
+    <p class="hint">افتراضات حتى تأتي أرقامك الحقيقية من تبويب «الربح الفعلي».</p>
+    <table><thead><tr><th>البند</th><th>متوقع %</th><th>أسوأ %</th></tr></thead><tbody id="wasteRows"></tbody></table>
+  </div>
+  <div class="card"><h2>الإنتاج والأدوات</h2>
+    <div class="g2">
+      <div><label>عدد التصميمات</label><input type="number" data-k="nDesign" data-n value="0"></div>
+      <div><label>تكلفة التصميم الواحد</label><input type="number" data-k="cDesign" data-n value="0"></div>
+      <div><label>عدد الفيديوهات</label><input type="number" data-k="nVideo" data-n value="0"></div>
+      <div><label>تكلفة الفيديو الواحد</label><input type="number" data-k="cVideo" data-n value="0"></div>
+      <div><label>أدوات AI (Flow/Higgsfield...)</label><input type="number" data-k="cTools" data-n value="0"></div>
+      <div><label>تكاليف أخرى</label><input type="number" data-k="cOther" data-n value="0"></div>
+    </div>
+  </div>
+  <div class="card"><h2>وقت الفريق (ضع وقتك أنت أيضًا)</h2>
+    <table><thead><tr><th>الدور</th><th>ساعات</th><th>أجر الساعة</th></tr></thead><tbody id="teamRows"></tbody></table>
+  </div>
+  <div class="card"><h2>الهوامش</h2>
+    <div class="g3">
+      <div><label>هامش أمان %</label><input type="number" data-k="buffer" data-n value="15"></div>
+      <div><label>ربحك الصافي %</label><input type="number" data-k="margin" data-n value="20"></div>
+      <div><label>رسوم الدفع % من السعر</label><input type="number" data-k="payFee" data-n value="0"></div>
+    </div>
+  </div>
+  <div class="card"><h2>النتيجة (داخلي)</h2>
+    <div id="pricing"></div>
+    <label>جرّب سعرًا آخر</label><input type="number" id="testPrice" placeholder="اكتب سعرًا لترى ربحه">
+    <div id="testRes"></div>
+  </div>
+  <div class="card"><h2>عرض السعر للعميل (رقم واحد)</h2>
+    <label>ما يشمله العرض</label><textarea data-k="scope" placeholder="خطة شهرية، X تصميم، X فيديو، إدارة الحملات، تقرير شهري..."></textarea>
+    <button class="p" onclick="copyOffer()">نسخ نص العرض</button>
+  </div>
+</section>
+
+<!-- 5 الربح الفعلي -->
+<section id="t5">
+  <div class="card"><h2>سجل الربح الفعلي</h2>
+    <p class="hint">بعد كل شهر: ما قبضته، وما صرفته فعلًا، والهدر الفعلي. يستخدم لتصحيح الافتراضات.</p>
+    <div style="overflow-x:auto"><table><thead><tr><th>الشهر</th><th>المقبوض</th><th>صرف إعلانات</th><th>تكاليف أخرى</th><th>هدر فعلي %</th><th>الهامش</th><th></th></tr></thead><tbody id="logRows"></tbody></table></div>
+    <button class="sm" onclick="addLog()">+ شهر</button>
+    <div id="logSum"></div>
+  </div>
+</section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const WASTE=[["إعلانات اختبار فاشلة",15,25],["مرحلة التعلم في ميتا",5,10],["إجهاد الإعلان",5,10],["عملاء غير جادين",5,15],["تأخير رفض الإعلانات",0,5],["تعديلات بعد الاعتماد",0,5]];
+const TEAM=["وقتي (د/ هشام)","مدير الحساب","المصمم","Media Buyer"];
+const KEY="agencyOS_v1";
+const SEG={
+ pharmacy:{kpi:"طلبات التوصيل ورسائل واتساب المتحولة لطلب",sale:"طلب مؤكد (توصيل أو استلام)",seasons:"الشتاء ونزلات البرد، رمضان، الصيف والشمس، العودة للمدارس، الأعياد",hooks:["التوصيل في دقائق حتى وقت متأخر","استشارة صيدلي مجانية على واتساب","روتين العناية حسب نوع البشرة","عروض الأمهات والأطفال"],fears:"الغش والأسعار، الانتظار، عدم توفر الصنف"},
+ derma:{kpi:"حجوزات الجلسات ونسبة الحضور",sale:"حجز جلسة حضر فعلًا",seasons:"قبل الصيف، الأعياد، موسم الأفراح، العروض قبل رمضان",hooks:["كشف بشرة مجاني","شرح الجهاز والتقنية ببساطة","خبرة الطبيب وشهاداته","تجربة حقيقية بموافقة العميلة"],fears:"الأمان والآثار الجانبية، السعر، النتائج غير الواقعية"},
+ dental:{kpi:"حجوزات الكشف ونسبة بدء العلاج",sale:"كشف حضر + خطة علاج بدأت",seasons:"العودة للمدارس، قبل الأفراح، العطلات",hooks:["الخوف من ألم الأسنان وكيف نتعامل معه","تقسيط العلاج","تنظيف وتبييض قبل المناسبة","أسنان الأطفال"],fears:"الألم، التكلفة، طول مدة العلاج"},
+ clinic:{kpi:"حجوزات الكشف ونسبة الحضور",sale:"كشف حضر فعلًا",seasons:"حسب التخصص (الحساسية في الربيع، البرد في الشتاء...)",hooks:["معلومة توعوية قصيرة من الطبيب","مواعيد بدون انتظار","حجز أونلاين سهل"],fears:"الانتظار، سعر الكشف، الثقة في الطبيب"},
+ lab:{kpi:"عدد التحاليل والباقات المباعة",sale:"تحليل/باقة مدفوعة",seasons:"بداية السنة، قبل رمضان، الصيف، فحوصات ما قبل الزواج",hooks:["سحب العينة من المنزل","باقات الفحص الدوري","النتيجة على واتساب"],fears:"دقة النتائج، السعر، وقت الانتظار"},
+ radio:{kpi:"حجوزات الأشعة والتحويلات من الأطباء",sale:"فحص تم",seasons:"على مدار السنة",hooks:["مواعيد سريعة","تقرير في نفس اليوم","أحدث الأجهزة"],fears:"الإشعاع والأمان، الانتظار، السعر"},
+ physio:{kpi:"حجوزات الجلسات وإكمال البرنامج",sale:"بدء برنامج جلسات",seasons:"بعد العطلات، الشتاء وآلام المفاصل",hooks:["آلام الظهر من الجلوس الطويل","تمارين بسيطة توعوية","جلسات منزلية"],fears:"عدد الجلسات وتكلفتها، عدم التحسن"},
+ nutri:{kpi:"حجوزات المتابعة والاستمرار شهريًا",sale:"اشتراك متابعة",seasons:"بداية السنة، قبل الصيف، بعد رمضان والأعياد",hooks:["نظام مناسب للأكل المصري","قياس InBody","متابعة أسبوعية"],fears:"الحرمان، الملل، الوزن الذي يعود"},
+ hospital:{kpi:"حجوزات العيادات والعمليات والطوارئ لكل قسم",sale:"حجز/عملية تمت",seasons:"حسب كل قسم، مع حملات الفحص المبكر",hooks:["قسم واحد في كل حملة","أطباء الفريق ومؤهلاتهم","التعاقدات مع شركات التأمين","تجهيزات الطوارئ"],fears:"التكلفة، الثقة، الإهمال، الانتظار"},
+ eye:{kpi:"حجوزات الكشف وعمليات الليزك ومبيعات النظارات",sale:"كشف/عملية/نظارة مباعة",seasons:"العودة للمدارس، الصيف (نظارات شمس)",hooks:["فحص نظر الأطفال قبل المدرسة","هل تناسبك عملية تصحيح النظر؟","تجربة الإطارات"],fears:"أمان العمليات، السعر، النتيجة"},
+ ivf:{kpi:"حجوزات الاستشارة الأولى",sale:"استشارة حضرت",seasons:"على مدار السنة",hooks:["توعية بالخطوات بلغة هادئة","فريق الطبيب وخبرته","خصوصية تامة"],fears:"الخصوصية، التكلفة، نسب النجاح",note:"حساس جدًا: لا نسب نجاح ولا وعود، وخطاب هادئ بلا ضغط نفسي."},
+ psych:{kpi:"حجوزات الجلسات الأولى",sale:"جلسة أولى حضرت",seasons:"على مدار السنة، أيام التوعية بالصحة النفسية",hooks:["كسر الوصمة بلغة بسيطة","جلسات أونلاين بخصوصية","معلومة توعوية"],fears:"الوصمة، الخصوصية، التكلفة",note:"حساس جدًا: لا تخاطب المشاهد كأنه مريض، ولا استغلال للضيق أو الخوف."},
+ homecare:{kpi:"طلبات الزيارات والعقود الشهرية",sale:"زيارة/عقد رعاية",seasons:"الشتاء، بعد العمليات",hooks:["رعاية كبار السن في البيت","تمريض بعد العمليات","تمريض موثوق ومدرب"],fears:"الثقة والأمان داخل البيت، الكفاءة، التكلفة"},
+ supp:{kpi:"مبيعات المنتج وتكرار الشراء",sale:"طلب مدفوع",seasons:"الشتاء (مناعة)، الصيف (العناية بالبشرة)، المناسبات",hooks:["مكونات واضحة ومرخصة","طريقة الاستخدام","تجارب حقيقية مسموح بها"],fears:"الغش، الأمان، عدم الفائدة",note:"لا ادعاءات علاجية، والمنتج لازم يكون مسجلًا."},
+ equip:{kpi:"طلبات عروض الأسعار والمبيعات",sale:"صفقة/طلب مدفوع",seasons:"بداية السنة المالية، المعارض الطبية",hooks:["الضمان والصيانة","تجربة الجهاز","حالات استخدام في عيادات معروفة بموافقتها"],fears:"الجودة، الصيانة، قطع الغيار"},
+ vet:{kpi:"حجوزات الكشف والتطعيمات",sale:"كشف/تطعيم تم",seasons:"مواعيد التطعيمات، الصيف",hooks:["جدول تطعيمات الحيوان الأليف","زيارة منزلية","فندقة الحيوانات"],fears:"التكلفة، التعامل مع الحيوان، الخبرة"},
+ other:{kpi:"حدده مع العميل",sale:"حدده مع العميل",seasons:"حسب النشاط",hooks:["معلومة توعوية","خبرة الفريق","سهولة الحجز أو الطلب"],fears:"الثقة، السعر، الوقت"}
+};
+const COMPL=["لا وعد بالشفاء أو نتائج مضمونة","لا صور قبل/بعد إلا بموافقة مكتوبة وبما تسمح به سياسات ميتا","لا ذكر أدوية تحتاج روشتة أو أسماء تجارية ممنوع الإعلان عنها","النص لا يفترض حالة صحية في المشاهد نفسه (مثل: «هل تعاني من...؟»)","لا بيانات أو صور مرضى بدون موافقة مكتوبة","المعلومة الطبية راجعها مختص","الأسعار والعروض مسموح بها في هذا التخصص (حسب قواعد النقابة)","الاستهداف لا يعتمد على حالات صحية حساسة"];
+let db={clients:{},current:null};
+const $=id=>document.getElementById(id);
+const fmt=n=>isFinite(n)?Math.round(n).toLocaleString("en-US"):"—";
+function toast(t){const e=$("toast");e.textContent=t;e.style.display="block";setTimeout(()=>e.style.display="none",1600)}
+function load(){try{const s=localStorage.getItem(KEY);if(s)db=JSON.parse(s)}catch(e){}if(!db.current||!db.clients[db.current])newClient(true)}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){}}
+function C(){return db.clients[db.current]}
+function blank(){return{name:"عميل جديد",comps:[],waste:WASTE.map(w=>[w[1],w[2]]),team:TEAM.map(()=>[0,0]),log:[]}}
+function newClient(silent){const id="c"+Date.now();db.clients[id]=blank();db.current=id;save();if(!silent){renderAll();toast("عميل جديد")}}
+function delClient(){if(Object.keys(db.clients).length<2)return toast("لا يمكن حذف آخر عميل");if(!confirm("حذف هذا العميل؟"))return;delete db.clients[db.current];db.current=Object.keys(db.clients)[0];save();renderAll()}
+function exportData(){const b=new Blob([JSON.stringify(db,null,1)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="agency-data.json";a.click()}
+function importData(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(d.clients){db=d;save();renderAll();toast("تم الاستيراد")}}catch(e){toast("ملف غير صالح")}};r.readAsText(f)}
+
+function renderSel(){const s=$("clientSel");s.innerHTML="";for(const id in db.clients){const o=document.createElement("option");o.value=id;o.textContent=db.clients[id].name||"بدون اسم";if(id===db.current)o.selected=true;s.appendChild(o)}}
+$("clientSel").onchange=e=>{db.current=e.target.value;save();renderAll()};
+
+function bindFields(){document.querySelectorAll("[data-k]").forEach(el=>{const k=el.dataset.k,c=C();
+  if(c[k]!==undefined)el.value=c[k];else if(el.tagName==="INPUT"&&el.dataset.n!==undefined){el.value=el.defaultValue;c[k]=+el.defaultValue||0}else if(el.tagName==="SELECT"){el.selectedIndex=0;c[k]=el.value}else el.value="";
+  el.oninput=el.onchange=()=>{C()[k]=el.dataset.n!==undefined?(+el.value||0):el.value;save();if(k==="name")renderSel();if(k==="seg")renderSeg();if(k==="planStatus")renderCompl();calc()}})}
+
+function renderSeg(){const s=SEG[C().seg],o=$("segInfo");if(!s){o.innerHTML="";return}
+ o.innerHTML=`<div class="res" style="margin-top:10px"><span>مؤشر النجاح</span><b style="direction:rtl;text-align:right">${s.kpi}</b><span>البيعة الفعلية</span><b style="direction:rtl;text-align:right">${s.sale}</b></div>
+ <label>المواسم</label><div>${s.seasons}</div>
+ <label>زوايا وهوكات مقترحة</label><div>${s.hooks.map(h=>"• "+h).join("<br>")}</div>
+ <label>مخاوف الزبون</label><div>${s.fears}</div>
+ ${s.note?`<div class="alert warn">${s.note}</div>`:""}
+ <button class="sm" style="margin-top:8px" onclick="fillSeg()">املأ الحقول الفارغة تلقائيًا</button>`}
+function fillSeg(){const c=C(),s=SEG[c.seg];if(!s)return;if(!c.saleDef)c.saleDef=s.sale;if(!c.seasons)c.seasons=s.seasons;save();bindFields();toast("تم الملء")}
+function renderCompl(){const c=C();if(!c.compl)c.compl=[];const box=$("complBox");
+ const all=COMPL.every((_,i)=>c.compl[i]);
+ box.innerHTML=COMPL.map((t,i)=>`<label style="display:flex;gap:8px;align-items:center;color:var(--txt);font-size:14px"><input type="checkbox" style="width:auto" ${c.compl[i]?"checked":""} onchange="C().compl[${i}]=this.checked;save();renderCompl()"> ${t}</label>`).join("")+
+ (c.planStatus==="معتمدة"&&!all?`<div class="alert bad">الخطة «معتمدة» لكن قائمة الامتثال غير مكتملة. لا تنشر قبل إكمالها.</div>`:all?`<div class="alert ok">الامتثال مكتمل.</div>`:"")}
+
+function renderComps(){const box=$("comps"),c=C();box.innerHTML="";c.comps.forEach((cp,i)=>{const d=document.createElement("div");d.className="comp";
+  d.innerHTML=`<div class="row" style="justify-content:space-between"><b>منافس ${i+1}</b><button class="sm" onclick="delComp(${i})">حذف</button></div>
+  <div class="g2">${[["n","الاسم"],["l","الرابط"],["o","عروضه وأسعاره"],["a","إعلاناته الحالية"],["s","قوته"],["w","ضعفه"]].map(f=>`<div><label>${f[1]}</label><input value="${(cp[f[0]]||"").replace(/"/g,"&quot;")}" oninput="C().comps[${i}]['${f[0]}']=this.value;save()"></div>`).join("")}</div>`;box.appendChild(d)})}
+function addComp(){C().comps.push({});save();renderComps()}
+function delComp(i){C().comps.splice(i,1);save();renderComps()}
+
+function renderWaste(){const t=$("wasteRows"),c=C();t.innerHTML="";WASTE.forEach((w,i)=>{if(!c.waste[i])c.waste[i]=[w[1],w[2]];t.insertAdjacentHTML("beforeend",`<tr><td>${w[0]}</td><td><input type="number" value="${c.waste[i][0]}" oninput="C().waste[${i}][0]=+this.value||0;save();calc()"></td><td><input type="number" value="${c.waste[i][1]}" oninput="C().waste[${i}][1]=+this.value||0;save();calc()"></td></tr>`)})}
+function renderTeam(){const t=$("teamRows"),c=C();t.innerHTML="";TEAM.forEach((r,i)=>{if(!c.team[i])c.team[i]=[0,0];t.insertAdjacentHTML("beforeend",`<tr><td>${r}</td><td><input type="number" value="${c.team[i][0]}" oninput="C().team[${i}][0]=+this.value||0;save();calc()"></td><td><input type="number" value="${c.team[i][1]}" oninput="C().team[${i}][1]=+this.value||0;save();calc()"></td></tr>`)})}
+
+function model(){const c=C(),n=k=>+c[k]||0;
+  const rate=c.cur==="USD"?(n("usd")||0):1;
+  const testD=Math.min(n("testDays"),n("days"));
+  let ad=(testD*n("testDaily")+(n("days")-testD)*n("scaleDaily"))*rate;
+  ad*=1+n("adTax")/100;
+  const wE=c.waste.reduce((s,w)=>s+(+w[0]||0),0)/100,wW=c.waste.reduce((s,w)=>s+(+w[1]||0),0)/100;
+  const prod=n("nDesign")*n("cDesign")+n("nVideo")*n("cVideo")+n("cTools")+n("cOther");
+  const team=c.team.reduce((s,t)=>s+(+t[0]||0)*(+t[1]||0),0);
+  const buf=1+n("buffer")/100;
+  const costE=(ad*(1+wE)+prod+team),costW=(ad*(1+wW)+prod+team)*buf;
+  const m=Math.max(n("margin"),0)/100,fee=n("payFee")/100;
+  const price=Math.ceil(costW/(1-m-fee)/50)*50;
+  return{ad,wE,wW,prod,team,costE,costW,price,fee,m,usdMissing:c.cur==="USD"&&!n("usd")}}
+function margins(price,M){const net=price*(1-M.fee);return{worst:(net-M.costW)/price,exp:(net-M.costE)/price,profW:net-M.costW,profE:net-M.costE}}
+
+function calc(){const c=C();if(!c)return;const M=model();const out=$("pricing");
+  if(M.usdMissing){out.innerHTML=`<div class="alert warn">أدخل سعر الدولار.</div>`;return}
+  if(M.m+M.fee>=0.95){out.innerHTML=`<div class="alert bad">الهامش + الرسوم مرتفعان جدًا.</div>`;return}
+  const g=margins(M.price,M),adFee=M.price-M.ad*(1+M.wE);
+  const lowM=(+c.margin||0)<20;
+  out.innerHTML=`<div class="res">
+    <span>الصرف الإعلاني (بدون هدر)</span><b>${fmt(M.ad)}</b>
+    <span>الهدر المتوقع / الأسوأ</span><b>${Math.round(M.wE*100)}% / ${Math.round(M.wW*100)}%</b>
+    <span>الإنتاج والأدوات</span><b>${fmt(M.prod)}</b>
+    <span>وقت الفريق</span><b>${fmt(M.team)}</b>
+    <span>التكلفة المتوقعة</span><b>${fmt(M.costE)}</b>
+    <span>التكلفة في أسوأ حالة (+أمان)</span><b>${fmt(M.costW)}</b>
+  </div>
+  <div style="margin-top:10px">السعر المقترح للعميل</div><div class="big">${fmt(M.price)}</div>
+  <div class="res" style="margin-top:6px">
+    <span>ربحك في أسوأ حالة</span><b>${fmt(g.profW)} (${(g.worst*100).toFixed(1)}%)</b>
+    <span>ربحك المتوقع</span><b>${fmt(g.profE)} (${(g.exp*100).toFixed(1)}%)</b>
+    <span>هامشك على جزء الأتعاب فقط</span><b>${adFee>0?((g.profE/adFee)*100).toFixed(0)+"%":"—"}</b>
+  </div>
+  ${lowM?`<div class="alert bad">هامشك أقل من حد 20% الصافي. ارفعه إلى 20 على الأقل.</div>`:`<div class="alert ok">السعر يضمن ${c.margin}% صافيًا حتى في أسوأ سيناريو للهدر.</div>`}
+  <p class="hint">المعادلة: السعر = التكلفة الأسوأ ÷ (1 − الهامش − رسوم الدفع)، مقرّبًا لأعلى 50.</p>`;
+  testPrice()}
+function testPrice(){const v=+$("testPrice").value,o=$("testRes");if(!v){o.innerHTML="";return}const M=model(),g=margins(v,M);
+  const cls=g.worst>=0.2?"ok":(g.exp>=0.2?"warn":"bad");
+  const tip=cls==="ok"?"مقبول: 20% أو أكثر حتى في أسوأ حالة.":cls==="warn"?"20% فقط لو جاء الهدر كما توقعت. الأسوأ أقل من الحد.":"أقل من 20%. ارفع السعر، أو قلل التعديلات والإنتاج، أو قلل نطاق الخدمة (لا تقلل الحد الأدنى للإعلانات).";
+  o.innerHTML=`<div class="alert ${cls}">أسوأ حالة: ${(g.worst*100).toFixed(1)}% (${fmt(g.profW)}) — متوقع: ${(g.exp*100).toFixed(1)}% (${fmt(g.profE)})<br>${tip}</div>`}
+$("testPrice").oninput=testPrice;
+
+function ctx(){const c=C();const comps=c.comps.map((x,i)=>`منافس ${i+1}: ${x.n||""} | ${x.l||""} | عروض/أسعار: ${x.o||""} | إعلانات: ${x.a||""} | قوة: ${x.s||""} | ضعف: ${x.w||""}`).join("\n")||"لم تُدخل بيانات منافسين.";
+  const s=SEG[c.seg];const sg=s?`\nالشريحة الصحية: ${document.querySelector('[data-k="seg"] option[value="'+c.seg+'"]').textContent} — مؤشر النجاح: ${s.kpi} — مخاوف الزبون: ${s.fears}`:"";
+  return`النشاط: ${c.name||""} (${c.type||""}) — المنطقة: ${c.area||""}${sg}
+الروابط: ${c.links||""}
+المنتجات والأسعار: ${c.products||""}
+الهدف: ${c.goal||""}
+الجمهور: ${c.audience||""}
+النبرة والقواعد: ${c.tone||""}
+تعريف البيعة الفعلية: ${c.saleDef||""}
+المواسم: ${c.seasons||""}
+أسعار السوق والطلب: ${c.marketPrices||""}
+المنافسون:
+${comps}`}
+function copyPrompt(type){const c=C();let p;
+ if(type==="market")p=`أنت خبير استراتيجية تسويق للمشروعات الصغيرة في مصر. حلّل البيانات التالية:
+
+${ctx()}
+
+المطلوب بالعربية وبعناوين واضحة:
+1. خريطة السوق: الطلب والمواسم ونطاق الأسعار.
+2. مقارنة المنافسين في جدول: العرض، السعر، الرسالة الإعلانية، القوة، الضعف.
+3. تحليل SWOT للعميل مقابل المنافسين.
+4. شرائح العملاء: من يشتري ولماذا، وما الذي يمنعه.
+5. التموضع المقترح: جملة واحدة تميّز العميل.
+6. أهم 5 فرص سريعة.
+قواعد صارمة: لا تخترع أرقامًا. أي رقم بلا مصدر من البيانات أعلاه اكتب بجانبه «تقدير» أو احذفه. افصل بين ما هو مؤكد من البيانات وما هو استنتاج.`;
+ else p=`أنت مدير حساب تسويق خبير في السوق المصري. اعتمادًا على:
+
+${ctx()}
+
+SWOT المعتمد:
+قوة: ${c.S||""}
+ضعف: ${c.W||""}
+فرص: ${c.O||""}
+تهديدات: ${c.T||""}
+التموضع: ${c.position||""}
+الأهداف: محافظ ${c.goalLow||"—"} / متوسط ${c.goalMid||"—"} / طموح ${c.goalHigh||"—"}
+مدة الحملة ${c.days||30} يومًا، منها ${c.testDays||10} أيام اختبار.
+
+اكتب خطة شهرية تشمل:
+1. الأهداف الرقمية القابلة للقياس.
+2. العروض المقترحة وهل هي مجدية ماليًا.
+3. مرحلة اختبار: 3 زوايا إعلانية (هوك + فكرة + جمهور) ومعيار اختيار الفائز.
+4. تقويم محتوى أسبوعي (منشورات، ريلز، قصص) مع المناسبات المصرية خلال الشهر.
+5. توزيع الميزانية بين الاختبار والتضخيم كنِسَب.
+6. هيكل حملة ميتا: الهدف، الاستهداف، ربط كل تصميم بجمهوره.
+7. مؤشرات الإنذار التي توقف إعلانًا أو تنقل ميزانيته.
+8. فحص امتثال: أي ادعاء صحي أو علاجي قد يخالف سياسات إعلانات ميتا، مع صياغة بديلة.
+اكتب بلغة بشرية مهنية لا تبدو مكتوبة بالذكاء الاصطناعي، ولا تخترع أرقامًا.`;
+ copy(p,"تم نسخ البرومبت")}
+function copyOffer(){const c=C(),M=model();copy(`عرض خدمة التسويق — ${c.name||""}
+
+يشمل:
+${c.scope||"—"}
+
+المدة: ${c.days||30} يومًا
+القيمة الإجمالية الشاملة: ${fmt(M.price)} جنيه
+
+ميزانية الإعلانات وإدارة الحملات والإنتاج كلها داخل الباقة.
+نتابع معكم أسبوعيًا عدد المبيعات الفعلية، ونرسل تقريرًا شهريًا بالنتائج.`,"تم نسخ العرض")}
+function copy(t,msg){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(msg)).catch(()=>{const a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();try{document.execCommand("copy")}catch(e){}a.remove();toast(msg)})}
+
+function renderLog(){const t=$("logRows"),c=C();t.innerHTML="";let rec=0,cost=0,ws=[];
+ c.log.forEach((r,i)=>{const m=r.rec?((r.rec-r.ad-r.oth)/r.rec*100):NaN;rec+=+r.rec||0;cost+=(+r.ad||0)+(+r.oth||0);if(r.w!==""&&r.w!=null)ws.push(+r.w);
+  const f=(k,ty)=>`<input ${ty==="n"?'type="number"':""} value="${r[k]??""}" onchange="C().log[${i}]['${k}']=${ty==="n"?"(+this.value||0)":"this.value"};save();renderLog()">`;
+  t.insertAdjacentHTML("beforeend",`<tr><td>${f("m")}</td><td>${f("rec","n")}</td><td>${f("ad","n")}</td><td>${f("oth","n")}</td><td>${f("w","n")}</td><td style="color:${m>=20?"var(--ok)":"var(--bad)"}">${isNaN(m)?"—":m.toFixed(1)+"%"}</td><td><button class="sm" onclick="C().log.splice(${i},1);save();renderLog()">×</button></td></tr>`)});
+ const tm=rec?((rec-cost)/rec*100):NaN,aw=ws.length?ws.reduce((a,b)=>a+b,0)/ws.length:NaN;
+ $("logSum").innerHTML=c.log.length?`<div class="alert ${tm>=20?"ok":"bad"}">إجمالي الهامش الفعلي: ${isNaN(tm)?"—":tm.toFixed(1)+"%"}${isNaN(aw)?"":` — متوسط الهدر الفعلي: ${aw.toFixed(0)}% (عدّل افتراضات الهدر في التسعير على أساسه)`}</div>`:""}
+function addLog(){C().log.push({m:"",rec:0,ad:0,oth:0,w:""});save();renderLog()}
+
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("on"));document.querySelectorAll("section").forEach(s=>s.classList.remove("on"));b.classList.add("on");$(b.dataset.t).classList.add("on");window.scrollTo(0,0)});
+function renderAll(){renderSel();bindFields();renderSeg();renderCompl();renderComps();renderWaste();renderTeam();renderLog();save();calc()}
+load();renderAll();
+</script>
+</body>
+</html>
