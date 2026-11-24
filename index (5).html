@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090d16">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>استوديو الإخراج الذكي — الرئيسية</title>
+<style>
+@font-face{font-family:Cairo;src:url(fonts/cairo-arabic.woff2) format("woff2");font-display:swap}
+*{box-sizing:border-box}
+body{margin:0;background:#090d16;color:#e5e7eb;font-family:Cairo,system-ui,sans-serif;padding:18px 14px 40px}
+h1{font-size:22px;margin:6px 0 2px}
+.sub{color:#94a3b8;font-size:14px;margin-bottom:16px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+a.c,div.c{display:block;text-decoration:none;color:inherit;background:#111827;border:1px solid #1f2a44;border-radius:16px;padding:14px;min-height:118px}
+a.c:active{background:#162036}
+.c .i{font-size:30px}
+.c b{display:block;font-size:16px;margin:6px 0 2px}
+.c span{font-size:12.5px;color:#94a3b8;line-height:1.6}
+.c.on{border-color:#38bdf8}
+.c.soon{opacity:.55}
+.tag{display:inline-block;font-size:11px;border-radius:99px;padding:1px 8px;margin-top:6px}
+.t1{background:#064e3b;color:#86efac}.t2{background:#1e293b;color:#cbd5e1}
+.ft{margin-top:18px;font-size:12px;color:#64748b;line-height:1.8}
+.wide{grid-column:1/-1}
+.st:empty{display:none}
+</style>
+</head>
+<body>
+<h1>🎬 استوديو الإخراج الذكي</h1>
+<div class="sub">اختار الأداة. كل أداة لها واجهة لوحدها، والشخصيات والأماكن والحفظ مشتركين بينهم.</div>
+<a class="c wide" href="agency.html" style="margin-bottom:10px;min-height:0;background:linear-gradient(135deg,#f5d27a,#d4a24c 55%,#b8862f);border:0;color:#1a1300"><div style="display:flex;align-items:center;gap:10px"><div class="i">💼</div><div style="flex:1"><b style="margin:0">افتح الوكالة</b><span style="color:#3b2a06">عملاء القطاع الصحي: دراسة السوق، الخطة، التسعير، الهوية البصرية.</span><div id="agClient" style="font-size:12.5px;font-weight:700;margin-top:4px"></div></div></div></a>
+<a class="c wide" id="todayCard" href="content.html?tab=5" style="display:none;margin-bottom:10px;border-color:#f59e0b;min-height:0"></a>
+<div class="g">
+ <a class="c on" href="film.html"><div class="i">🎬</div><b>أفلام ومسلسلات</b><span>قصة، ذاكرة مسلسل، لقطات، ريلز.</span><div class="st" data-st="film"></div></a>
+ <a class="c on" href="ad.html"><div class="i">📣</div><b>إعلانات</b><span>فيديو، صوتي، بوست، بوستر.</span><div class="st" data-st="ad"></div></a>
+ <a class="c on" href="song.html"><div class="i">🎼</div><b>أغاني وكليب</b><span>كلمات، Suno، كليب أو صورة متحركة.</span><div class="st" data-st="song"></div></a>
+ <a class="c on" href="wa.html"><div class="i">🏪</div><b>ردود واتساب للصيدلية</b><span>ردود سريعة وترحيب وغياب بمواعيد صيدلية هشام عمار، بدون ذكاء اصطناعي.</span></a>
+ <a class="c on" href="content.html"><div class="i">⚡</div><b>محتوى سريع</b><span>أفكار وهوكات، كاروسيل، ريلز بدون وش، خطة نشر، فحص صحي، ردود، أداء.</span><div class="st" data-st="content"></div></a>
+ <a class="c on" href="doc.html"><div class="i">🎙️</div><b>برامج ووثائقي وشرح</b><span>بحث بمصادر، بودكاست، وايت بورد وخرائط.</span><div class="st" data-st="doc"></div></a>
+ <a class="c on" href="song-fix.html"><div class="i">🎵</div><b>مُصلّح الأغنية</b><span>استبدال الجزء الغلط في أغنية Suno.</span></a>
+ <a class="c on" href="montage.html"><div class="i">🎞️</div><b>استوديو المونتاج</b><span>ارفع لقطاتك، اكتب اللي عايزه، والفريق يعمل المونتاج والتلوين والصوت.</span><div class="st" data-st="montage"></div></a>
+ <a class="c on" href="studio.html"><div class="i">🧰</div><b>الاستوديو الكامل (القديم)</b><span>الأدوات المتقدمة وشغلك القديم.</span></a>
+</div>
+<div class="c wide" style="margin-top:12px" id="dash"><b>☁️ أعمالك على Drive</b><span>كل الأعمال المحفوظة من كل الاستوديوهات، دوّر بالاسم وافتح على طول.</span><button id="dashDrive" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1d4ed8;color:#fff;font-family:inherit">☁️ اعرض أعمالي</button><div id="dashD"></div></div>
+<div class="c wide" style="margin-top:12px" id="bkCard"><b>☁️ نسخة احتياطية على Google Drive</b><span>كل الاستوديوهات والشخصيات والأماكن والدروس في نسخة واحدة على Drive، من اللاب أو الموبايل. تقدر ترجّعها على أي جهاز.</span><div id="bkLast" style="font-size:12px;margin-top:6px"></div>
+<label style="display:flex;gap:6px;align-items:center;font-size:13px;margin-top:6px"><input type="checkbox" id="bkMedia" style="width:auto">ومعاها فيديوهات ومواد استوديو المونتاج (أبطأ)</label>
+<button id="bkDrive" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:0;background:#10b981;color:#04130d;font-weight:700;font-family:inherit">☁️ اعمل نسخة على Drive</button>
+<button id="bkDriveIn" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#fff;font-family:inherit">⬇️ رجّع نسخة من Drive</button><div id="bkMsg" style="font-size:13px;color:#94a3b8;margin-top:6px"></div><div id="bkList"></div>
+<details style="margin-top:8px"><summary style="font-size:13px;color:#94a3b8">💾 نسخة كملف على الجهاز</summary>
+<button id="bkOut" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1d4ed8;color:#fff;font-family:inherit">⬇️ تصدير ملف</button>
+<label style="display:inline-block;margin-top:8px;padding:9px 12px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#fff">⬆️ استرجاع ملف<input type="file" id="bkIn" accept=".json,application/json" hidden></label></details></div>
+<div class="c wide" style="margin-top:12px;border-color:#7f1d1d"><b>🧹 مشروع جديد</b><span>يمسح كل الأعمال والمكتبات القديمة من الجهاز ده ويبدأ من الصفر، بعد ما يعمل نسخة على Drive.</span><button onclick="CORE.wipeBox()" style="margin-top:8px;padding:9px 12px;border-radius:10px;border:0;background:#b91c1c;color:#fff;font-weight:700;font-family:inherit">🧹 امسح القديم وابدأ جديد</button></div>
+<div class="c wide" style="margin-top:12px"><a href="guide.pdf" style="color:inherit;text-decoration:none"><b>📖 دليل الاستخدام</b><span>شرح مبسّط لكل الأزرار والخطوات (PDF).</span></a></div>
+<div class="ft">داخل الاستوديو: زر 🏠 يرجعك هنا، وزر 🕘 يفتح سجل النسخ.</div>
+<script src="core.js"></script>
+<script>
+const ST=[['film','🎬','أفلام ومسلسلات'],['ad','📣','إعلانات'],['song','🎼','أغاني وكليب'],['doc','🎙️','برامج ووثائقي'],['montage','🎞️','مونتاج'],['content','⚡','محتوى سريع']];
+const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function dash(){ST.forEach(async([ns])=>{const el=document.querySelector('[data-st="'+ns+'"]');if(!el)return;let P={};try{P=JSON.parse(localStorage.getItem('hs_'+ns)||(await CORE.restoreBig('hs_'+ns))||'{}')}catch(e){}
+ const sh=P.shots||[],dn=sh.filter(x=>x.done).length,has=(P.wname||P.idea||P.script||P.lyrics||P.topic||P.bName||P.title||sh.length),dirty=localStorage.getItem('hs_dirty_'+ns),ps=CORE.pubStatus(P);
+ if(ns==='montage'){const md=P.media||[];if(!md.length&&!P.wname&&!P.brief){el.innerHTML='';return}el.innerHTML='<div style="margin-top:8px;font-size:12px;background:#0b1220;border-radius:8px;padding:5px 7px;line-height:1.6">📁 '+E(P.wname||'بدون اسم')+'<br><span style="color:#94a3b8">'+(P.edl?'جاهز للتصدير • '+P.edl.clips.length+' لقطة':md.length+' ملف')+'</span>'+(dirty?' <span style="color:#fcd34d">●</span>':'')+'</div>';return}
+ if(!has){el.innerHTML='';return}
+ const stage=!sh.length?'كتابة':dn<sh.length?'تنفيذ '+dn+'/'+sh.length:ps?ps:'جاهز للنشر';
+ el.innerHTML='<div style="margin-top:8px;font-size:12px;background:#0b1220;border-radius:8px;padding:5px 7px;line-height:1.6">📁 '+E(P.wname||'بدون اسم')+'<br><span style="color:#94a3b8">'+stage+'</span>'+(dirty?' <span style="color:#fcd34d">●</span>':'')+'</div>'})}
+async function todayPost(){const el=document.getElementById('todayCard');let P={};try{P=JSON.parse(localStorage.getItem('hs_content')||(await CORE.restoreBig('hs_content'))||'{}')}catch(e){}
+ const t=new Date(),d=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0'),l=(P.plan||[]).filter(x=>String(x.date||'').includes(d));
+ if(!l.length){el.style.display='none';return}el.style.display='block';
+ el.innerHTML='<b>📌 منشور النهارده</b>'+l.map(r=>'<div style="margin-top:6px;font-size:14px;line-height:1.7">'+(r.done?'✅ ':'')+'<span style="color:#fcd34d">'+E(r.fmt)+'</span> • '+E(r.idea)+(r.hook?'<div style="color:#fde68a">«'+E(r.hook)+'»</div>':'')+'</div>').join('')+'<span style="color:#38bdf8;font-size:13px">افتح الخطة ←</span>'}
+function agClient(){const el=document.getElementById('agClient');try{const d=JSON.parse(localStorage.getItem('agencyOS_v1')||'{}'),c=d.clients&&d.clients[d.current],n=d.clients?Object.keys(d.clients).length:0;el.textContent=c?'👤 العميل الحالي: '+(c.name||'بدون اسم')+(n>1?' • '+n+' عملاء':''):''}catch(e){el.textContent=''}}
+agClient();window.addEventListener('pageshow',agClient);
+todayPost();window.addEventListener('pageshow',todayPost);
+dash();window.addEventListener('pageshow',dash);document.addEventListener('visibilitychange',()=>{if(!document.hidden)dash()});
+document.getElementById('dashDrive').onclick=async()=>{const box=document.getElementById('dashD');if(!(await CORE.gdConnect()))return;box.innerHTML='<div style="font-size:13px;color:#94a3b8;margin-top:6px">⏳ بجيب أعمالك…</div>';
+ try{const all=await Promise.all(ST.map(([ns])=>CORE.gdList(ns).then(l=>l.map(x=>Object.assign(x,{ns})))));const l=all.flat().sort((a,b)=>b.modifiedTime.localeCompare(a.modifiedTime));
+  box.innerHTML=`<input id="dashQ" placeholder="دوّر باسم العمل…" style="width:100%;margin-top:8px;padding:8px;border-radius:10px;border:1px solid #334155;background:#0b1220;color:#fff;font-family:inherit"><div id="dashR"></div>`;
+  const show=q=>{document.getElementById('dashR').innerHTML=l.filter(x=>!q||(x.appProperties.name||'').includes(q)).map(x=>{const s=ST.find(y=>y[0]===x.ns);return `<a href="${x.ns}.html?open=${x.id}" style="display:flex;gap:10px;align-items:center;border-top:1px dashed #1f2a44;padding:8px 0;color:inherit;text-decoration:none"><span>${s[1]}</span><div style="flex:1"><b style="font-size:14px">${E(x.appProperties.name)}</b><div style="font-size:12px;color:#94a3b8">${s[2]} • ${new Date(x.modifiedTime).toLocaleString('ar-EG',{dateStyle:'short',timeStyle:'short'})}</div></div><span style="color:#38bdf8;font-size:13px">افتح</span></a>`}).join('')||'<div style="font-size:13px;color:#94a3b8;margin-top:6px">مفيش أعمال.</div>'};
+  show('');document.getElementById('dashQ').oninput=e=>show(e.target.value.trim())}catch(e){box.innerHTML='<div style="color:#fca5a5;font-size:13px">⚠️ '+E(e.message)+'</div>'}};
+document.getElementById('bkOut').onclick=async()=>{const d=await CORE.backupCollect();
+ const name='استوديو-نسخة-'+new Date().toISOString().slice(0,10)+'.json',f=new File([JSON.stringify(d)],name,{type:'application/json'});
+ try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});return}}catch(e){if(e&&e.name==='AbortError')return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=name;a.click()};
+document.getElementById('bkIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(d.type!=='hisham-studios-backup')throw 0;
+ if(!confirm('استرجاع النسخة؟ هتستبدل الأعمال الحالية في الاستوديوهات الجديدة ('+Object.keys(d.keys).length+' عنصر).'))return;await CORE.backupApply(d);alert('اترجعت ✓');location.reload()}catch(x){alert('الملف ده مش نسخة احتياطية للاستوديو')}};
+
+/* نسخة Drive */
+const bkMsg=t=>{document.getElementById('bkMsg').textContent=t};
+function bkLast(){const t=+(localStorage.getItem('hs_lastbk')||0),el=document.getElementById('bkLast');if(!t){el.innerHTML='<span style="color:#fcd34d">⚠️ لسه ما عملتش نسخة على Drive</span>';return}const d=Math.floor((Date.now()-t)/864e5);el.innerHTML=d>=3?'<span style="color:#fcd34d">⚠️ آخر نسخة من '+d+' يوم، اعمل نسخة جديدة</span>':'<span style="color:#86efac">✓ آخر نسخة: '+(d?'من '+d+' يوم':'النهارده')+'</span>'}
+bkLast();
+document.getElementById('bkDrive').onclick=async e=>{const b=e.target;b.disabled=true;try{const ok=await CORE.backupToDrive(document.getElementById('bkMedia').checked,bkMsg);bkMsg(ok?'✓ اتعملت النسخة على Drive':'اتلغى');bkLast()}catch(x){bkMsg('⚠️ '+x.message)}b.disabled=false};
+document.getElementById('bkDriveIn').onclick=async()=>{bkMsg('⏳ بجيب النسخ…');let l;try{l=await CORE.backupList()}catch(x){bkMsg('⚠️ '+x.message);return}if(!l){bkMsg('');return}if(!l.length){bkMsg('مفيش نسخ على Drive لسه');return}bkMsg('اختار النسخة:');
+ document.getElementById('bkList').innerHTML=l.slice(0,15).map(x=>'<div style="display:flex;gap:8px;align-items:center;border-top:1px dashed #1f2a44;padding:6px 0"><span style="flex:1;font-size:13px">'+E(x.name.replace(/\.json$/,''))+'</span><button data-bk="'+x.id+'" style="padding:6px 10px;border-radius:8px;border:0;background:#10b981;font-family:inherit">رجّعها</button></div>').join('')};
+document.getElementById('bkList').onclick=async e=>{const b=e.target.closest('[data-bk]');if(!b)return;if(!confirm('ترجّع النسخة دي؟ هتستبدل الشغل الحالي على الجهاز ده (الأعمال والمكتبة).'))return;
+ try{const r=await CORE.backupFromDrive(b.dataset.bk,document.getElementById('bkMedia').checked,bkMsg);alert('اترجعت ✓ ('+r.keys+' عنصر'+(r.media?' + '+r.media+' ملف مونتاج':'')+')');location.reload()}catch(x){bkMsg('⚠️ '+x.message)}};
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}</script>
+<script src="fieldtools.js"></script>
+</body>
+</html>
