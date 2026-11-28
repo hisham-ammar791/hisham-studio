@@ -456,11 +456,13 @@ function t3(){const P=p(),sl=P.slides;let ch=false;sl.forEach(s=>{if(!s.id){sid(
  <label class="l">الكابشن والهاشتاجات</label><textarea data-f="cCap" rows="5" placeholder="الكابشن بييجي لوحده مع رد الكاروسيل، أو اكتبه هنا">${esc(P.cCap)}</textarea>
  <button class="b g" data-a="postShare" style="width:100%">📤 انشر على فيسبوك أو إنستجرام (الصور + الكابشن)</button>
  <button class="b bl" data-a="postAI" style="width:100%">🤖 ابعته للذكاء يراجعه قبل النشر</button>
- <button class="b" data-a="postFixCp" style="width:100%">📋 انسخ أمر الإصلاح الشامل (من غير صور)</button>
- <button class="b" data-a="postFix" style="width:100%;border-color:#f59e0b">🛠️ إصلاح شامل بالذكاء (لغوي، تصميم، ألوان، طبي، إخراج)</button>
  <div class="chips"><button class="b s" data-a="carCap">📋 انسخ الكابشن</button><button class="b s" data-a="postDl">⬇️ نزّل الصور</button></div>
  <label class="l">📥 رد المراجعة</label><textarea data-f="revPaste" rows="4" placeholder="الصق رد الذكاء هنا، وهو يعدّل نصوص السلايدات وأوامرها والكابشن لوحده">${esc(P.revPaste)}</textarea>
- <button class="b g" data-a="apply:rev" style="width:100%">✍️ طبّق المراجعة</button></div>`:''}`}
+ <button class="b g" data-a="apply:rev" style="width:100%">✍️ طبّق المراجعة</button></div>
+ ${(()=>{const iss=sl.filter(s=>s.issue).length,rd=sl.filter(s=>s.redo).length,an=(P.revNotes||'').split('\n').filter(Boolean).length;return `<div class="c" style="border-color:#f59e0b"><h3>🛠️ الإصلاح الشامل</h3><div class="m">بعد ما تطبّق المراجعة، أمر واحد لكل الصور: لغوي، وتصميم، وألوان، وإخراجي${P.health?'، وطبي':''}، ومعاه مشاكل المراجعة.</div>
+ <div class="m" style="margin-top:6px">${iss||an||rd?`✓ داخل في الأمر: ${iss} سلايد فيها مشكلة${an?'، و'+an+' ملاحظة على المنشور':''}${rd?'، و'+rd+' أمر صورة معدّل':''}.`:'لسه ما اتطبقتش مراجعة، فالأمر هيطلع بالبنود الأساسية بس.'}</div>
+ <button class="b" data-a="postFix" style="width:100%;border-color:#f59e0b">🛠️ ابعت الصور والأمر للذكاء يصلّحها</button>
+ <button class="b" data-a="postFixCp" style="width:100%">📋 انسخ أمر الإصلاح الشامل (من غير صور)</button></div>`})()}`:''}`}
 
 function t4(){const P=p(),s=CORE.pick(RSTYLES,P.rStyle);
  return `<div class="c"><h3>🎙️ ريلز بدون وش وتعليق صوتي</h3><div class="m">سكريبت بالتوقيت، ونص الشاشة، وأمر فيديو بالإنجليزي لكل لقطة، وتوجيه الصوت.</div>
