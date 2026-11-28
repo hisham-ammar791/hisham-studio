@@ -324,14 +324,13 @@ function t3(){const P=p(),sl=P.slides;let ch=false;sl.forEach(s=>{if(!s.id){sid(
  <label class="l">الكلام على الصورة</label>${sel('cText',CTEXT,P.cText)}
  ${btns('car','انسخ أمر الكاروسيل')}${outBox('cPaste','📥 الرد',['car','🖼️ حوّله لسلايدات'])}</div>
  ${sl.length?`<div class="c"><h3>🖼️ السلايدات (${sl.filter(s=>s.done).length}/${sl.length})</h3>${P.cIdent?`<div class="m">🎨 الهوية: ${esc(P.cIdent)}</div>`:''}
- <div class="m">🎨 «انسخ الأمر الكامل» = الصورة والنص عليها في أمر واحد. لو عايز الصورة فاضية وتحط النص في Canva، انسخ أمر الصورة من خانته.</div>
+ <div class="m">🎨 ابدأ بـ«كل الأوامر الكاملة»، ولو سلايد طلع غلط عيده لوحده بزر «أمر السلايد ده» (الصورة والنص عليها). لو عايز الصورة فاضية وتحط النص في Canva، انسخ أمر الصورة من خانته.</div>
  <div class="chips"><button class="b s g" data-a="carAll" data-k="full">🎨 كل الأوامر الكاملة</button><button class="b s" data-a="carAll" data-k="text">📋 كل النصوص</button><button class="b s" data-a="carH">✅ افحص النصوص</button></div>
  ${sl.map((s,i)=>`<div class="sl${s.done?' dn':''}"><div class="st"><b>سلايد ${i+1}</b><button class="b s" data-a="sUp" data-i="${i}" style="margin:0">⬆️</button><button class="b s" data-a="sDn" data-i="${i}" style="margin:0">⬇️</button><button class="b s${s.done?' g':''}" data-a="sDone" data-i="${i}" style="margin:0">✓</button><button class="b s r" data-a="sDel" data-i="${i}" style="margin:0">🗑️</button></div>
  <label class="l">النص</label><textarea data-sl="${i}:text" rows="2">${esc(s.text)}</textarea>
  <label class="l">أمر الصورة</label><textarea class="ltr" data-sl="${i}:img" rows="3">${esc(s.img)}</textarea>
- <div class="pair"><button class="b bl" data-a="sFull" data-i="${i}">🎨 انسخ الأمر الكامل</button><button class="b" data-a="sFull!" data-i="${i}" title="ابعته لتطبيق تختاره">📤</button></div>
  ${s.pic?`<div class="th" data-thw><img data-th="${esc(s.id)}" alt="صورة سلايد ${i+1}"><button class="b s r" data-a="sPicDel" data-i="${i}">✕</button></div>`:''}
- <label class="b up">${s.pic?'🔁 غيّر الصورة':'🖼️ ارفع الصورة اللي طلعت'}<input type="file" accept="image/*" data-up="${i}" hidden></label></div>`).join('')}
+ <div class="chips"><button class="b s" data-a="sFull" data-i="${i}">🎨 أمر السلايد ده</button><button class="b s" data-a="sFull!" data-i="${i}" title="ابعته لتطبيق تختاره">📤</button><label class="b s" style="margin:0;cursor:pointer">${s.pic?'🔁 غيّر الصورة':'🖼️ ارفع الصورة'}<input type="file" accept="image/*" data-up="${i}" hidden></label></div></div>`).join('')}
  <button class="b" data-a="sAdd" style="width:100%">➕ سلايد</button></div>
  <div class="c" style="border-color:#10b981"><h3>📦 المنشور الكامل (${pics}/${sl.length} صورة)</h3><div class="m">ارفع صورة كل سلايد أول ما تطلع، فتتجمع هنا بالترتيب ومعاها الكابشن، وتنشر المنشور كله بضغطة.</div>
  <div class="grid">${sl.map((s,i)=>s.pic?`<div data-thw><img data-th="${esc(s.id)}" alt=""><span>${i+1}</span></div>`:`<div class="miss">سلايد ${i+1}<br>من غير صورة</div>`).join('')}</div>
