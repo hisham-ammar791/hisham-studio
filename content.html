@@ -57,6 +57,7 @@ input[type=checkbox]{width:22px;height:22px;flex:0 0 auto}
 <header><button class="b" data-a="home" style="margin:0">🏠</button><h1>⚡ استوديو المحتوى السريع</h1><button class="b" data-a="hist" style="margin:0" title="سجل النسخ">🕘</button></header>
 <nav id="nav"></nav>
 <main id="app"></main>
+<div id="ver" style="text-align:center;margin:14px 0 90px;font-size:12px;color:var(--muted)"><span id="verTxt">نسخة v73</span> · <a href="#" id="verBtn" style="color:#38bdf8">🔄 تحديث التطبيق</a><div id="verNew" style="display:none;margin-top:8px"></div></div>
 <script src="core.js"></script>
 <script src="fieldtools.js"></script>
 <script src="ideas-lib.js"></script>
@@ -694,6 +695,10 @@ window.addEventListener('hs-store',e=>{if(e.detail==='content')render()});
 (()=>{const q=new URLSearchParams(location.search).get('tab');if(q!==null&&+q>=0&&+q<TABS.length){p().step=+q;history.replaceState(null,'',location.pathname)}})();
 st.snap('عند الفتح');render();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+(()=>{const BUILD=73,b=document.getElementById('verBtn'),n=document.getElementById('verNew');
+ const refresh=async()=>{try{const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));const ks=await caches.keys();await Promise.all(ks.filter(k=>!/fonts/.test(k)).map(k=>caches.delete(k)))}catch(x){}location.reload()};
+ b&&b.addEventListener('click',e=>{e.preventDefault();b.textContent='⏳ بحدّث…';refresh()});
+ fetch('sw.js',{cache:'no-store'}).then(r=>r.text()).then(t=>{const m=t.match(/hisham-studio-v(\d+)/);if(m&&+m[1]>BUILD){n.style.display='block';n.innerHTML='<button class="b g" style="width:100%">🆕 فيه تحديث جديد (v'+m[1]+') — اضغط هنا</button>';n.firstChild.addEventListener('click',refresh)}else if(m){document.getElementById('verTxt').textContent='نسخة v'+BUILD+' ✓ آخر نسخة'}}).catch(()=>{})})();
 </script>
 </body>
 </html>
