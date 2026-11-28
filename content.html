@@ -248,6 +248,30 @@ perf(){const l=PERF.get();if(!l.length){alert('سجّل منشورات الأو�
 
 /* ================= تحويل الردود ================= */
 const strip=s=>s.replace(/^\s*(?:[-•*▪︎●]|\d+[.)\-]|[٠-٩]+[.)\-])\s*/,'').replace(/\*\*/g,'').trim();
+function postReview(nums){const P=p(),n=P.slides.length;
+ return `أنت فريق مراجعة محتوى عالمي: مدير إبداعي، ومصمم جرافيك، وكاتب محتوى، ومدقق لغة عربية${P.health?'، وصيدلي مراجع للصياغة الصحية':''}.
+المطلوب: راجع الكاروسيل ده قبل النشر على فيسبوك وإنستجرام، واحكم عليه، وقولّي أصلّح إيه بالظبط.
+
+الصور المرفقة هي السلايدات بالترتيب (${nums.map(x=>'سلايد '+x).join('، ')})${nums.length<n?'، والباقي لسه ما اتعملش':''}. المقاس ${P.cAspect}.
+${pageTxt()}
+${P.cIdent?'الهوية المطلوبة: '+P.cIdent+'\n':''}
+النص المفروض يكون مكتوب على كل سلايد:
+${P.slides.map((s,i)=>'سلايد '+(i+1)+': '+(s.text||'(من غير نص)')).join('\n')}
+
+الكابشن:
+${(P.cCap||'(مفيش كابشن لسه)').trim()}
+
+افحص في كل سلايد: الكلام العربي مكتوب صح حرف بحرف ومقروء (مفيش حروف ناقصة أو ملخبطة أو كلام زيادة)، والصورة بتعبّر عن النص، وثبات الألوان والأسلوب والإضاءة مع باقي السلايدات، واللوجو لو موجود، وأي غلط أو تشويه في الصورة.
+وافحص الكاروسيل كله: قوة سلايد 1 كهوك يخلّي الواحد يقلّب، وترتيب الفكرة، والدعوة للإجراء في الآخر${P.health?'، والدقة الطبية وقواعد المحتوى الصحي':''}.
+
+${p().health?HEALTH+'\n':''}
+اكتب الناتج بالشكل ده بالظبط، وقرارك واحد وواضح، من غير ما تديني اختيارات:
+الحكم: ✅ جاهز للنشر / ⚠️ محتاج تعديل / ⛔ لازم يتعاد
+سلايد 1: ✅ تمام — أو — ⚠️ المشكلة في سطر واحد
+أمر الإصلاح: (English image prompt كامل وجاهز أعيد بيه السلايد ده، فيه النص العربي الصح بين علامتي تنصيص) — اكتبه بس للسلايد اللي محتاج تعديل
+… وهكذا لكل سلايد
+الكابشن المحسّن: (نسخة نهائية جاهزة للنشر بنفس اللغة، بهوك في أول سطر، وفقرات قصيرة للموبايل، ودعوة لإجراء واحد، و5 لـ7 هاشتاجات)
+${CORE.WRITING}`}
 function applyBrand(src){const P=p(),v=(src||P.brandOut).trim();if(!v){alert('الصق الرد الأول');return false}
  const g=lb=>{const m=v.match(new RegExp('^\\s*[-•*]*\\s*\\**(?:'+lb+')\\**\\s*[:：]\\s*(.+)$','m'));return m?m[1].replace(/\*\*/g,'').trim():''};
  const find=(list,t)=>{if(!t)return null;const x=list.find(o=>t.includes(o[1].replace(/\s*\(.*\)/,'')));return x?x[0]:null};
@@ -370,7 +394,8 @@ function t3(){const P=p(),sl=P.slides;let ch=false;sl.forEach(s=>{if(!s.id){sid(
  <div class="c" style="border-color:#10b981"><h3>📦 المنشور الكامل (${pics}/${sl.length} صورة)</h3><div class="m">ارفع صورة كل سلايد أول ما تطلع، فتتجمع هنا بالترتيب ومعاها الكابشن، وتنشر المنشور كله بضغطة.</div>
  <div class="grid">${sl.map((s,i)=>s.pic?`<div data-thw><img data-th="${esc(s.id)}" alt=""><span>${i+1}</span></div>`:`<div class="miss">سلايد ${i+1}<br>من غير صورة</div>`).join('')}</div>
  <label class="l">الكابشن والهاشتاجات</label><textarea data-f="cCap" rows="5" placeholder="الكابشن بييجي لوحده مع رد الكاروسيل، أو اكتبه هنا">${esc(P.cCap)}</textarea>
- <button class="b g" data-a="postShare" style="width:100%">📤 انشر المنشور كله (الصور + الكابشن)</button>
+ <button class="b g" data-a="postShare" style="width:100%">📤 انشر على فيسبوك أو إنستجرام (الصور + الكابشن)</button>
+ <button class="b bl" data-a="postAI" style="width:100%">🤖 ابعته للذكاء يراجعه قبل النشر</button>
  <div class="chips"><button class="b s" data-a="carCap">📋 انسخ الكابشن</button><button class="b s" data-a="postDl">⬇️ نزّل الصور</button></div></div>`:''}`}
 
 function t4(){const P=p(),s=CORE.pick(RSTYLES,P.rStyle);
@@ -520,6 +545,11 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='sPicDel'&&s){if(confirm('تشيل صورة السلايد '+(i+1)+'؟')){IMG.del(sid(s));s.pic=false;st.save();render()}return}
  if(a==='sDone'&&s){s.done=!s.done;st.save();render();return}
  if(a==='sDel'&&s){if(confirm('تمسح السلايد '+(i+1)+'؟')){st.snap('قبل حذف سلايد',true);P.slides.splice(i,1);st.save();render()}return}
+ if(a==='postAI'){const l=P.slides.filter(x=>x.pic);if(!l.length){toast('ارفع صور السلايدات الأول');return}
+  const bl=await Promise.all(l.map(x=>IMG.get(x.id))),files=[];bl.forEach((b,j)=>{if(b)files.push(new File([b],'slide-'+(P.slides.indexOf(l[j])+1)+'.jpg',{type:'image/jpeg'}))});
+  const t=postReview(l.map(x=>P.slides.indexOf(x)+1));await CORE.copy(t,'اتنسخ أمر المراجعة ✓ (لو ما اتلصقش لوحده الصقه)');
+  try{if(files.length&&navigator.canShare&&navigator.canShare({files})){await navigator.share({files,text:t.length<=6000?t:'الصق الأمر هنا (اتنسخ)'});return}}catch(x){if(x&&x.name==='AbortError')return}
+  toast('ارفق صور السلايدات بإيدك في التطبيق والصق الأمر',5000);return}
  if(a==='postShare'||a==='postDl'){const l=P.slides.filter(x=>x.pic);if(!l.length){toast('ارفع صور السلايدات الأول');return}
   const bl=await Promise.all(l.map(x=>IMG.get(x.id))),files=[];bl.forEach((b,j)=>{if(b)files.push(new File([b],'slide-'+(P.slides.indexOf(l[j])+1)+'.jpg',{type:'image/jpeg'}))});
   if(!files.length){toast('الصور مش موجودة على الجهاز ده، ارفعها تاني');return}
