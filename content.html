@@ -145,7 +145,7 @@ const QRULES=[[/(بيعالج|يعالج|تعالج|علاج نهائي|علاج
 
 /* ================= التخزين ================= */
 const DEF={step:0,wname:'',
- pName:'',niche:'pharmacy',nicheCustom:'',audience:'',offer:'',identity:'',lang:'eg',voice:'friend',customVoice:'',satire:'light',health:true,
+ pName:'',niche:'pharmacy',nicheCustom:'',brandHint:'',brandOut:'',audience:'',offer:'',identity:'',lang:'eg',voice:'friend',customVoice:'',satire:'light',health:true,
  iNiche:'',iCount:10,iGoal:'mix',hook:'auto',emo:'auto',iPaste:'',compIn:'',compOut:'',
  idea:'',goal:'aware',fSec:30,fourOut:'',
  cTopic:'',cKind:'tips',useLogo:true,useRefs:true,cN:7,cAspect:'4:5',cText:'clean',cPaste:'',slides:[],cIdent:'',cCap:'',
@@ -241,11 +241,21 @@ health(){const P=p();if(!P.hIn.trim()){alert('الصق النص اللي عاي�
  return `أنت صيدلي مراجع ومسؤول عن مطابقة إعلانات المنتجات الصحية في مصر (ضوابط هيئة الدواء المصرية وأخلاقيات المهنة)، ومعاك كاتب محتوى محترف.\nراجع النص ده قبل النشر:\n"""\n${P.hIn.trim().slice(0,6000)}\n"""\n\nافحص: ادعاءات العلاج أو الشفاء أو الوقاية، والنتائج المضمونة والأرقام والنسب، والدراسات والمصادر المذكورة (موجودة فعلًا ولا لأ)، وقبل/بعد، والتخويف، والترويج لأدوية الروشتة أو المضادات الحيوية للاستخدام الذاتي، والجرعات في محتوى عام، والفئات الحساسة (أطفال، حوامل، مرضى مزمنين)، والمقارنات المطلقة، و«طبيعي يعني آمن»، وأي معلومة طبية غلط.\n\nالناتج:\n1) الحكم في سطر واحد: ✅ جاهز للنشر / ⚠️ محتاج تعديل / ⛔ ما ينفعش يتنشر.\n2) المشاكل: كل جملة فيها مشكلة، والسبب، والبديل الآمن (بحد أقصى 7، الأهم الأول).\n3) النسخة المصححة كاملة، بنفس الأسلوب والطول، وجاهزة للنشر.\nلو النص سليم قول كده وما تغيرش فيه حاجة. حكم واحد واضح، من غير اختيارات.`},
 reply(){const P=p();if(!P.rpNew.trim()){alert('اكتب الموقف الأول');return ''}
  return `أنت مسؤول خدمة عملاء ومدير مجتمع لصفحة:\n${pageTxt()}\nاكتب 4 ردود جاهزة على الموقف ده في تعليقات فيسبوك أو رسايل واتساب:\n"${P.rpNew.trim()}"\nنبرات مختلفة: ودود رسمي، وخفيف الدم، ومختصر جدًا، ورد يحوّل للرسايل. كل رد إنساني وقصير (أقل من 40 كلمة)، ومن غير وعود طبية أو تشخيص، ولو فيه سؤال عن دوا أو جرعة يحوّل للصيدلي. استخدم {الاسم} و{المنتج} و{السعر} مكان البيانات المتغيرة.\nاللغة: ${L()[2]}.\nاكتب سطر لكل رد بالشكل ده بالظبط ومن غير أي كلام تاني:\nعنوان قصير | الرد`},
+brand(){const P=p();if(!P.pName.trim()){alert('اكتب اسم العميل أو الصفحة الأول');return ''}const hl=HEALTHY.includes(P.niche);
+ return `أنت استراتيجي براند وتسويق محتوى عالمي، وفاهم السوق والجمهور المصري كويس.\nالعميل: ${P.pName.trim()}\nالنوع/المجال: ${nicheName()}\n${P.brandHint.trim()?'معلومات إضافية من صاحب الشغل: '+P.brandHint.trim()+'\n':''}البلد: مصر\n\nاقترح بيانات صفحة العميل ده على السوشيال ميديا. خليها محددة وواقعية لنوعه، مش كلام عام ينفع لأي حد. لو فيه حاجة مش معروفة عن العميل ده بالذات، اقترح الأنسب لنوعه.\n${hl?HEALTH+'\n':''}\nاكتب الناتج بالشكل ده بالظبط، كل بند في سطر واحد، ومن غير أي كلام قبله أو بعده:\nالجمهور: (مين بالظبط، السن، المنطقة والمستوى، أهم مشاكلهم ورغباتهم اللي المحتوى هيكلمها)\nالمنتجات والخدمات والعروض: (أهم اللي يقدمه نوع العميل ده، وعرضين أو تلاتة مناسبين)\nالهوية: (لونين أساسيين ولون تمييز بالكود، وخط عربي، وأسلوب الصور، والنبرة)\nالبصمة: (اختار واحدة بس بالاسم من: ${CORE.VOICES.filter(v=>v[0]!=='custom').map(v=>v[1]).join('، ')})\nالسخرية: (اختار واحدة بس بالاسم من: ${CORE.SATIRE.map(v=>v[1].replace(/\s*\(.*\)/,'')).join('، ')})\nمحاور المحتوى: (3 أو 4 محاور مفصولة بفاصلة)\nاللغة: (اختار واحدة بس بالاسم من: ${CORE.LANGS.map(v=>v[1]).join('، ')})`},
 perf(){const l=PERF.get();if(!l.length){alert('سجّل منشورات الأول');return ''}
  return `أنت محلل أداء سوشيال ميديا. ده سجل منشوراتي (نسبة التفاعل = (تفاعل + حفظ + مشاركة) ÷ مشاهدات):\nالتاريخ | الصيغة | نوع الهوك | الهوك | مشاهدات | تفاعل | حفظ | مشاركة | متابعين جدد | النسبة\n${l.slice(0,80).map(e=>[e.d,CORE.pick(FMTS,e.fmt)[1],e.ht?CORE.pick(HT,e.ht)[1]:'-',e.hook||'-',e.views||0,e.eng||0,e.saves||0,e.shares||0,e.follows||0,rate(e).toFixed(1)+'%'].join(' | ')).join('\n')}\n\nقولي بصراحة وبأرقام من السجل:\n1) أنهي صيغة وأنهي نوع هوك بيجيبوا أعلى تفاعل، وأنهي بيجيب متابعين.\n2) أبطّل إيه.\n3) أحسن 3 هوكات عندي وليه نجحوا.\n4) 7 أفكار جاية مبنية على اللي نجح، كل فكرة بهوكها.\nلو السجل صغير (أقل من 10 منشورات) قول إن الحكم مبدئي.\n${pageTxt()}`}};
 
 /* ================= تحويل الردود ================= */
 const strip=s=>s.replace(/^\s*(?:[-•*▪︎●]|\d+[.)\-]|[٠-٩]+[.)\-])\s*/,'').replace(/\*\*/g,'').trim();
+function applyBrand(src){const P=p(),v=(src||P.brandOut).trim();if(!v){alert('الصق الرد الأول');return false}
+ const g=lb=>{const m=v.match(new RegExp('^\\s*[-•*]*\\s*\\**(?:'+lb+')\\**\\s*[:：]\\s*(.+)$','m'));return m?m[1].replace(/\*\*/g,'').trim():''};
+ const find=(list,t)=>{if(!t)return null;const x=list.find(o=>t.includes(o[1].replace(/\s*\(.*\)/,'')));return x?x[0]:null};
+ const aud=g('الجمهور'),off=g('المنتجات والخدمات والعروض|المنتجات|الخدمات'),idn=g('الهوية'),vo=find(CORE.VOICES,g('البصمة')),sa=find(CORE.SATIRE,g('السخرية')),pil=g('محاور المحتوى|المحاور'),lg=find(CORE.LANGS,g('اللغة'));
+ if(!aud&&!off&&!idn){alert('مش لاقي البيانات. الرد لازم يكون سطور زي «الجمهور: …» و«الهوية: …»');return false}
+ st.snap('قبل اقتراح بيانات الصفحة',true);let n=0;
+ if(aud){P.audience=aud;n++}if(off){P.offer=off;n++}if(idn){P.identity=idn;n++}if(vo){P.voice=vo;n++}if(sa){P.satire=sa;n++}if(pil){P.pPillars=pil;n++}if(lg){P.lang=lg;n++}
+ P.brandOut='';st.save();toast('✨ اتملت '+n+' خانات ✓ راجعها وعدّل اللي عايزه');render();return n+' خانات'}
 function parseIdeas(){const P=p(),v=P.iPaste.trim();if(!v){alert('الصق الرد الأول');return}
  const nk=P.iNiche||P.niche,l=LIB.get(),have=new Set(l.map(x=>x.hook));let n=0;
  v.split('\n').forEach(line=>{if((line.match(/\|/g)||[]).length<1)return;const c=strip(line).split('|').map(x=>x.trim());if(!c[0]||/^الفكرة$/.test(c[0])||/^-+$/.test(c[0]))return;
@@ -289,6 +299,9 @@ function t0(){const P=p(),br=BR.get();
  ${br.length?`<label class="l">براند محفوظ</label><div class="row"><div><select data-brand>${'<option value="">— اختار —</option>'+br.map((x,i)=>`<option value="${i}"${String(i)===brandSel?' selected':''}>${esc(x.pName)}</option>`).join('')}</select></div>${brandSel!==''?'<button class="b r" data-a="delBrand" style="margin:0">🗑️</button>':''}</div>`:''}
  <label class="l">اسم الصفحة أو البراند</label><input data-f="pName" value="${esc(P.pName)}" placeholder="مثال: صيدلية دكتور اتش">
  <label class="l">المجال</label>${sel('niche',NICHES,P.niche)}${P.niche==='custom'?`<input data-f="nicheCustom" value="${esc(P.nicheCustom)}" placeholder="اكتب مجالك" style="margin-top:6px">`:''}
+ <label class="l">معلومات إضافية عن العميل (اختياري)</label><input data-f="brandHint" value="${esc(P.brandHint)}" placeholder="مثال: صيدلية في حي شعبي بالمنصورة، بتوصّل، أسعارها متوسطة">
+ <div class="m" style="margin-top:6px">✨ اكتب الاسم والمجال، والذكاء يقترح الجمهور والعروض والهوية والبصمة والمحاور:</div>
+ ${btns('brand','انسخ أمر الاقتراح')}${outBox('brandOut','📥 الرد',['brand','✨ املا الخانات'],4)}
  <label class="l">الجمهور</label><textarea data-f="audience" rows="2" placeholder="مثال: أمهات وستات بيوت 25–45 سنة في المنطقة، بيدوروا على حلول سريعة وأسعار واضحة">${esc(P.audience)}</textarea>
  <label class="l">المنتجات والخدمات والعروض</label><textarea data-f="offer" rows="2" placeholder="مثال: توصيل مجاني فوق 300 جنيه، قياس ضغط وسكر مجانًا، مستحضرات تجميل">${esc(P.offer)}</textarea>
  <label class="l">الهوية (ألوان، خط، نبرة)</label><input data-f="identity" value="${esc(P.identity)}" placeholder="مثال: أخضر #0f766e وأبيض، خط Cairo، نبرة ودودة وموثوقة">
@@ -436,7 +449,7 @@ function render(){const P=p();if(!(P.step>=0&&P.step<TABS.length))P.step=0;
  const nb=document.querySelector('#nav .g');nb&&nb.scrollIntoView({inline:'center',block:'nearest'})}
 
 /* ================= التفاعل ================= */
-const OUT={ideas:o=>{p().iPaste=o;st.save();parseIdeas()},comp:o=>{p().compOut=o},four:o=>{p().fourOut=o},car:o=>{p().cPaste=o;st.save();parseSlides()},reel:o=>{p().rOut=o},plan:o=>{p().planPaste=o;st.save();parsePlan()},day:(o,i)=>{const r=p().plan[i];if(r)r.out=o},health:o=>{p().hOut=o},reply:o=>{p().rpOut=o;st.save();parseReplies()},perf:o=>{p().perfOut=o}};
+const OUT={brand:o=>{p().brandOut=o;st.save();applyBrand()},ideas:o=>{p().iPaste=o;st.save();parseIdeas()},comp:o=>{p().compOut=o},four:o=>{p().fourOut=o},car:o=>{p().cPaste=o;st.save();parseSlides()},reel:o=>{p().rOut=o},plan:o=>{p().planPaste=o;st.save();parsePlan()},day:(o,i)=>{const r=p().plan[i];if(r)r.out=o},health:o=>{p().hOut=o},reply:o=>{p().rpOut=o;st.save();parseReplies()},perf:o=>{p().perfOut=o}};
 async function runAg(k,arg){if(!CORE.gemKey()){CORE.agentKeyBox();return}if(busy){toast('استنى، الفريق لسه شغال…');return}const t=PR[k](arg);if(!t)return;busy=true;st.snap('قبل '+k,true);
  try{const o=await CORE.gemRun([t],s=>toast(s,90000));OUT[k](String(o||'').trim(),arg);st.save();toast('✓ الرد وصل');render()}catch(x){toast('⚠️ '+x.message,5000)}busy=false}
 const csv=(name,head,rows)=>{const q=x=>'"'+String(x==null?'':x).replace(/"/g,'""')+'"',t='\ufeff'+[head].concat(rows).map(r=>r.map(q).join(',')).join('\n'),f=new File([t],name,{type:'text/csv'});
@@ -479,7 +492,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='go'){go(i);return}
  if(a.startsWith('pr:')){const snd=a.endsWith('!'),[fn,arg]=a.slice(3).replace(/!$/,'').split(':');if(!PR[fn])return;const t=PR[fn](arg===undefined?undefined:+arg);if(!t)return;st.snap('قبل '+fn);snd?CORE.send(t):CORE.copy(t,'اتنسخ الأمر ✓ الصقه في التطبيق');return}
  if(a.startsWith('ag:')){const [fn,arg]=a.slice(3).split(':');runAg(fn,arg===undefined?undefined:+arg);return}
- if(a.startsWith('apply:')){({ideas:parseIdeas,car:()=>parseSlides(),plan:()=>parsePlan(),reply:parseReplies})[a.slice(6)]();return}
+ if(a.startsWith('apply:')){({brand:()=>applyBrand(),ideas:parseIdeas,car:()=>parseSlides(),plan:()=>parsePlan(),reply:parseReplies})[a.slice(6)]();return}
  if(a.startsWith('cp:')){const v=P[a.slice(3)]||'';if(!v.trim()){toast('فاضي');return}CORE.copy(v,'اتنسخ ✓');return}
  if(a.startsWith('clr:')){if(!P[a.slice(4)]||confirm('تمسح الخانة دي؟')){st.snap('قبل المسح',true);P[a.slice(4)]='';st.save();render()}return}
  if(a.startsWith('toH:')){const v=P[a.slice(4)]||'';if(!v.trim()){toast('فاضي');return}P.hIn=v;qRes=null;go(6);return}
