@@ -492,7 +492,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   files.forEach((f,j)=>setTimeout(()=>{const x=document.createElement('a');x.href=URL.createObjectURL(f);x.download=f.name;x.click()},j*400));return}
  if(a==='sUp'||a==='sDn'){const j=a==='sUp'?i-1:i+1;if(j<0||j>=P.slides.length)return;[P.slides[i],P.slides[j]]=[P.slides[j],P.slides[i]];st.save();render();return}
  if(a==='sAdd'){P.slides.push({text:'',img:'',done:false});st.save();render();return}
- if(a==='carAll'){const t=P.slides.map((x,j)=>k==='full'?'Slide '+(j+1)+':\n'+fullPrompt(x):'سلايد '+(j+1)+'\n'+x.text).join('\n\n');CORE.copy(t,'اتنسخ ✓');return}
+ if(a==='carAll'){const n=P.slides.length,t=(k==='full'?'This is an Arabic carousel of '+n+' slides. Generate one separate image per slide, in order from Slide 1 to Slide '+n+', with the same style, colors and lighting in all of them. If you ever place several slides together in one image or sheet, arrange them from RIGHT to LEFT (Arabic reading order): Slide 1 on the far right, then Slide 2 to its left, and so on.\n\n':'')+P.slides.map((x,j)=>k==='full'?'Slide '+(j+1)+':\n'+fullPrompt(x):'سلايد '+(j+1)+'\n'+x.text).join('\n\n');CORE.copy(t,'اتنسخ ✓');return}
  if(a==='carCap'){if(!(P.cCap||'').trim()){toast('الكابشن فاضي');return}CORE.copy(P.cCap,'اتنسخ الكابشن ✓');return}
  if(a==='carH'){P.hIn=P.slides.map(x=>x.text).join('\n')+(P.cCap?'\n\n'+P.cCap:'');qRes=null;go(6);return}
  /* الريلز */
