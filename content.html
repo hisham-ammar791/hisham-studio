@@ -148,7 +148,7 @@ const DEF={step:0,wname:'',
  pName:'',niche:'pharmacy',nicheCustom:'',audience:'',offer:'',identity:'',lang:'eg',voice:'friend',customVoice:'',satire:'light',health:true,
  iNiche:'',iCount:10,iGoal:'mix',hook:'auto',emo:'auto',iPaste:'',compIn:'',compOut:'',
  idea:'',goal:'aware',fSec:30,fourOut:'',
- cTopic:'',cKind:'tips',cN:7,cAspect:'4:5',cText:'clean',cPaste:'',slides:[],cIdent:'',cCap:'',
+ cTopic:'',cKind:'tips',useLogo:true,useRefs:true,cN:7,cAspect:'4:5',cText:'clean',cPaste:'',slides:[],cIdent:'',cCap:'',
  rTopic:'',rStyle:'broll',rSec:30,rVoice:'mine',rOut:'',
  pStart:'',pTime:'20:00',pDays:30,pPerWeek:5,pMix:'',pPillars:'',occOff:[],planPaste:'',plan:[],
  hIn:'',hOut:'',rpNew:'',rpOut:'',perfOut:''};
@@ -182,8 +182,20 @@ const sid=s=>s.id||(s.id='s'+Date.now().toString(36)+Math.random().toString(36).
 const shrink=f=>new Promise((ok,no)=>{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{const sc=Math.min(1,1440/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?ok(b):no(new Error('مش قادر أحفظ الصورة')),'image/jpeg',.92)};im.onerror=()=>{URL.revokeObjectURL(u);no(new Error('الصورة مش مقروءة'))};im.src=u});
 const thumbs=()=>document.querySelectorAll('img[data-th]').forEach(el=>IMG.get(el.dataset.th).then(b=>{if(b)el.src=URL.createObjectURL(b);else{const w=el.closest('[data-thw]');w&&w.remove()}}));
 /* الأمر الكامل: أمر الصورة + النص يتكتب عليها بالظبط */
+/* لوجو وصور العميل: لكل براند (باسم الصفحة) على الجهاز */
+const ASSETS=LS('hs_cs_assets',()=>({}));
+const bKey=()=>(p().pName||'').trim()||'_';
+const assets=()=>{const a=ASSETS.get()[bKey()]||{};return {logo:!!a.logo,refs:a.refs||[]}};
+const setAssets=v=>{const m=ASSETS.get();m[bKey()]=v;ASSETS.set(m)};
+const aId=k=>'a:'+bKey()+':'+k;
+const useAs=()=>{const a=assets(),P=p();return {logo:a.logo&&P.useLogo,refs:P.useRefs?a.refs:[]}};
+const attachTxt=()=>{const u=useAs();return (u.logo?'\nThe client\'s LOGO is attached as an image: place it exactly as given (do not redraw, recolor, distort or translate it), small and clean in a corner, without covering the text.':'')+(u.refs.length?'\nReference photo(s) of the client\'s real product/place are attached: keep the product/place look faithful to them (shape, colors, packaging, label).':'')};
+async function attachFiles(){const u=useAs(),ks=(u.logo?['logo']:[]).concat(u.refs),out=[];for(const k of ks){const b=await IMG.get(aId(k));if(b)out.push(new File([b],(k==='logo'?'logo':'ref-'+(out.length))+'.'+(/png/.test(b.type)?'png':/webp/.test(b.type)?'webp':'jpg'),{type:b.type||'image/jpeg'}))}return out}
+async function sendWith(t){const fs=await attachFiles();if(!fs.length)return CORE.send(t);await CORE.copy(t,'اتنسخ الأمر ✓ (لو النص ما اتلصقش لوحده الصقه)');
+ try{if(navigator.canShare&&navigator.canShare({files:fs})){await navigator.share({files:fs,text:t.length<=6000?t:'الصق الأمر هنا (اتنسخ)'});return}}catch(x){if(x&&x.name==='AbortError')return}
+ toast('الموبايل ده مش بيبعت صور مع نص؛ ارفق اللوجو والصور بإيدك في التطبيق',5000)}
 const fullPrompt=s=>{const img=String(s.img||'').replace(/,?\s*(?:no text|no letters|no words|without (?:any )?text|(?:leave )?(?:clear |plenty of )?(?:empty|negative|blank) space for (?:the )?text)[^,.\n]*/gi,'').replace(/\s+([,.])/g,'$1').replace(/,\s*,/g,',').trim(),tx=String(s.text||'').trim(),id=p().cIdent.trim();
- return (img||'Clean modern social media carousel slide, aspect ratio '+p().cAspect)+(id?'\nVisual identity (keep identical in every slide): '+id:'')+(tx?'\n\nWrite this exact Arabic text on the image, large and highly legible, in correct Arabic script (right-to-left, properly connected letters, no missing or extra letters), strong contrast with the background and comfortable margins. Keep the line breaks. Do not add any other words:\n"'+tx+'"':'')};
+ return (img||'Clean modern social media carousel slide, aspect ratio '+p().cAspect)+(id?'\nVisual identity (keep identical in every slide): '+id:'')+attachTxt()+(tx?'\n\nWrite this exact Arabic text on the image, large and highly legible, in correct Arabic script (right-to-left, properly connected letters, no missing or extra letters), strong contrast with the background and comfortable margins. Keep the line breaks. Do not add any other words:\n"'+tx+'"':'')};
 const waNum=s=>{s=String(s||'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g,'');if(s.startsWith('00'))s=s.slice(2);if(s.startsWith('0'))s='20'+s.slice(1);return s};
 
 /* المناسبات: مصرية وصحية وهجرية ومواسم */
@@ -216,7 +228,7 @@ comp(){const P=p();if(!P.compIn.trim()){alert('الصق المنشور أو او
 four(){const P=p();if(!P.idea.trim()){alert('اكتب الفكرة الأول');return ''}
  return `أنت فريق محتوى عالمي: كاتب محتوى، وكاتب سكريبت ريلز، ومصمم كاروسيل، ومدير سوشيال ميديا.\nالفكرة: ${P.idea.trim()}\nالهدف: ${CORE.pick(GOALS,P.goal)[1]}.\n\nحوّل الفكرة لأربع صيغ بنفس الرسالة الأساسية. كل صيغة مكتوبة لطبيعة منصتها، مش نفس الكلام متقطع.\nابدأ بسطر «الرسالة الأساسية:» في جملة واحدة.\n\n## 1) ريلز (${P.fSec} ثانية، 9:16)\nالهوك في أول 3 ثواني (لفظي + بصري + سمعي)، وسكريبت التعليق بالتوقيت [00:00–00:03]، والنص على الشاشة، واللقطات. عدد الكلمات حوالي 2.5 كلمة في الثانية.\n## 2) كاروسيل (7 سلايدات)\nنص كل سلايد في سطرين بالكتير. الأول هوك يخلي الواحد يقلّب، وقبل الأخير أقوى معلومة، والأخير دعوة لإجراء واحد (احفظ، شارك، أو اكتب تعليق).\n## 3) بوست\n3 هوكات لأول سطر وعلّم الأقوى، والبوست بالأقوى في فقرات قصيرة جدًا للموبايل، ودعوة لإجراء، و5 لـ7 هاشتاجات.\n## 4) ستوري (3 شاشات)\nالكلام على كل شاشة، وستيكر تفاعل (استطلاع، سؤال، أو عداد)، والخطوة الأخيرة (رسالة أو رابط).\n\n${CORE.hookEmoTxt(P)}${base()}`},
 car(){const P=p(),t=(P.cTopic||P.idea).trim();if(!t){alert('اكتب موضوع الكاروسيل الأول');return ''}const clean=P.cText==='clean';
- return `أنت فريق كاروسيل عالمي: كاتب محتوى ومصمم جرافيك.\nاعمل كاروسيل ${P.cN} سلايدات عن: ${t}\nالنوع: ${CORE.pick(CKINDS,P.cKind)[1]}. المقاس: ${P.cAspect}.\nالهوية البصرية الثابتة في كل السلايدات: ${P.identity.trim()||'اقترح هوية بسيطة (لونين أساسيين ولون تمييز بالكود، وخط عربي واضح) والتزم بيها'}.\n\nقواعد الكتابة: سلايد 1 هوك أقل من 10 كلمات وسطر فرعي صغير يخلي الواحد يقلّب. كل سلايد فكرة واحدة وأقل من 25 كلمة. السلايد قبل الأخير أقوى معلومة. الأخير دعوة لإجراء واحد.\nقواعد الصور: نفس الأسلوب والألوان والإضاءة في كل الأوامر عشان الكاروسيل يطلع حتة واحدة. ${clean?'الصورة من غير أي كلام أو حروف خالص، وسيب مساحة فاضية واضحة للنص (فوق أو تحت)، لأن النص هيتحط بعدين في تطبيق تصميم.':'النص العربي يتكتب جوه الصورة بالظبط بين علامتي تنصيص، بخط كبير واضح، ومساحة كافية حواليه.'}\n\nاكتب الناتج بالشكل ده بالظبط:\nالهوية: (الألوان بالكود، والخط، والأسلوب) في سطر واحد\nسلايد 1\nالنص: ...\nأمر الصورة: (English image prompt for Gemini / Nano Banana: subject, composition, colors, lighting, style, aspect ratio ${P.cAspect}${clean?', no text, no letters, empty space for text':''})\nسلايد 2\n...\nوبعد آخر سلايد:\nالكابشن: ...\nالهاشتاجات: ...\n\n${base()}`},
+ return `أنت فريق كاروسيل عالمي: كاتب محتوى ومصمم جرافيك.\nاعمل كاروسيل ${P.cN} سلايدات عن: ${t}\nالنوع: ${CORE.pick(CKINDS,P.cKind)[1]}. المقاس: ${P.cAspect}.\nالهوية البصرية الثابتة في كل السلايدات: ${P.identity.trim()||'اقترح هوية بسيطة (لونين أساسيين ولون تمييز بالكود، وخط عربي واضح) والتزم بيها'}.${useAs().logo?'\nالعميل عنده لوجو هيترفق مع كل صورة: في كل أمر صورة سيب له مكان صغير فاضي في ركن ثابت.':''}${useAs().refs.length?'\nفيه صور حقيقية لمنتج/مكان العميل هتترفق: اكتب أوامر الصور على إنها بتستخدم المنتج الحقيقي ده.':''}\n\nقواعد الكتابة: سلايد 1 هوك أقل من 10 كلمات وسطر فرعي صغير يخلي الواحد يقلّب. كل سلايد فكرة واحدة وأقل من 25 كلمة. السلايد قبل الأخير أقوى معلومة. الأخير دعوة لإجراء واحد.\nقواعد الصور: نفس الأسلوب والألوان والإضاءة في كل الأوامر عشان الكاروسيل يطلع حتة واحدة. ${clean?'الصورة من غير أي كلام أو حروف خالص، وسيب مساحة فاضية واضحة للنص (فوق أو تحت)، لأن النص هيتحط بعدين في تطبيق تصميم.':'النص العربي يتكتب جوه الصورة بالظبط بين علامتي تنصيص، بخط كبير واضح، ومساحة كافية حواليه.'}\n\nاكتب الناتج بالشكل ده بالظبط:\nالهوية: (الألوان بالكود، والخط، والأسلوب) في سطر واحد\nسلايد 1\nالنص: ...\nأمر الصورة: (English image prompt for Gemini / Nano Banana: subject, composition, colors, lighting, style, aspect ratio ${P.cAspect}${clean?', no text, no letters, empty space for text':''})\nسلايد 2\n...\nوبعد آخر سلايد:\nالكابشن: ...\nالهاشتاجات: ...\n\n${base()}`},
 reel(){const P=p(),t=(P.rTopic||P.idea).trim();if(!t){alert('اكتب موضوع الريلز الأول');return ''}const s=CORE.pick(RSTYLES,P.rStyle),words=Math.round(P.rSec*2.5);
  const vo={mine:'توجيه أداء ليّا وأنا بسجّل بصوتي: فين أوقف، والكلمة اللي أضغط عليها، وفين أسرّع أو أبطّأ، ونبرة كل جزء. علّم الوقفة بـ / والضغط بخط تحت الكلمة.',ai:'وصف الصوت لتطبيق توليد الصوت: النوع، والسن، والنبرة، والسرعة، واللهجة، والإحساس، بالإنجليزي في سطر واحد جاهز للنسخ.',none:'من غير تعليق صوتي: الكلام كله نص على الشاشة على إيقاع الموسيقى.'}[P.rVoice];
  return `أنت فريق ريلز عالمي: كاتب سكريبت، ومخرج، ومونتير، ومهندس صوت.\nاعمل ريلز من غير وش إنسان حقيقي${P.rStyle==='char'?' (المقدّم شخصية كرتون أو 3D)':''} عن: ${t}\nالستايل: ${s[1].replace(/^\S+\s/,'')} — ${s[2]}.\nالمدة: ${P.rSec} ثانية، مقاس 9:16.${P.rVoice!=='none'?` التعليق حوالي ${words} كلمة.`:''}\n${P.rStyle==='char'?CORE.castTxt(P):''}\nالناتج بالترتيب:\n1) الهوك (أول 3 ثواني): الكلام، والصورة، والصوت.\n2) ${P.rVoice==='none'?'النص على الشاشة':'سكريبت التعليق'} بالتوقيت: [00:00–00:03] …\n3) النص على الشاشة لكل جزء (كلمات قليلة كبيرة).\n4) اللقطات: لكل لقطة: المدة | الوصف بالعربي | Video prompt in English (vertical 9:16, ${P.rStyle==='char'?'the character keeps the same look and voice':'no human faces'}).\n5) ${vo}\n6) الموسيقى والمؤثرات الصوتية لكل جزء.\n7) الكابشن و5 هاشتاجات.\n\n${CORE.hookEmoTxt(P)}${base()}`},
@@ -263,6 +275,15 @@ const outBox=(f,label,apply,rows)=>`<label class="l">${label||'📥 الرد'}</
 const sel=(f,list,v)=>`<select data-f="${f}">${CORE.opts(list,String(v))}</select>`;
 const num=a=>a.map(x=>[String(x),String(x)]);
 
+function assetsCard(){const a=assets(),P=p();
+ return `<div class="c" style="border-color:#38bdf8"><h3>🏷️ لوجو وصور العميل</h3><div class="m">بتتحفظ على الموبايل باسم الصفحة «${esc(P.pName.trim()||'من غير اسم')}». لما تضغط 📤 في الكاروسيل بتتبعت مع الأمر للتطبيق اللي تختاره، والأمر بيقوله يستخدمها.</div>
+ <label class="l">اللوجو</label>${a.logo?`<div class="th" data-thw style="max-width:160px"><img data-th="${esc(aId('logo'))}" alt="اللوجو" style="background:#fff"><button class="b s r" data-a="asDel" data-k="logo">✕</button></div>`:''}
+ <label class="b s" style="display:inline-block;cursor:pointer">${a.logo?'🔁 غيّر اللوجو':'⬆️ ارفع اللوجو'}<input type="file" accept="image/*" data-as="logo" hidden></label>
+ <label class="l">صور المنتج أو المكان (لحد 6)</label>${a.refs.length?`<div class="grid">${a.refs.map(k=>`<div data-thw><img data-th="${esc(aId(k))}" alt=""><button class="b s r" data-a="asDel" data-k="${esc(k)}" style="position:absolute;top:4px;left:4px;margin:0">✕</button></div>`).join('')}</div>`:''}
+ ${a.refs.length<6?'<label class="b s" style="display:inline-block;cursor:pointer;margin-top:6px">➕ ضيف صور<input type="file" accept="image/*" multiple data-as="refs" hidden></label>':''}
+ <label style="display:flex;gap:8px;align-items:center;margin-top:10px;font-size:14px"><input type="checkbox" data-chk="useLogo" ${P.useLogo?'checked':''}>حط اللوجو في كل سلايد</label>
+ <label style="display:flex;gap:8px;align-items:center;margin-top:6px;font-size:14px"><input type="checkbox" data-chk="useRefs" ${P.useRefs?'checked':''}>استخدم صور العميل كمرجع للمنتج</label>
+ ${a.logo||a.refs.length?'<button class="b" data-a="asSend" style="width:100%">📤 ابعت اللوجو والصور لوحدهم</button>':''}</div>`}
 function t0(){const P=p(),br=BR.get();
  return `<div class="c"><h3>🧭 بيانات الصفحة</h3><div class="m">بتدخل في كل أوامر الاستوديو. اكتبها مرة واحفظها كبراند، وبدّل بين صفحاتك بضغطة.</div>
  ${br.length?`<label class="l">براند محفوظ</label><div class="row"><div><select data-brand>${'<option value="">— اختار —</option>'+br.map((x,i)=>`<option value="${i}"${String(i)===brandSel?' selected':''}>${esc(x.pName)}</option>`).join('')}</select></div>${brandSel!==''?'<button class="b r" data-a="delBrand" style="margin:0">🗑️</button>':''}</div>`:''}
@@ -275,6 +296,7 @@ function t0(){const P=p(),br=BR.get();
  <label class="l">البصمة (صوت الكاتب)</label>${sel('voice',CORE.VOICES,P.voice)}${P.voice==='custom'?`<textarea data-f="customVoice" rows="3" placeholder="الصق عينة نص بتحب أسلوبها" style="margin-top:6px">${esc(P.customVoice)}</textarea>`:''}
  <label style="display:flex;gap:8px;align-items:center;margin-top:12px;font-size:14px"><input type="checkbox" data-chk="health" ${P.health?'checked':''}>🩺 قواعد المحتوى الصحي في كل الأوامر</label>
  <div><button class="b g" data-a="saveBrand">💾 احفظ كبراند</button><button class="b" data-a="impBrand">📥 هات براندات استوديو الإعلانات</button></div></div>
+ ${assetsCard()}
  <div class="c" style="border-color:#f59e0b"><h3>💼 من الوكالة</h3><div class="m">هات بيانات العميل وهويته البصرية (ألوان وخطوط وممنوعات) من صفحة الوكالة بضغطة، فتدخل في كل أوامر المحتوى والإعلان.</div>
  ${(()=>{const c=agencyClient();return c?`<div class="m" style="margin-top:4px">العميل الحالي: <b>${esc(c.name||'بدون اسم')}</b></div>`:'<div class="m" style="margin-top:4px">مفيش عميل محفوظ في الوكالة لسه.</div>'})()}
  <button class="b g" data-a="impAg" style="width:100%">📥 هات العميل الحالي من الوكالة</button>
@@ -325,7 +347,7 @@ function t3(){const P=p(),sl=P.slides;let ch=false;sl.forEach(s=>{if(!s.id){sid(
  ${btns('car','انسخ أمر الكاروسيل')}${outBox('cPaste','📥 الرد',['car','🖼️ حوّله لسلايدات'])}</div>
  ${sl.length?`<div class="c"><h3>🖼️ السلايدات (${sl.filter(s=>s.done).length}/${sl.length})</h3>${P.cIdent?`<div class="m">🎨 الهوية: ${esc(P.cIdent)}</div>`:''}
  <div class="m">🎨 ابدأ بـ«كل الأوامر الكاملة»، ولو سلايد طلع غلط عيده لوحده بزر «أمر السلايد ده» (الصورة والنص عليها). لو عايز الصورة فاضية وتحط النص في Canva، انسخ أمر الصورة من خانته.</div>
- <div class="chips"><button class="b s g" data-a="carAll" data-k="full">🎨 كل الأوامر الكاملة</button><button class="b s" data-a="carAll" data-k="text">📋 كل النصوص</button><button class="b s" data-a="carH">✅ افحص النصوص</button></div>
+ <div class="chips"><button class="b s g" data-a="carAll" data-k="full">🎨 كل الأوامر الكاملة</button><button class="b s" data-a="carAll!" data-k="full" title="ابعتها مع اللوجو والصور">📤</button><button class="b s" data-a="carAll" data-k="text">📋 كل النصوص</button><button class="b s" data-a="carH">✅ افحص النصوص</button></div>
  ${sl.map((s,i)=>`<div class="sl${s.done?' dn':''}"><div class="st"><b>سلايد ${i+1}</b><button class="b s" data-a="sUp" data-i="${i}" style="margin:0">⬆️</button><button class="b s" data-a="sDn" data-i="${i}" style="margin:0">⬇️</button><button class="b s${s.done?' g':''}" data-a="sDone" data-i="${i}" style="margin:0">✓</button><button class="b s r" data-a="sDel" data-i="${i}" style="margin:0">🗑️</button></div>
  <label class="l">النص</label><textarea data-sl="${i}:text" rows="2">${esc(s.text)}</textarea>
  <label class="l">أمر الصورة</label><textarea class="ltr" data-sl="${i}:img" rows="3">${esc(s.img)}</textarea>
@@ -410,7 +432,7 @@ function t8(){const P=p(),l=PERF.get();
 
 function render(){const P=p();if(!(P.step>=0&&P.step<TABS.length))P.step=0;
  document.getElementById('nav').innerHTML=TABS.map((t,k)=>`<button class="b${k===P.step?' g':''}" data-a="go" data-i="${k}" style="margin:0">${t}</button>`).join('');
- document.getElementById('app').innerHTML=[t0,t1,t2,t3,t4,t5,t6,t7,t8][P.step]();if(P.step===3)thumbs();
+ document.getElementById('app').innerHTML=[t0,t1,t2,t3,t4,t5,t6,t7,t8][P.step]();if(P.step===3||P.step===0)thumbs();
  const nb=document.querySelector('#nav .g');nb&&nb.scrollIntoView({inline:'center',block:'nearest'})}
 
 /* ================= التفاعل ================= */
@@ -442,6 +464,8 @@ document.addEventListener('input',e=>{const t=e.target,P=p();if(!t.dataset)retur
 document.addEventListener('change',e=>{const t=e.target,P=p();if(!t.dataset)return;
  if(t.dataset.f&&(t.tagName==='SELECT'||t.type==='date'||t.type==='time')){const f=t.dataset.f;P[f]=/^(iCount|fSec|cN|rSec|pDays|pPerWeek)$/.test(f)?+t.value:t.value;if(f==='niche'&&HEALTHY.includes(t.value))P.health=true;st.save();if(/^(niche|voice|pStart|pDays)$/.test(f))render();return}
  if(t.dataset.pf&&t.tagName==='SELECT'){pf[t.dataset.pf]=t.value;return}
+ if(t.dataset.as){const kind=t.dataset.as,fs=[...(t.files||[])];if(!fs.length)return;const a=assets();toast('⏳ بحفظ…');
+  (async()=>{try{if(kind==='logo'){await IMG.put(aId('logo'),fs[0]);a.logo=true}else{for(const f of fs.slice(0,6-a.refs.length)){const k='r'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);await IMG.put(aId(k),await shrink(f));a.refs.push(k)}}setAssets(a);toast('🏷️ اتحفظ ✓');render()}catch(x){toast('⚠️ '+(x&&x.message||'مش قادر أحفظ'),4000)}})();return}
  if(t.dataset.up!==undefined){const s=P.slides[+t.dataset.up],f=t.files&&t.files[0];if(!s||!f)return;toast('⏳ بحفظ الصورة…');
   shrink(f).then(b=>IMG.put(sid(s),b)).then(()=>{s.pic=true;st.save();toast('🖼️ اتحفظت صورة السلايد ✓');render()}).catch(x=>toast('⚠️ '+(x&&x.message||'مش قادر أحفظ الصورة'),4000));return}
  if(t.dataset.chk){P[t.dataset.chk]=t.checked;st.save();return}
@@ -460,6 +484,8 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a.startsWith('clr:')){if(!P[a.slice(4)]||confirm('تمسح الخانة دي؟')){st.snap('قبل المسح',true);P[a.slice(4)]='';st.save();render()}return}
  if(a.startsWith('toH:')){const v=P[a.slice(4)]||'';if(!v.trim()){toast('فاضي');return}P.hIn=v;qRes=null;go(6);return}
  /* الصفحة */
+ if(a==='asDel'){if(!confirm('تشيل الصورة دي؟'))return;const x=assets();IMG.del(aId(k));if(k==='logo')x.logo=false;else x.refs=x.refs.filter(r=>r!==k);setAssets(x);render();return}
+ if(a==='asSend'){const sv=[P.useLogo,P.useRefs];P.useLogo=P.useRefs=true;const fs=await attachFiles();P.useLogo=sv[0];P.useRefs=sv[1];if(!fs.length){toast('مفيش صور');return}try{if(navigator.canShare&&navigator.canShare({files:fs})){await navigator.share({files:fs});return}}catch(x){if(x&&x.name==='AbortError')return}toast('المشاركة مش مدعومة هنا');return}
  if(a==='seedLib'){const l=LIB.get(),have=new Set(l.map(x=>x.idea+'|'+x.hook));let n=0;(window.HEALTH_IDEAS||[]).forEach(x=>{if(have.has(x.d+'|'+x.h))return;l.unshift({idea:x.d,hook:x.h,ht:'',fmt:x.t,niche:x.n,src:'health100'});n++});LIB.set(l);toast('📚 اتضافت '+n+' فكرة ✓');render();return}
  if(a==='impAg'){const c=agencyClient();if(!c){toast('مفيش عميل في الوكالة. افتح الوكالة وأضف عميل أولًا');return}st.snap('قبل استيراد عميل من الوكالة',true);if(c.name)P.pName=c.name;const nk=SEGNICHE[c.seg]||(c.seg?'doctor':'');if(nk)P.niche=nk;if(c.audience)P.audience=c.audience;const off=[c.products,c.goal&&('الهدف: '+c.goal),c.saleDef&&('البيعة الفعلية: '+c.saleDef)].filter(Boolean).join('\n');if(off)P.offer=off;const idn=agencyIdentity(c);if(idn)P.identity=idn;P.health=true;st.save();toast('📥 اتجاب العميل: '+(c.name||'')+' ✓');render();return}
  if(a==='saveBrand'){if(!P.pName.trim()){alert('اكتب اسم الصفحة الأول');return}const o={};['pName','niche','nicheCustom','audience','offer','identity','lang','voice','customVoice','satire','health'].forEach(f=>o[f]=P[f]);const l=BR.get(),j=l.findIndex(x=>x.pName===o.pName);if(j>=0)l[j]=o;else l.push(o);BR.set(l);brandSel=String(j>=0?j:l.length-1);toast('💾 اتحفظ البراند ✓');render();return}
@@ -477,7 +503,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='ideaTo'){if(!P.idea.trim()){toast('اكتب الفكرة الأول');return}if(k==='3')P.cTopic=P.idea;else P.rTopic=P.idea;st.save();go(+k);return}
  /* الكاروسيل */
  const s=P.slides[i];
- if((a==='sFull'||a==='sFull!')&&s){if(!s.img.trim()&&!s.text.trim()){toast('السلايد فاضي');return}const t=fullPrompt(s);a==='sFull!'?CORE.send(t):CORE.copy(t,'اتنسخ الأمر الكامل ✓ (الصورة + النص)');return}
+ if((a==='sFull'||a==='sFull!')&&s){if(!s.img.trim()&&!s.text.trim()){toast('السلايد فاضي');return}const t=fullPrompt(s);a==='sFull!'?sendWith(t):CORE.copy(t,(useAs().logo||useAs().refs.length)?'اتنسخ ✓ ارفق اللوجو/الصور في التطبيق، أو استخدم 📤':'اتنسخ الأمر الكامل ✓ (الصورة + النص)');return}
  if(a==='sPicDel'&&s){if(confirm('تشيل صورة السلايد '+(i+1)+'؟')){IMG.del(sid(s));s.pic=false;st.save();render()}return}
  if(a==='sDone'&&s){s.done=!s.done;st.save();render();return}
  if(a==='sDel'&&s){if(confirm('تمسح السلايد '+(i+1)+'؟')){st.snap('قبل حذف سلايد',true);P.slides.splice(i,1);st.save();render()}return}
@@ -491,7 +517,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
   files.forEach((f,j)=>setTimeout(()=>{const x=document.createElement('a');x.href=URL.createObjectURL(f);x.download=f.name;x.click()},j*400));return}
  if(a==='sUp'||a==='sDn'){const j=a==='sUp'?i-1:i+1;if(j<0||j>=P.slides.length)return;[P.slides[i],P.slides[j]]=[P.slides[j],P.slides[i]];st.save();render();return}
  if(a==='sAdd'){P.slides.push({text:'',img:'',done:false});st.save();render();return}
- if(a==='carAll'){const n=P.slides.length,t=(k==='full'?'This is an Arabic carousel of '+n+' slides. Generate one separate image per slide, in order from Slide 1 to Slide '+n+', with the same style, colors and lighting in all of them. If you ever place several slides together in one image or sheet, arrange them from RIGHT to LEFT (Arabic reading order): Slide 1 on the far right, then Slide 2 to its left, and so on.\n\n':'')+P.slides.map((x,j)=>k==='full'?'Slide '+(j+1)+':\n'+fullPrompt(x):'سلايد '+(j+1)+'\n'+x.text).join('\n\n');CORE.copy(t,'اتنسخ ✓');return}
+ if(a==='carAll'||a==='carAll!'){const n=P.slides.length,t=(k==='full'?'This is an Arabic carousel of '+n+' slides. Generate one separate image per slide, in order from Slide 1 to Slide '+n+', with the same style, colors and lighting in all of them. If you ever place several slides together in one image or sheet, arrange them from RIGHT to LEFT (Arabic reading order): Slide 1 on the far right, then Slide 2 to its left, and so on.\n\n':'')+P.slides.map((x,j)=>k==='full'?'Slide '+(j+1)+':\n'+fullPrompt(x):'سلايد '+(j+1)+'\n'+x.text).join('\n\n');a==='carAll!'?sendWith(t):CORE.copy(t,'اتنسخ ✓');return}
  if(a==='carCap'){if(!(P.cCap||'').trim()){toast('الكابشن فاضي');return}CORE.copy(P.cCap,'اتنسخ الكابشن ✓');return}
  if(a==='carH'){P.hIn=P.slides.map(x=>x.text).join('\n')+(P.cCap?'\n\n'+P.cCap:'');qRes=null;go(6);return}
  /* الريلز */

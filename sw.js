@@ -3,7 +3,7 @@
 // - The page itself (index.html) is fetched from the network first, so a new upload appears at once;
 //   if the network is missing or slower than 4 seconds, the stored copy opens instead.
 // - Icons, fonts and other files are served from the cache and refreshed in the background.
-const CACHE = 'hisham-studio-v58';
+const CACHE = 'hisham-studio-v59';
 const FILES = ['./', 'index.html', 'studio.html', 'song-fix.html', 'song.html', 'ad.html', 'film.html', 'doc.html', 'montage.html', 'content.html', 'wa.html', 'ideas-lib.js', 'agency.html', 'agency.webmanifest', 'icons/agency-192.png', 'icons/agency-512.png', 'icons/agency-180.png', 'core.js', 'fieldtools.js', 'manifest.webmanifest', 'icons/film-192.png', 'icons/film-512.png', 'icons/film-180.png', 'icons/ad-192.png', 'icons/ad-512.png', 'icons/ad-180.png', 'icons/song-192.png', 'icons/song-512.png', 'icons/song-180.png', 'icons/doc-192.png', 'icons/doc-512.png', 'icons/doc-180.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
   'apple-touch-icon.png', 'fonts/cairo-arabic.woff2', 'fonts/cairo-latin.woff2', 'fonts/cairo-latin-ext.woff2', 'guide.pdf'];
 
