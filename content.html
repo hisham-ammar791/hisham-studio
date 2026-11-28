@@ -148,7 +148,7 @@ const DEF={step:0,wname:'',
  pName:'',niche:'pharmacy',nicheCustom:'',brandHint:'',brandOut:'',audience:'',offer:'',identity:'',lang:'eg',voice:'friend',customVoice:'',satire:'light',health:true,
  iNiche:'',iCount:10,iGoal:'mix',hook:'auto',emo:'auto',iPaste:'',compIn:'',compOut:'',
  idea:'',goal:'aware',fSec:30,fourOut:'',
- cTopic:'',cKind:'tips',useLogo:true,useRefs:true,cN:7,cAspect:'4:5',cText:'clean',cPaste:'',slides:[],cIdent:'',cCap:'',revPaste:'',
+ cTopic:'',cKind:'tips',useLogo:true,useRefs:true,cN:7,cAspect:'4:5',cText:'clean',cPaste:'',slides:[],cIdent:'',cCap:'',revPaste:'',revNotes:'',
  rTopic:'',rStyle:'broll',rSec:30,rVoice:'mine',rOut:'',
  pStart:'',pTime:'20:00',pDays:30,pPerWeek:5,pMix:'',pPillars:'',occOff:[],planPaste:'',plan:[],
  hIn:'',hOut:'',rpNew:'',rpOut:'',perfOut:''};
@@ -249,7 +249,7 @@ perf(){const l=PERF.get();if(!l.length){alert('سجّل منشورات الأو�
 /* ================= تحويل الردود ================= */
 const strip=s=>s.replace(/^\s*(?:[-•*▪︎●]|\d+[.)\-]|[٠-٩]+[.)\-])\s*/,'').replace(/\*\*/g,'').trim();
 function postFix(nums){const P=p(),n=P.slides.length,all=P.cCap+' '+P.offer,ph=(all.match(/(?:\+?20)?0?1[0-9]{9}/)||[''])[0];let cast='';try{cast=(CORE.castTxt?CORE.castTxt(P):'')||''}catch(e){}
- const notes=P.slides.map((s,i)=>s.redo&&s.img?'سلايد '+(i+1)+': '+s.img:'').filter(Boolean),hl=P.health;
+ const notes=P.slides.map((s,i)=>s.redo&&s.img?'سلايد '+(i+1)+': '+s.img:'').filter(Boolean),hl=P.health,iss=P.slides.map((s,i)=>s.issue?'سلايد '+(i+1)+': '+s.issue:'').filter(Boolean);
  return `أنت فريق إنتاج وإصلاح عالمي: مدير فني ومخرج، ومصمم جرافيك، ومتخصص ألوان، ومدقق لغة عربية${hl?'، ومراجع طبي (صيدلي)':''}. الصور المرفقة هي سلايدات كاروسيل (${nums.map(x=>'سلايد '+x).join('، ')}) لصفحة ${P.pName.trim()||'العميل'} في مجال ${nicheName()}.
 المطلوب: إصلاح شامل لكل سلايد وإخراج النسخ النهائية كصور فعلية، سلايد سلايد على حدة، مش مجرد برومبتات ولا تقرير. ابدأ التنفيذ فورًا في الرد ده من غير أسئلة أو تأكيدات أو مقدمات. احتفظ بترتيب السلايدات وفكرة كل واحدة.
 
@@ -282,7 +282,7 @@ ${hl?`
 ${hl?'٦':'٥'}) الثوابت (ماتتغيرش):
 - الشعار${ph?' ورقم الهاتف ('+ph+')':' وأي رقم هاتف أو عنوان'} زي ما هم بالظبط.${useAs().logo?' الشعار الأصلي مرفق بجودة عالية، استخدمه كما هو، ماتعيدش رسمه.':''}
 - الفكرة والرسالة وترتيب السلايدات.
-${notes.length?'\nملاحظات خاصة بسلايدات معينة:\n'+notes.join('\n')+'\n':''}
+${iss.length?'\nمشاكل اتحدّدت في مراجعة سابقة، لازم تتصلّح بالتحديد:\n'+iss.join('\n')+'\n':''}${P.revNotes.trim()?'\nملاحظات المراجعة على المنشور كله (علمية/تجارية/تصميمية/دعائية):\n'+P.revNotes.trim()+'\n':''}${notes.length?'\nتوجيه الصورة المعدّل للسلايدات دي:\n'+notes.join('\n')+'\n':''}
 النتيجة المطلوبة: ${n} صور منفصلة بمقاس ${P.cAspect}، متناسقة بصريًا ولغويًا${hl?' وعلميًا':''}، جاهزة لفيسبوك وإنستجرام. لو الكتابة العربية جوه الصورة نفسها مش مضبوطة، ولّد الصورة من غير النص وضيف النص العربي الصحيح فوقها كطبقة تصميم نظيفة. وفي آخر الرد سطر واحد بس: أي سلايد لسه فيه مشكلة وإيه هي.`}
 function postReview(nums){const P=p(),n=P.slides.length;
  return `أنت فريق مراجعة عالمي: مراجع علمي متخصص في «${nicheName()}»، ومستشار تسويق ومبيعات، ومدير فني ومصمم جرافيك، وكاتب إعلانات (Copywriter)، ومدقق لغة عربية${P.health?'، وصيدلي مراجع للصياغة الصحية':''}.
@@ -322,13 +322,15 @@ function applyReview(src){const P=p(),v=(src||P.revPaste).replace(/\r/g,'').trim
  st.snap('قبل تطبيق المراجعة',true);let nt=0,nf=0,cap=false;
  const parts=v.split(/^\s*[#*]*\s*سلايد\s*([0-9٠-٩]+)\s*\**\s*[:：]/m);
  for(let j=1;j<parts.length;j+=2){const s=P.slides[dg(parts[j])-1],b=parts[j+1].split(/^\s*[#*]*\s*الكابشن/m)[0];if(!s)continue;
+  const first=(parts[j+1]||'').trim(),iss=first.split('\n')[0].replace(/\*\*/g,'').replace(/^(?:✅|⚠️|⛔)\s*/,'').replace(/^(?:تمام|—|-|:)+\s*/,'').trim();if(/^⚠️|^⛔/.test(first)&&iss)s.issue=iss;else if(/^✅/.test(first))s.issue='';
   const nt1=(b.match(/^\s*\**النص الجديد\**\s*[:：]\s*([\s\S]+?)(?=^\s*\**(?:أمر الإصلاح|سلايد)|(?![\s\S]))/m)||[])[1],fx=(b.match(/^\s*\**أمر الإصلاح\**\s*[:：]\s*([\s\S]+?)(?=^\s*\**(?:النص الجديد|سلايد)|(?![\s\S]))/m)||[])[1];
   if(nt1&&cl(nt1)&&!/^\(.*\)$/.test(cl(nt1))){s.text=cl(nt1);nt++}
   if(fx&&cl(fx).length>20&&!/^\(.*\)$/.test(cl(fx))){s.img=cl(fx);s.redo=true;s.done=false;nf++}}
  /* لو الرد جدول: | 1 | العنوان | النص | */
  if(!nt)v.split('\n').forEach(l=>{const m=l.match(/^\s*\|\s*([0-9٠-٩]+)\s*\|([^|]*)\|([^|]*)\|/);if(!m)return;const s=P.slides[dg(m[1])-1];if(!s)return;const t=[cl(m[2]),cl(m[3])].filter(Boolean).join('\n');if(t){s.text=t;s.redo=true;nt++}});
+ const ang=['علميًا','تجاريًا','تصميميًا','دعائيًا'].map(a=>{const m=v.match(new RegExp('^\\s*[#*-]*\\s*\\**'+a+'\\**\\s*[:：]\\s*(.+)$','m'));return m&&/⚠️/.test(m[1])?a+': '+m[1].replace(/\*\*/g,'').replace(/⚠️/g,'').trim():''}).filter(Boolean);if(ang.length)P.revNotes=ang.join('\n');
  const cm=v.match(/^\s*[#*]*\s*الكابشن المحس[ّ]?ن\**\s*[:：]\s*([\s\S]+)$/m);if(cm&&cl(cm[1])){P.cCap=cm[1].replace(/\*\*/g,'').trim();cap=true}
- if(!nt&&!nf&&!cap){alert('مش لاقي تعديلات أقدر أطبقها. الرد لازم يكون بالشكل: «سلايد 1: …» و«النص الجديد: …» و«أمر الإصلاح: …» و«الكابشن المحسّن: …»');return false}
+ if(!nt&&!nf&&!cap&&!ang.length){alert('مش لاقي تعديلات أقدر أطبقها. الرد لازم يكون بالشكل: «سلايد 1: …» و«النص الجديد: …» و«أمر الإصلاح: …» و«الكابشن المحسّن: …»');return false}
  P.revPaste='';st.save();toast('✍️ اتطبق: '+nt+' نص، '+nf+' أمر صورة'+(cap?'، والكابشن':'')+' ✓');render();return 'المراجعة'}
 function applyBrand(src){const P=p(),v=(src||P.brandOut).trim();if(!v){alert('الصق الرد الأول');return false}
  const g=lb=>{const m=v.match(new RegExp('^\\s*[-•*]*\\s*\\**(?:'+lb+')\\**\\s*[:：]\\s*(.+)$','m'));return m?m[1].replace(/\*\*/g,'').trim():''};
@@ -454,6 +456,7 @@ function t3(){const P=p(),sl=P.slides;let ch=false;sl.forEach(s=>{if(!s.id){sid(
  <label class="l">الكابشن والهاشتاجات</label><textarea data-f="cCap" rows="5" placeholder="الكابشن بييجي لوحده مع رد الكاروسيل، أو اكتبه هنا">${esc(P.cCap)}</textarea>
  <button class="b g" data-a="postShare" style="width:100%">📤 انشر على فيسبوك أو إنستجرام (الصور + الكابشن)</button>
  <button class="b bl" data-a="postAI" style="width:100%">🤖 ابعته للذكاء يراجعه قبل النشر</button>
+ <button class="b" data-a="postFixCp" style="width:100%">📋 انسخ أمر الإصلاح الشامل (من غير صور)</button>
  <button class="b" data-a="postFix" style="width:100%;border-color:#f59e0b">🛠️ إصلاح شامل بالذكاء (لغوي، تصميم، ألوان، طبي، إخراج)</button>
  <div class="chips"><button class="b s" data-a="carCap">📋 انسخ الكابشن</button><button class="b s" data-a="postDl">⬇️ نزّل الصور</button></div>
  <label class="l">📥 رد المراجعة</label><textarea data-f="revPaste" rows="4" placeholder="الصق رد الذكاء هنا، وهو يعدّل نصوص السلايدات وأوامرها والكابشن لوحده">${esc(P.revPaste)}</textarea>
@@ -606,6 +609,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='sPicDel'&&s){if(confirm('تشيل صورة السلايد '+(i+1)+'؟')){IMG.del(sid(s));s.pic=false;st.save();render()}return}
  if(a==='sDone'&&s){s.done=!s.done;st.save();render();return}
  if(a==='sDel'&&s){if(confirm('تمسح السلايد '+(i+1)+'؟')){st.snap('قبل حذف سلايد',true);P.slides.splice(i,1);st.save();render()}return}
+ if(a==='postFixCp'){CORE.copy(postFix(P.slides.map((s,j)=>j+1)),'اتنسخ أمر الإصلاح الشامل ✓ ارفق الصور بإيدك في التطبيق');return}
  if(a==='postFix'){const l=P.slides.filter(x=>x.pic);if(!l.length){toast('ارفع صور السلايدات الأول');return}
   const bl=await Promise.all(l.map(x=>IMG.get(x.id))),files=[];bl.forEach((b,j)=>{if(b)files.push(new File([b],'slide-'+(P.slides.indexOf(l[j])+1)+'.jpg',{type:'image/jpeg'}))});
   const t=postFix(l.map(x=>P.slides.indexOf(x)+1));await CORE.copy(t,'اتنسخ أمر الإصلاح ✓ (لو ما اتلصقش لوحده الصقه)');
