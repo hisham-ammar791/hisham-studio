@@ -248,6 +248,21 @@ perf(){const l=PERF.get();if(!l.length){alert('سجّل منشورات الأو�
 
 /* ================= تحويل الردود ================= */
 const strip=s=>s.replace(/^\s*(?:[-•*▪︎●]|\d+[.)\-]|[٠-٩]+[.)\-])\s*/,'').replace(/\*\*/g,'').trim();
+function postFix(nums){const P=p(),n=P.slides.length,all=P.cCap+' '+P.offer,ph=(all.match(/(?:\+?20)?0?1[0-9]{9}/)||[''])[0];let cast='';try{cast=(CORE.castTxt?CORE.castTxt(P):'')||''}catch(e){}
+ const notes=P.slides.map((s,i)=>s.redo&&s.img?'سلايد '+(i+1)+': '+s.img:'').filter(Boolean);
+ return `أنت مصمم جرافيك ومخرج فني عالمي. الصور المرفقة هي سلايدات كاروسيل (${nums.map(x=>'سلايد '+x).join('، ')}) لصفحة ${P.pName.trim()||'العميل'}.
+المطلوب: أصلح السلايدات وأخرج النسخ النهائية كصور فعلية، سلايد سلايد على حدة، مش مجرد برومبتات للإصلاح. ابدأ التنفيذ فورًا في الرد ده من غير أسئلة أو تأكيدات.
+احتفظ بترتيب السلايدات وفكرة كل سلايد، والتزم في كل سلايد بالآتي:
+1. تصحيح النصوص العربية حرفيًا ومنع أخطاء الحروف والتشكيل. النص الصحيح المكتوب على كل سلايد بالظبط:
+${P.slides.map((s,i)=>'   سلايد '+(i+1)+': '+(String(s.text||'(من غير نص)').replace(/\n/g,' / '))).join('\n')}
+2. تحسين التكوين والمساحات وتوزيع النصوص، وتنويع زاوية الكاميرا واللقطة بين السلايدات بدل تكرار نفس التكوين.
+3. توحيد الشخصيات وملامحها وملابسها في كل السلايدات.${cast?'\n'+cast:''}
+4. تثبيت الهوية البصرية: ${P.cIdent.trim()||P.identity.trim()||'نفس ألوان وخطوط الصور الحالية'}.
+5. تحسين الإضاءة والخامات بنفس أسلوب الصور الحالية الراقي، من غير ما تغيّر الفكرة.
+6. الحفاظ على الشعار${ph?' ورقم الهاتف ('+ph+')':' وأي رقم هاتف أو عنوان'} دون تغيير.${useAs().logo?' الشعار الأصلي مرفق بجودة عالية، استخدمه كما هو.':''}
+7. توحيد المقاس ${P.cAspect} لجميع السلايدات.
+${notes.length?'\nملاحظات خاصة بسلايدات معينة:\n'+notes.join('\n')+'\n':''}
+النتيجة المطلوبة: ${n} صور منفصلة، متناسقة بصريًا، جاهزة لفيسبوك وإنستجرام. لو الكتابة العربية جوه الصورة نفسها مش مضبوطة، ولّد الصورة وضيف النص العربي الصحيح فوقها كطبقة تصميم نظيفة.`}
 function postReview(nums){const P=p(),n=P.slides.length;
  return `أنت فريق مراجعة عالمي: مراجع علمي متخصص في «${nicheName()}»، ومستشار تسويق ومبيعات، ومدير فني ومصمم جرافيك، وكاتب إعلانات (Copywriter)، ومدقق لغة عربية${P.health?'، وصيدلي مراجع للصياغة الصحية':''}.
 المطلوب: راجع الكاروسيل ده قبل النشر على فيسبوك وإنستجرام، واحكم عليه، وقولّي أصلّح إيه بالظبط.
@@ -418,6 +433,7 @@ function t3(){const P=p(),sl=P.slides;let ch=false;sl.forEach(s=>{if(!s.id){sid(
  <label class="l">الكابشن والهاشتاجات</label><textarea data-f="cCap" rows="5" placeholder="الكابشن بييجي لوحده مع رد الكاروسيل، أو اكتبه هنا">${esc(P.cCap)}</textarea>
  <button class="b g" data-a="postShare" style="width:100%">📤 انشر على فيسبوك أو إنستجرام (الصور + الكابشن)</button>
  <button class="b bl" data-a="postAI" style="width:100%">🤖 ابعته للذكاء يراجعه قبل النشر</button>
+ <button class="b" data-a="postFix" style="width:100%;border-color:#f59e0b">🛠️ ابعت الصور للذكاء يصلّحها (حروف، شخصيات، هوية، مقاس)</button>
  <div class="chips"><button class="b s" data-a="carCap">📋 انسخ الكابشن</button><button class="b s" data-a="postDl">⬇️ نزّل الصور</button></div>
  <label class="l">📥 رد المراجعة</label><textarea data-f="revPaste" rows="4" placeholder="الصق رد الذكاء هنا، وهو يعدّل نصوص السلايدات وأوامرها والكابشن لوحده">${esc(P.revPaste)}</textarea>
  <button class="b g" data-a="apply:rev" style="width:100%">✍️ طبّق المراجعة</button></div>`:''}`}
@@ -569,6 +585,11 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='sPicDel'&&s){if(confirm('تشيل صورة السلايد '+(i+1)+'؟')){IMG.del(sid(s));s.pic=false;st.save();render()}return}
  if(a==='sDone'&&s){s.done=!s.done;st.save();render();return}
  if(a==='sDel'&&s){if(confirm('تمسح السلايد '+(i+1)+'؟')){st.snap('قبل حذف سلايد',true);P.slides.splice(i,1);st.save();render()}return}
+ if(a==='postFix'){const l=P.slides.filter(x=>x.pic);if(!l.length){toast('ارفع صور السلايدات الأول');return}
+  const bl=await Promise.all(l.map(x=>IMG.get(x.id))),files=[];bl.forEach((b,j)=>{if(b)files.push(new File([b],'slide-'+(P.slides.indexOf(l[j])+1)+'.jpg',{type:'image/jpeg'}))});
+  const t=postFix(l.map(x=>P.slides.indexOf(x)+1));await CORE.copy(t,'اتنسخ أمر الإصلاح ✓ (لو ما اتلصقش لوحده الصقه)');
+  const ex=await attachFiles();try{const all=files.concat(ex);if(all.length&&navigator.canShare&&navigator.canShare({files:all})){await navigator.share({files:all,text:t.length<=6000?t:'الصق الأمر هنا (اتنسخ)'});return}}catch(x){if(x&&x.name==='AbortError')return}
+  toast('ارفق صور السلايدات بإيدك في التطبيق والصق الأمر',5000);return}
  if(a==='postAI'){const l=P.slides.filter(x=>x.pic);if(!l.length){toast('ارفع صور السلايدات الأول');return}
   const bl=await Promise.all(l.map(x=>IMG.get(x.id))),files=[];bl.forEach((b,j)=>{if(b)files.push(new File([b],'slide-'+(P.slides.indexOf(l[j])+1)+'.jpg',{type:'image/jpeg'}))});
   const t=postReview(l.map(x=>P.slides.indexOf(x)+1));await CORE.copy(t,'اتنسخ أمر المراجعة ✓ (لو ما اتلصقش لوحده الصقه)');
