@@ -148,7 +148,7 @@ const DEF={step:0,wname:'',
  pName:'',niche:'pharmacy',nicheCustom:'',brandHint:'',brandOut:'',audience:'',offer:'',identity:'',lang:'eg',voice:'friend',customVoice:'',satire:'light',health:true,
  iNiche:'',iCount:10,iGoal:'mix',hook:'auto',emo:'auto',iPaste:'',compIn:'',compOut:'',
  idea:'',goal:'aware',fSec:30,fourOut:'',
- cTopic:'',cKind:'tips',useLogo:true,useRefs:true,cN:7,cAspect:'4:5',cText:'clean',cPaste:'',slides:[],cIdent:'',cCap:'',
+ cTopic:'',cKind:'tips',useLogo:true,useRefs:true,cN:7,cAspect:'4:5',cText:'clean',cPaste:'',slides:[],cIdent:'',cCap:'',revPaste:'',
  rTopic:'',rStyle:'broll',rSec:30,rVoice:'mine',rOut:'',
  pStart:'',pTime:'20:00',pDays:30,pPerWeek:5,pMix:'',pPillars:'',occOff:[],planPaste:'',plan:[],
  hIn:'',hOut:'',rpNew:'',rpOut:'',perfOut:''};
@@ -265,13 +265,27 @@ ${(P.cCap||'(مفيش كابشن لسه)').trim()}
 وافحص الكاروسيل كله: قوة سلايد 1 كهوك يخلّي الواحد يقلّب، وترتيب الفكرة، والدعوة للإجراء في الآخر${P.health?'، والدقة الطبية وقواعد المحتوى الصحي':''}.
 
 ${p().health?HEALTH+'\n':''}
-اكتب الناتج بالشكل ده بالظبط، وقرارك واحد وواضح، من غير ما تديني اختيارات:
+ممنوع تكتب تقرير أو مقدمة أو جداول أو درجات أو صور أو خطة إعلانات. اكتب الشكل ده بس، بالظبط، لأن الرد هيتلصق في أداة بتقراه سطر سطر. قرارك واحد وواضح، من غير اختيارات:
 الحكم: ✅ جاهز للنشر / ⚠️ محتاج تعديل / ⛔ لازم يتعاد
 سلايد 1: ✅ تمام — أو — ⚠️ المشكلة في سطر واحد
+النص الجديد: (اكتبه بس لو نص السلايد محتاج يتغير، بنفس اللغة وأقصر لو طويل)
 أمر الإصلاح: (English image prompt كامل وجاهز أعيد بيه السلايد ده، فيه النص العربي الصح بين علامتي تنصيص) — اكتبه بس للسلايد اللي محتاج تعديل
 … وهكذا لكل سلايد
 الكابشن المحسّن: (نسخة نهائية جاهزة للنشر بنفس اللغة، بهوك في أول سطر، وفقرات قصيرة للموبايل، ودعوة لإجراء واحد، و5 لـ7 هاشتاجات)
 ${CORE.WRITING}`}
+function applyReview(src){const P=p(),v=(src||P.revPaste).replace(/\r/g,'').trim();if(!v){alert('الصق رد المراجعة الأول');return false}
+ const dg=x=>+String(x).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)),cl=x=>x.replace(/\*\*/g,'').replace(/^[«"“]|[»"”]$/g,'').trim();
+ st.snap('قبل تطبيق المراجعة',true);let nt=0,nf=0,cap=false;
+ const parts=v.split(/^\s*[#*]*\s*سلايد\s*([0-9٠-٩]+)\s*\**\s*[:：]/m);
+ for(let j=1;j<parts.length;j+=2){const s=P.slides[dg(parts[j])-1],b=parts[j+1].split(/^\s*[#*]*\s*الكابشن/m)[0];if(!s)continue;
+  const nt1=(b.match(/^\s*\**النص الجديد\**\s*[:：]\s*([\s\S]+?)(?=^\s*\**(?:أمر الإصلاح|سلايد)|(?![\s\S]))/m)||[])[1],fx=(b.match(/^\s*\**أمر الإصلاح\**\s*[:：]\s*([\s\S]+?)(?=^\s*\**(?:النص الجديد|سلايد)|(?![\s\S]))/m)||[])[1];
+  if(nt1&&cl(nt1)&&!/^\(.*\)$/.test(cl(nt1))){s.text=cl(nt1);nt++}
+  if(fx&&cl(fx).length>20&&!/^\(.*\)$/.test(cl(fx))){s.img=cl(fx);s.redo=true;s.done=false;nf++}}
+ /* لو الرد جدول: | 1 | العنوان | النص | */
+ if(!nt)v.split('\n').forEach(l=>{const m=l.match(/^\s*\|\s*([0-9٠-٩]+)\s*\|([^|]*)\|([^|]*)\|/);if(!m)return;const s=P.slides[dg(m[1])-1];if(!s)return;const t=[cl(m[2]),cl(m[3])].filter(Boolean).join('\n');if(t){s.text=t;s.redo=true;nt++}});
+ const cm=v.match(/^\s*[#*]*\s*الكابشن المحس[ّ]?ن\**\s*[:：]\s*([\s\S]+)$/m);if(cm&&cl(cm[1])){P.cCap=cm[1].replace(/\*\*/g,'').trim();cap=true}
+ if(!nt&&!nf&&!cap){alert('مش لاقي تعديلات أقدر أطبقها. الرد لازم يكون بالشكل: «سلايد 1: …» و«النص الجديد: …» و«أمر الإصلاح: …» و«الكابشن المحسّن: …»');return false}
+ P.revPaste='';st.save();toast('✍️ اتطبق: '+nt+' نص، '+nf+' أمر صورة'+(cap?'، والكابشن':'')+' ✓');render();return 'المراجعة'}
 function applyBrand(src){const P=p(),v=(src||P.brandOut).trim();if(!v){alert('الصق الرد الأول');return false}
  const g=lb=>{const m=v.match(new RegExp('^\\s*[-•*]*\\s*\\**(?:'+lb+')\\**\\s*[:：]\\s*(.+)$','m'));return m?m[1].replace(/\*\*/g,'').trim():''};
  const find=(list,t)=>{if(!t)return null;const x=list.find(o=>t.includes(o[1].replace(/\s*\(.*\)/,'')));return x?x[0]:null};
@@ -385,7 +399,7 @@ function t3(){const P=p(),sl=P.slides;let ch=false;sl.forEach(s=>{if(!s.id){sid(
  ${sl.length?`<div class="c"><h3>🖼️ السلايدات (${sl.filter(s=>s.done).length}/${sl.length})</h3>${P.cIdent?`<div class="m">🎨 الهوية: ${esc(P.cIdent)}</div>`:''}
  <div class="m">🎨 ابدأ بـ«كل الأوامر الكاملة»، ولو سلايد طلع غلط عيده لوحده بزر «أمر السلايد ده» (الصورة والنص عليها). لو عايز الصورة فاضية وتحط النص في Canva، انسخ أمر الصورة من خانته.</div>
  <div class="chips"><button class="b s g" data-a="carAll" data-k="full">🎨 كل الأوامر الكاملة</button><button class="b s" data-a="carAll!" data-k="full" title="ابعتها مع اللوجو والصور">📤</button><button class="b s" data-a="carAll" data-k="text">📋 كل النصوص</button><button class="b s" data-a="carH">✅ افحص النصوص</button></div>
- ${sl.map((s,i)=>`<div class="sl${s.done?' dn':''}"><div class="st"><b>سلايد ${i+1}</b><button class="b s" data-a="sUp" data-i="${i}" style="margin:0">⬆️</button><button class="b s" data-a="sDn" data-i="${i}" style="margin:0">⬇️</button><button class="b s${s.done?' g':''}" data-a="sDone" data-i="${i}" style="margin:0">✓</button><button class="b s r" data-a="sDel" data-i="${i}" style="margin:0">🗑️</button></div>
+ ${sl.map((s,i)=>`<div class="sl${s.done?' dn':''}"><div class="st"><b>سلايد ${i+1}${s.redo?' <span class="tag" style="background:#7c2d12">⚠️ يتعاد</span>':''}</b><button class="b s" data-a="sUp" data-i="${i}" style="margin:0">⬆️</button><button class="b s" data-a="sDn" data-i="${i}" style="margin:0">⬇️</button><button class="b s${s.done?' g':''}" data-a="sDone" data-i="${i}" style="margin:0">✓</button><button class="b s r" data-a="sDel" data-i="${i}" style="margin:0">🗑️</button></div>
  <label class="l">النص</label><textarea data-sl="${i}:text" rows="2">${esc(s.text)}</textarea>
  <label class="l">أمر الصورة</label><textarea class="ltr" data-sl="${i}:img" rows="3">${esc(s.img)}</textarea>
  ${s.pic?`<div class="th" data-thw><img data-th="${esc(s.id)}" alt="صورة سلايد ${i+1}"><button class="b s r" data-a="sPicDel" data-i="${i}">✕</button></div>`:''}
@@ -396,7 +410,9 @@ function t3(){const P=p(),sl=P.slides;let ch=false;sl.forEach(s=>{if(!s.id){sid(
  <label class="l">الكابشن والهاشتاجات</label><textarea data-f="cCap" rows="5" placeholder="الكابشن بييجي لوحده مع رد الكاروسيل، أو اكتبه هنا">${esc(P.cCap)}</textarea>
  <button class="b g" data-a="postShare" style="width:100%">📤 انشر على فيسبوك أو إنستجرام (الصور + الكابشن)</button>
  <button class="b bl" data-a="postAI" style="width:100%">🤖 ابعته للذكاء يراجعه قبل النشر</button>
- <div class="chips"><button class="b s" data-a="carCap">📋 انسخ الكابشن</button><button class="b s" data-a="postDl">⬇️ نزّل الصور</button></div></div>`:''}`}
+ <div class="chips"><button class="b s" data-a="carCap">📋 انسخ الكابشن</button><button class="b s" data-a="postDl">⬇️ نزّل الصور</button></div>
+ <label class="l">📥 رد المراجعة</label><textarea data-f="revPaste" rows="4" placeholder="الصق رد الذكاء هنا، وهو يعدّل نصوص السلايدات وأوامرها والكابشن لوحده">${esc(P.revPaste)}</textarea>
+ <button class="b g" data-a="apply:rev" style="width:100%">✍️ طبّق المراجعة</button></div>`:''}`}
 
 function t4(){const P=p(),s=CORE.pick(RSTYLES,P.rStyle);
  return `<div class="c"><h3>🎙️ ريلز بدون وش وتعليق صوتي</h3><div class="m">سكريبت بالتوقيت، ونص الشاشة، وأمر فيديو بالإنجليزي لكل لقطة، وتوجيه الصوت.</div>
@@ -505,7 +521,7 @@ document.addEventListener('change',e=>{const t=e.target,P=p();if(!t.dataset)retu
  if(t.dataset.as){const kind=t.dataset.as,fs=[...(t.files||[])];if(!fs.length)return;const a=assets();toast('⏳ بحفظ…');
   (async()=>{try{if(kind==='logo'){await IMG.put(aId('logo'),fs[0]);a.logo=true}else{for(const f of fs.slice(0,6-a.refs.length)){const k='r'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);await IMG.put(aId(k),await shrink(f));a.refs.push(k)}}setAssets(a);toast('🏷️ اتحفظ ✓');render()}catch(x){toast('⚠️ '+(x&&x.message||'مش قادر أحفظ'),4000)}})();return}
  if(t.dataset.up!==undefined){const s=P.slides[+t.dataset.up],f=t.files&&t.files[0];if(!s||!f)return;toast('⏳ بحفظ الصورة…');
-  shrink(f).then(b=>IMG.put(sid(s),b)).then(()=>{s.pic=true;st.save();toast('🖼️ اتحفظت صورة السلايد ✓');render()}).catch(x=>toast('⚠️ '+(x&&x.message||'مش قادر أحفظ الصورة'),4000));return}
+  shrink(f).then(b=>IMG.put(sid(s),b)).then(()=>{s.pic=true;s.redo=false;st.save();toast('🖼️ اتحفظت صورة السلايد ✓');render()}).catch(x=>toast('⚠️ '+(x&&x.message||'مش قادر أحفظ الصورة'),4000));return}
  if(t.dataset.chk){P[t.dataset.chk]=t.checked;st.save();return}
  if(t.dataset.occ){const k=t.dataset.occ,i=P.occOff.indexOf(k);if(t.checked&&i>=0)P.occOff.splice(i,1);if(!t.checked&&i<0)P.occOff.push(k);st.save();return}
  if(t.hasAttribute('data-lf')){libF=t.value;const b=document.getElementById('libList');if(b)b.innerHTML=libItems();return}
@@ -517,7 +533,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]')
  if(a==='go'){go(i);return}
  if(a.startsWith('pr:')){const snd=a.endsWith('!'),[fn,arg]=a.slice(3).replace(/!$/,'').split(':');if(!PR[fn])return;const t=PR[fn](arg===undefined?undefined:+arg);if(!t)return;st.snap('قبل '+fn);snd?(fn==='brand'?sendWith(t,true):CORE.send(t)):CORE.copy(t,fn==='brand'&&(assets().logo||assets().refs.length)?'اتنسخ ✓ ارفق اللوجو والصور في التطبيق، أو استخدم 📤':'اتنسخ الأمر ✓ الصقه في التطبيق');return}
  if(a.startsWith('ag:')){const [fn,arg]=a.slice(3).split(':');runAg(fn,arg===undefined?undefined:+arg);return}
- if(a.startsWith('apply:')){({brand:()=>applyBrand(),ideas:parseIdeas,car:()=>parseSlides(),plan:()=>parsePlan(),reply:parseReplies})[a.slice(6)]();return}
+ if(a.startsWith('apply:')){({rev:()=>applyReview(),brand:()=>applyBrand(),ideas:parseIdeas,car:()=>parseSlides(),plan:()=>parsePlan(),reply:parseReplies})[a.slice(6)]();return}
  if(a.startsWith('cp:')){const v=P[a.slice(3)]||'';if(!v.trim()){toast('فاضي');return}CORE.copy(v,'اتنسخ ✓');return}
  if(a.startsWith('clr:')){if(!P[a.slice(4)]||confirm('تمسح الخانة دي؟')){st.snap('قبل المسح',true);P[a.slice(4)]='';st.save();render()}return}
  if(a.startsWith('toH:')){const v=P[a.slice(4)]||'';if(!v.trim()){toast('فاضي');return}P.hIn=v;qRes=null;go(6);return}
